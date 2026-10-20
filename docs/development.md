@@ -20,6 +20,8 @@ uv run --isolated --no-project --with ./dist/equipment_data_manager-0.1.0-py3-no
 
 These commands work in PowerShell and POSIX shells. `uv sync` creates `.venv`;
 no global pandas installation is needed. The engine requires pinned pandas;
+CI bootstraps uv with the hosted Python 3.12, then uses `uv python install 3.12.14`
+for the pinned project runtime; setup-python lacks that exact Windows build.
 the optional `legacy` extra supplies Excel readers for discovery, not TMA support.
 The lockfile pins dependencies and artifact hashes. Update `uv.lock` only with
 reviewed dependency changes and rerun all tests. Build tooling is pinned in

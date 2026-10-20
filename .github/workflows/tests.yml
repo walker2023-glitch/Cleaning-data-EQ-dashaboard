@@ -16,8 +16,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12.14'
+          # Bootstrap uv using the available hosted Python release. uv provides
+          # the exact project runtime even when setup-python lacks Windows builds.
+          python-version: '3.12'
       - run: python -m pip install uv==0.12.23
+      - run: uv python install 3.12.14
       - run: uv sync --frozen --all-extras
       - run: uv run --frozen --all-extras pytest
       - run: uv run --frozen --all-extras equipment-data-manager --check-config config.example.toml
