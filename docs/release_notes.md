@@ -1,5 +1,22 @@
 # Release notes
 
+## 0.2.0 — M2 local desktop prototype
+
+- Added a CustomTkinter interface with supported report cards, native local file
+  selection, explicit month confirmation, previews, results, warnings, history/help
+  and bundled synthetic samples. TMA is visibly unavailable.
+- Added background processing, main-thread event delivery and between-file stop/
+  deferred close. Source changes invalidate previews; corrections require an
+  explicit checkbox and M1's existing bound approval token.
+- Added shared read-only M1 preview/history APIs without changing cleaners,
+  calculations or exclusions. No outputs are created by preview.
+- Added workflow/widget tests and a visible-window smoke workflow, plus Windows
+  PyInstaller onedir build configuration and packaged-executable CI checks.
+
+This user-directed M2 is offline. Microsoft/Graph work is deferred, not implemented.
+Production accuracy remains unverified; managed-PC testing and IT distribution
+approval are still required. Windows build evidence is reported in the PR checks.
+
 ## 0.1.0 — M1 offline cleaning foundation
 
 - Added type/period-specific CSV wrappers around original repair and flat-service

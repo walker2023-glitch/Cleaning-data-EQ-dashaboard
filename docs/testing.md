@@ -1,5 +1,9 @@
 # Test instructions and evidence limits
 
+M2 adds workflow/background-worker and real CustomTkinter widget tests. The local
+full run passed **117 tests**, including every prior M0/M1 test. Widget tests need
+a real/virtual display and do not silently skip when a display is missing.
+
 M1 local validation: **89 tests passed** on Linux / Python 3.12.14, with no skips.
 Frozen dependency installation, package builds and an isolated wheel-based
 synthetic repair run also passed. Remote Windows/CI results are separate evidence.
@@ -10,6 +14,28 @@ From the repository root using Python 3.12.14 / uv 0.12.23:
 uv sync --frozen --all-extras
 uv run --frozen --all-extras pytest
 ```
+
+On headless Linux use `xvfb-run -a uv run --frozen --all-extras pytest`. The cloud
+run used its existing Xorg server with a dummy display. Windows CI runs directly.
+
+Focused desktop checks:
+
+```sh
+uv run --frozen --all-extras pytest tests/test_desktop_workflow.py tests/test_desktop_widgets.py
+uv run --frozen --all-extras python -m equipment_data_manager.ui.app --smoke-test --smoke-dir data/desktop-smoke
+```
+
+The smoke check creates an actual window and isolated synthetic inputs/outputs,
+then checks write-free preview, M1 processing, duplicates, explicit correction
+confirmation, retained revisions and history. It exits 0 and writes
+`desktop-smoke.json` with `passed` only when the complete flow finishes. GUI tests
+also exercise native selection adapters, invalid input/type/month, blocked TMA,
+input mutation after preview, stale corrections, long work without freezing,
+deferred close, cancellation and recoverable worker errors.
+
+Windows CI builds and runs the actual PyInstaller executable with this flow before
+uploading a prototype ZIP/checksum. The build/check outcomes belong to their exact
+PR commit; they do not establish managed-PC usability or production accuracy.
 
 For focused development:
 
