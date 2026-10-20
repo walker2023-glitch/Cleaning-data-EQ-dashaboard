@@ -1,0 +1,17 @@
+# Copy to config.local.toml (ignored). Keep tokens, passwords and secrets out.
+# M0 only supports offline mode; these empty fields never initiate connections.
+[app]
+mode = "offline"
+
+[microsoft]
+tenant_id = ""
+client_id = ""
+authority = ""
+scopes = []
+
+[sharepoint]
+site_id = ""
+drive_id = ""
+raw_folder_id = ""
+cleaned_folder_id = ""
+logs_folder_id = ""

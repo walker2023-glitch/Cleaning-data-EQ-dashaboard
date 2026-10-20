@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "equipment-data-manager"
+version = "0.0.1"
+description = "Offline discovery scaffold for a Windows equipment report manager"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.optional-dependencies]
+# Used only to inspect and characterize the supplied legacy scripts in M0.
+legacy = ["pandas==2.2.3", "openpyxl==3.1.5", "xlrd==2.0.2"]
+
+[dependency-groups]
+dev = ["pytest==8.3.5"]
+
+[project.scripts]
+equipment-data-manager = "equipment_data_manager.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/equipment_data_manager"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+pythonpath = ["legacy"]
