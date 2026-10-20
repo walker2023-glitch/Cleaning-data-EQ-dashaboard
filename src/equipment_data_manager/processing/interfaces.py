@@ -37,6 +37,8 @@ class CleanResult:
 
 
 class Cleaner(Protocol):
+    version: str
+
     def clean(self, raw_bytes: bytes, *, source_name: str, period: str) -> CleanResult:
         """Return candidate CSV without file/network side effects.
 

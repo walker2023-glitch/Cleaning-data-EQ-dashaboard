@@ -27,6 +27,8 @@ data/
 raw_data/
 cleaned_data/
 *.db
+*.sqlite3
+*.sqlite3-*
 
 # Test and packaging artifacts
 .pytest_cache/
