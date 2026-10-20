@@ -5,7 +5,9 @@ recorded in `source_hashes.json` and checked by tests. This is provenance of the
 uploads, not independent verification of their business correctness or origin.
 
 These are reference inputs for discovery, **not** production adapters. They are
-excluded from the installed application wheel. Do not run their `main()` or
+excluded from the installed application wheel at this path. M1 bundles copies of
+repair/service/common under `processing/_legacy` with only relative import changes;
+tests compare those copies against the originals. Do not run the originals' `main()` or
 `process_file()` functions against real data: they use fixed local paths and
 can write or overwrite CSVs. Tests import only the three pure DataFrame cleaner
 functions via pytest's `legacy` import path and use synthetic data.

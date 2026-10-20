@@ -1,4 +1,4 @@
-# M0 discovery inventory
+# M0/M1 source discovery inventory
 
 ## Evidence and status
 
@@ -73,5 +73,24 @@ These are source observations, not fixes or approved business rules:
   can overwrite outputs. No manifest, rollback, version conflict handling, period
   approval, or publication validation exists in these scripts.
 
-M0 tests cover only selected pure transforms and preserve source hashes. Golden
-comparisons against real sanitized examples and all reconciliation remain open.
+## M1 integration findings
+
+All six files were reinspected. Repairs and flat Service Orders Lists have usable
+pure transformations and are wrapped without calculation/exclusion changes.
+`row_clean_common` supplies their pandas-dependent helpers. The requests module's
+five-column shape and Excel readers do not prove TMA compatibility, so that adapter
+remains blocked. Inventory still cannot import without the original taxonomy
+helpers; no replacement is guessed. Original local paths, month-name/year fallback,
+per-file naming and local `main`/`process_file` entry points are bypassed.
+
+The M1 wheel bundles copies of repair/service/common modules with only relative
+import changes; all six originals remain untouched. pandas is now a core runtime
+dependency. Excel readers remain an optional discovery extra. Package identity
+includes wrapper version, vendored-source hash and pandas version.
+
+Supported adapter layouts are conservative source-derived CSV subsets, documented
+in `cleaning_architecture.md`. The engine adds explicit guards, category/count
+warnings and local duplicate/replacement safety, without rewriting transforms.
+Synthetic tests cover that workflow and compare wrappers against original
+transforms/writers. Golden comparisons against approved sanitized examples and
+source/Power BI reconciliation remain open. See `milestones.md` for current status.

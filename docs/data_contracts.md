@@ -4,6 +4,17 @@
 source code, not sanitized exports. Synthetic fixtures characterize limited code
 paths; they are not business approval or proof that source layouts match.
 
+M1 enables only header-first UTF-8 CSV repair and flat service candidates. The
+repair gate requires all seven input lookup fields listed below. Flat service
+requires `EquipmentId1`, `EquipmentName1`, `ScheduledDate`, `CompletedDate`,
+`Description`, `Cost`, `Textbox21`, and exactly one of `Name`/`Location`. These
+conservative guards define a supported subset; they do not declare organizational
+required/optional fields. Duplicate/blank headers, competing aliases and malformed
+row widths fail. Existing transformations/exclusions remain unchanged. Repair
+results outside the confirmed month fail before artifact selection instead of
+adding a new filtering rule. Invalid source dates/money produce diagnostics while
+retaining original exclusion/zero behavior. See `cleaning_architecture.md` for policy.
+
 ## CompuClean repairs
 
 Observed input lookups: `PersonnelId5` (labelled equipment name), `PersonnelId1`
