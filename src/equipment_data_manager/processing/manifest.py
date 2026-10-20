@@ -14,7 +14,7 @@ import sqlite3
 from uuid import uuid4
 
 from equipment_data_manager.processing.interfaces import CleanResult
-from equipment_data_manager.processing.models import OutputRevision, ProcessingError, ReportType
+from equipment_data_manager.processing.models import HistoryEntry, OutputRevision, ProcessingError, ReportType
 
 OUTPUT_NAMES = {
     ReportType.REPAIRS: "CompuClean_RepairReports",
@@ -25,6 +25,45 @@ OUTPUT_NAMES = {
 class LocalOutputStore:
     def __init__(self, root: Path):
         self.root = Path(root).resolve()
+
+    @contextmanager
+    def read_transaction(self):
+        """Read a consistent existing manifest without creating/migrating it."""
+        path = self.root / "manifest.sqlite3"
+        if path.is_symlink():
+            raise ProcessingError("unsafe_output_store")
+        if not path.exists():
+            yield None
+            return
+        connection = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=5)
+        try:
+            if connection.execute("PRAGMA user_version").fetchone()[0] != 1:
+                raise ProcessingError("unsupported_manifest_version")
+            connection.execute("BEGIN")
+            yield connection
+        finally:
+            connection.close()
+
+    def history(self) -> tuple[HistoryEntry, ...]:
+        """Completed revisions, not a log of failed attempts or validation approval."""
+        with self.read_transaction() as connection:
+            if connection is None:
+                return ()
+            rows = connection.execute(
+                """SELECT r.id, r.report_type, r.period, r.source_hash, r.output_hash,
+                          r.cleaner_version, r.input_rows, r.output_rows, r.warnings,
+                          a.revision_id IS NOT NULL
+                   FROM revisions r LEFT JOIN active a ON a.revision_id = r.id
+                   ORDER BY r.rowid DESC"""
+            ).fetchall()
+            return tuple(
+                HistoryEntry(
+                    ReportType(row[1]), row[2],
+                    OutputRevision(row[0], self.artifact_path(ReportType(row[1]), row[2], row[0]),
+                                   row[3], row[4], row[5], row[6], row[7]),
+                    bool(row[9]), tuple(json.loads(row[8])),
+                ) for row in rows
+            )
 
     @contextmanager
     def transaction(self):
@@ -68,6 +107,8 @@ class LocalOutputStore:
         return path
 
     def current(self, connection, report_type: ReportType, period: str):
+        if connection is None:
+            return None, ()
         row = connection.execute(
             """SELECT r.id, r.source_hash, r.output_hash, r.cleaner_version,
                       r.input_rows, r.output_rows, r.warnings

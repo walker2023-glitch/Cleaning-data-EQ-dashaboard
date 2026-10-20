@@ -48,6 +48,15 @@ class OutputRevision:
 
 
 @dataclass(frozen=True)
+class HistoryEntry:
+    report_type: ReportType
+    period: str
+    artifact: OutputRevision
+    is_current: bool
+    warnings: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class ProcessingResult:
     status: ProcessingStatus
     code: str
