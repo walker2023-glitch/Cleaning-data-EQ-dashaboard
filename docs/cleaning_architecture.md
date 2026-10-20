@@ -78,7 +78,8 @@ depends on missing `dashboard.taxonomy` and is outside this milestone.
 - Reject missing required columns, ambiguous/unknown layouts, empty/no-output
   inputs, nonfinite numeric outputs, and repair results outside the confirmed
   month. Mismatches fail instead of silently adding repair filters.
-- Service retains its scheduled-OR-completed month inclusion rule.
+- Service retains its scheduled-OR-completed month inclusion rule and warns about
+  cross-period dates in accepted rows without excluding additional records.
 - Invalid dates/malformed money produce category/count warnings. Existing date
   exclusions and money-to-zero behavior remain unchanged. Duration heuristics,
   defaults and rate are explicitly unverified. Unknown source columns and excluded

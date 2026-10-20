@@ -66,8 +66,8 @@ class LegacyCsvCleaner:
         source_files = ("row_clean_common.py", "repairs_row_clean.py", "service_row_clean.py")
         root = Path(__file__).parent / "_legacy"
         source_hash = sha256(b"".join((root / name).read_bytes() for name in source_files)).hexdigest()
-        # Bump wrapper-v1 if reading, output formatting or validation policy changes.
-        self.version = f"wrapper-v1:pandas-{pd.__version__}:{source_hash}"
+        # Bump this version if reading, formatting or validation policy changes.
+        self.version = f"wrapper-v2:pandas-{pd.__version__}:{source_hash}"
 
     def clean(self, raw_bytes: bytes, *, source_name: str, period: str) -> CleanResult:
         validate_period(period)
@@ -135,6 +135,13 @@ class LegacyCsvCleaner:
             raise ProcessingError("no_output_rows")
 
         self._validate_candidate(cleaned, period)
+        if self.report_type == ReportType.SERVICE_ORDERS:
+            cross_period = sum(
+                bool(value) and str(value)[:7] != period
+                for column in ("Sched. Date", "Completed Date") for value in cleaned[column]
+            )
+            if cross_period:
+                notes.append(f"cross_period_output_dates:{cross_period}")
         output = StringIO(newline="")
         if self.report_type == ReportType.REPAIRS:
             # Reuse the exact existing writer, including its three-row preamble.

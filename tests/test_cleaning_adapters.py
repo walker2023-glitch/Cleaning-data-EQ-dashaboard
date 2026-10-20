@@ -135,6 +135,7 @@ def test_service_cross_month_rule_and_last_day_are_preserved():
     result = LegacyCsvCleaner(ReportType.SERVICE_ORDERS).clean(raw, source_name="sample.csv", period="2026-09")
     assert result.output_rows == 1
     assert b"2026-10-01" in result.output_bytes
+    assert "cross_period_output_dates:1" in result.warnings
 
 
 def test_utf8_bom_keeps_same_candidate_bytes():

@@ -27,7 +27,7 @@ The engine requires pinned pandas; the optional `legacy` extra supplies Excel
 readers for discovery, not TMA support.
 The lockfile pins dependencies and artifact hashes. Update `uv.lock` only with
 reviewed dependency changes and rerun all tests. Build tooling is pinned in
-`pyproject.toml`. Bump the adapter's `wrapper-v1` version if reading, formatting or
+`pyproject.toml`. Bump the adapter's `wrapper-v2` version if reading, formatting or
 validation behavior changes; source and pandas versions are already in its identity.
 
 ## Package layout
