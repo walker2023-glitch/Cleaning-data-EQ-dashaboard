@@ -1,1 +1,1 @@
-"""Cleaning contracts; production adapters await verified data contracts."""
+"""Offline processing; production accuracy awaits approved data contracts."""

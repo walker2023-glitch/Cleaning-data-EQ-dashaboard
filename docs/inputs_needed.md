@@ -1,4 +1,18 @@
-# Inputs needed to finish discovery
+# Inputs needed for verified cleaning (M0/M1)
+
+## What M1 now makes available
+
+An offline coordinator and CLI wrap the supplied repair and flat-service CSV
+transforms without changing their calculations/exclusions. Synthetic tests cover
+the API, duplicates, corrected months, failed processing and preserved originals.
+Production accuracy remains unverified. TMA selection is explicitly blocked until
+the requests cleaner's relationship to the real Work Orders export is established.
+Legacy service context layouts, Excel and other encodings are not enabled.
+
+The highest-priority next inputs are one approved raw/expected pair for repairs,
+one for flat service orders, and a confirmed TMA raw/expected pair plus identification
+of the correct cleaner. Include the counts/totals and policies described below.
+No need to resend the six existing uploads.
 
 ## Source scripts
 

@@ -4,15 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "equipment-data-manager"
-version = "0.0.1"
-description = "Offline discovery scaffold for a Windows equipment report manager"
+version = "0.1.0"
+description = "Offline equipment report cleaning engine and validation foundation"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = ["pandas==2.2.3"]
 
 [project.optional-dependencies]
-# Used only to inspect and characterize the supplied legacy scripts in M0.
-legacy = ["pandas==2.2.3", "openpyxl==3.1.5", "xlrd==2.0.2"]
+# Excel readers are discovery-only until TMA formats are verified.
+legacy = ["openpyxl==3.1.5", "xlrd==2.0.2"]
 
 [dependency-groups]
 dev = ["pytest==8.3.5"]

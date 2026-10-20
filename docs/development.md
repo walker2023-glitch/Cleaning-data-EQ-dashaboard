@@ -1,78 +1,69 @@
-# Development (M0)
+# Development (M1 offline engine)
 
-## Workflow and scope
+Read `README.md` and `design.md` fully before changes. Use a feature branch and
+pull-request review. M1 is based on M0 commit `2889796`; PR #1 remains a separate
+draft and must not be merged automatically. The M1 PR targets the M0 branch so
+its review contains only M1 changes; retarget after M0 merges.
 
-Read `README.md` and `design.md` in full before editing. Use a feature branch and
-review changes through a pull request. Cloud tasks are already isolated; use the
-existing checkout and do not create a worktree unless explicitly requested.
-
-Use Python 3.12.14 (`.python-version`) and uv 0.12.23. From the root run:
+Cloud tasks are already isolated. Use the existing checkout and do not create a
+worktree unless explicitly requested. Use Python 3.12.14 (`.python-version`) and
+uv 0.12.23. From the repository root:
 
 ```sh
 uv sync --frozen --all-extras
 uv run --frozen --all-extras pytest
 uv run --frozen --all-extras equipment-data-manager --check-config config.example.toml
 uv build
-uv run --isolated --no-project --with ./dist/equipment_data_manager-0.0.1-py3-none-any.whl python -I -m equipment_data_manager
+uv run --isolated --no-project --with ./dist/equipment_data_manager-0.1.0-py3-none-any.whl python -I -m equipment_data_manager
+uv run --isolated --no-project --with ./dist/equipment_data_manager-0.1.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/wheel-smoke
 ```
 
-`uv sync` creates `.venv`; no global pandas installation is needed. On Windows,
-install the approved Python/uv toolchain through your normal development process.
-The lockfile contains resolved packages and artifact hashes. Refresh it with
-`uv lock` only in a reviewed dependency update, then rerun tests. The core package
-has no runtime dependencies. Build tooling is pinned in `pyproject.toml`.
+These commands work in PowerShell and POSIX shells. `uv sync` creates `.venv`;
+no global pandas installation is needed. CI bootstraps uv with the hosted Python
+3.12, then uses `uv python install 3.12.14` for the pinned project runtime;
+setup-python lacks that exact Windows build.
 
-Required for M0: install, offline CLI/config check, all pytest tests, wheel/sdist
-build and installed-wheel smoke check. CI runs on Ubuntu and Windows. A Windows
-desktop pilot without Python, GUI, sign-in, Graph permissions and real report
-reconciliation are later checks, not claims made by the M0 test suite.
+The engine requires pinned pandas; the optional `legacy` extra supplies Excel
+readers for discovery, not TMA support.
+The lockfile pins dependencies and artifact hashes. Update `uv.lock` only with
+reviewed dependency changes and rerun all tests. Build tooling is pinned in
+`pyproject.toml`. Bump the adapter's `wrapper-v2` version if reading, formatting or
+validation behavior changes; source and pandas versions are already in its identity.
 
-## Layout
+## Package layout
 
 | Location | Purpose |
 |---|---|
-| `src/equipment_data_manager/` | Installable offline package and CLI |
-| `processing/interfaces.py` | Cleaner, candidate result/schema/metrics contracts |
-| `storage/interface.py` | Storage protocol with version-aware reads and create-only output |
-| `storage/graph_sharepoint.py` | Explicitly disabled operations; no HTTP or auth implementation |
-| `config.example.toml` | Empty, credential-free future integration settings |
-| `legacy/clean/` | Exact uploaded sources, excluded from application wheel |
-| `tests/fixtures/synthetic/` | Source-derived characterization inputs/expected outputs |
-| `docs/` | Discovery, unverified contracts, supply checklist and development notes |
+| `processing/interfaces.py` | Cleaner and candidate CSV/schema/metric contracts |
+| `processing/models.py` | Requests, statuses and revision/result metadata |
+| `processing/cleaners.py` | Supported-layout guards and source-preserving wrappers |
+| `processing/_legacy/` | Three bundled original modules; only imports changed |
+| `processing/coordinator.py` | Bytes/path inputs, sequential work and review decisions |
+| `processing/manifest.py` | Local SQLite selection and immutable CSV revisions |
+| `legacy/clean/` | All six untouched uploads with checked SHA-256 hashes |
+| `storage/` | Future storage contracts and disabled Graph implementation |
+| `tests/` | Offline characterization, failure injection and workflow tests |
 
-Tests deny socket connections/DNS during execution. The offline CLI never imports
-legacy scripts or any Microsoft SDK. Pure legacy transformations are tested to
-confirm a few observed behaviors, not to declare the inputs safe or approved.
-Inventory import is intentionally unrun until its missing original helper exists;
-there is no fake taxonomy module or skipped test masquerading as verification.
+The coordinator is callable without CLI/GUI or Graph. See
+[cleaning_architecture.md](cleaning_architecture.md) for the Python API and
+transaction/recovery boundaries, and [testing.md](testing.md) for tests and limits.
 
-## Integration boundaries
+## Fixture and output handling
 
-`Cleaner.clean` accepts bytes plus a source name and a confirmed YYYY-MM period.
-`CleanResult` carries candidate bytes, counts, typed schema, warnings, cleaner
-version, source period, and unit-labelled decimal metrics. No production adapters,
-registry, classifier or coordinator are implemented in M0. A future validator must
-approve candidates before any storage write.
+Keep experiments/output under ignored `data/` or an authorized local temporary
+directory. No real exports, credentials, tokens, PBIX files or organizational
+settings belong in commits. SQLite manifests are ignored, but CSVs outside ignored
+paths are not automatically safe to commit. Commit only reviewed synthetic or
+explicitly sanitized fixtures under `tests/fixtures/`, with provenance, expected
+counts, exclusions, totals and tolerances. Current examples are source-derived,
+not production or TMA validation. Do not change calculation/date/exclusion behavior
+without verified fixtures and explicit approval. Tests verify the vendored copies
+differ from the untouched originals only in package-relative imports.
 
-`ReportRepository` is injectable for later local fixture and Graph adapters.
-Opaque item/folder IDs avoid assuming URLs or local paths. Reads carry expected
-ETags; create-output is defined as fail-if-present. Conditional replacement,
-staging, pagination, permission checks, bounded retries, cancellation, and shared
-concurrency protection still require M1/M2 implementation and tests. The disabled
-Graph class raises on every call; these interfaces do not establish Graph support.
+## Deferred integration
 
-No MSAL/token/cache code is present. Do not add client secrets for a public desktop
-client. Future integration requires IT-approved registration/permissions, confirmed
-test locations and secure Windows token caching; see `docs/admin_setup.md`.
-
-## Fixture handling
-
-Never commit raw production exports, names, descriptions, tenant IDs, tokens,
-PBIX files, local config or outputs. `data/` is ignored. Commit reviewed synthetic
-or explicitly sanitized fixtures only under `tests/fixtures/`, with provenance,
-expected counts and totals, exclusions and comparison tolerances. The current
-synthetic examples are not TMA samples or approved Power BI baselines.
-
-Do not change legacy transforms to fit assumptions. Establish fixture-backed
-business contracts before M1 adapter work. No production SharePoint access is
-needed for development or tests in M0.
+M0 configuration remains offline-only; Microsoft fields are inert placeholders.
+No MSAL, credentials, network client, token cache or GUI is added in M1. The Graph
+stub still raises on every operation. Local locking protects this output store
+only; it is not a cross-computer SharePoint lease. IT approval, conditional Graph
+uploads and secure Windows token caching remain M2.
