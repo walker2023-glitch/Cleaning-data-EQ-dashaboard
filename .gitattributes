@@ -1,0 +1,2 @@
+# Preserve uploaded source bytes, including on Windows checkouts.
+legacy/clean/*.py -text
