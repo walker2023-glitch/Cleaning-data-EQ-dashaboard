@@ -21,6 +21,7 @@ logs/
 build/
 dist/
 *.spec
+!packaging/EquipmentDataManager.spec
 
 # Departmental data
 data/

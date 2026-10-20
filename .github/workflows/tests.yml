@@ -22,8 +22,30 @@ jobs:
       - run: python -m pip install uv==0.12.23
       - run: uv python install 3.12.14
       - run: uv sync --frozen --all-extras
-      - run: uv run --frozen --all-extras pytest
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a uv run --frozen --all-extras pytest
+      - if: runner.os == 'Windows'
+        run: uv run --frozen --all-extras pytest
       - run: uv run --frozen --all-extras equipment-data-manager --check-config config.example.toml
       - run: uv build
-      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.1.0-py3-none-any.whl python -I -m equipment_data_manager
-      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.1.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/ci-wheel-smoke
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/ci-wheel-smoke
+      - if: runner.os == 'Windows' && github.event_name == 'pull_request'
+        run: ./packaging/build.ps1
+      - if: runner.os == 'Windows' && github.event_name == 'pull_request'
+        shell: pwsh
+        run: |
+          $checkDir = Join-Path $PWD "data/packaged-smoke"
+          $process = Start-Process -FilePath "dist/EquipmentDataManager/EquipmentDataManager.exe" -ArgumentList @("--smoke-test", "--smoke-dir", $checkDir) -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw "Desktop smoke timed out" }
+          if ($process.ExitCode -ne 0) { throw "Desktop smoke failed with exit code $($process.ExitCode)" }
+          $report = Get-Content "$checkDir/desktop-smoke.json" | ConvertFrom-Json
+          if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
+      - if: runner.os == 'Windows' && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EquipmentDataManager-v0.2.0-Windows-prototype
+          path: |
+            dist/EquipmentDataManager_v0.2.0_win64.zip
+            dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
+            data/packaged-smoke/desktop-smoke.json
