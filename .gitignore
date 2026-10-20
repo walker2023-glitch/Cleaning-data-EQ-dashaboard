@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+*.token
+*.secret
+
+# Local application settings
+config.local.json
+logs/
+*.log
+
+# Build output
+build/
+dist/
+*.spec
+
+# Departmental data
+data/
+raw_data/
+cleaned_data/
+*.db
+
+# Editor files
+.vscode/
+.idea/
