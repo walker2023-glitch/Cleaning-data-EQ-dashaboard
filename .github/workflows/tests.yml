@@ -23,9 +23,9 @@ jobs:
       - run: uv python install 3.12.14
       - run: uv sync --frozen --all-extras
       - if: runner.os == 'Linux'
-        run: xvfb-run -a uv run --frozen --all-extras pytest
+        run: xvfb-run -a uv run --frozen --all-extras python .github/run_tests.py
       - if: runner.os == 'Windows'
-        run: uv run --frozen --all-extras pytest
+        run: uv run --frozen --all-extras python .github/run_tests.py
       - run: uv run --frozen --all-extras equipment-data-manager --check-config config.example.toml
       - run: uv build
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager
