@@ -1,4 +1,18 @@
-# Inputs needed for verified cleaning (M0/M1)
+# Inputs needed for verified cleaning and desktop pilot (M0–M2)
+
+## What is needed after the desktop prototype
+
+M2 adds a local GUI around M1, plus invented sample reports and Windows packaging
+checks. It does not close the production-accuracy gate. Please provide the approved
+repair/service raw/expected pairs and baseline totals below, and confirm the actual
+TMA export/cleaner. The GUI keeps TMA processing blocked until then.
+
+For a desktop pilot, identify an authorized reviewer and IT-managed Windows 10/11
+PC without Python. Confirm allowed executable/signing policy, an approved local
+candidate folder, retention/support ownership, display scaling/accessibility needs,
+and whether the preview/correction warnings are understandable to Facilities staff.
+No Microsoft registration or production folder access is needed to try bundled
+synthetic samples. Microsoft/Graph work still needs separate approval.
 
 ## What M1 now makes available
 

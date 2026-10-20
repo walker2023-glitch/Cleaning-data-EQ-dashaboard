@@ -11,7 +11,16 @@ CompuClean and TMA reports stored in SharePoint.
 - Power BI-ready CSV outputs
 - Simple Windows executable distribution
 
-## Current status: M1 offline cleaning foundation
+## Current status: M2 local desktop prototype
+
+The CustomTkinter desktop wraps the real M1 engine with report selection, local
+file picking, explicit month confirmation, write-free preview, background processing,
+correction review, results, candidate history and help. Bundled synthetic samples
+let you preview the workflow without departmental data.
+
+See the [employee guide](docs/user_guide.md), [desktop architecture](docs/desktop_architecture.md)
+and [Windows packaging instructions](docs/windows_packaging.md). This user-directed
+M2 is offline; the original design's M2 Microsoft/Graph milestone remains deferred.
 
 The application described in [design.md](design.md) is the target design.
 The offline coordinator accepts CSV bytes or local files, wraps the existing
@@ -23,8 +32,9 @@ a corrected monthly revision. Inputs and previous output revisions are retained.
 Production cleaning accuracy is **unverified**. Supported layouts are conservative,
 source-derived gates, not approved departmental schemas. TMA processing remains
 blocked because the requests cleaner's compatibility is unconfirmed. Inventory's
-taxonomy dependency is missing. No GUI, sign-in, SharePoint operation or Power BI
-change is implemented.
+taxonomy dependency is missing. No sign-in, SharePoint operation or Power BI change
+is implemented. An automated packaged-window smoke check does not establish
+employee-release readiness; a managed-PC usability/security pilot remains required.
 
 M0's verified-sample acceptance criterion remains open: sanitized raw/expected
 report pairs, approved totals, and organizational configuration are still needed.
@@ -35,6 +45,7 @@ and [milestone status](docs/milestones.md).
 ## Development
 
 Use Python **3.12.14** and **uv 0.12.23**. pandas is the pinned engine dependency.
+The `desktop` extra supplies CustomTkinter/Pillow; `packaging` supplies PyInstaller.
 The `legacy` extra adds Excel readers for source discovery only. The wheel bundles
 three source-preserved modules with package-relative import changes; all six
 untouched original uploads remain under `legacy/clean`.
@@ -47,6 +58,28 @@ uv run --frozen --all-extras python -m equipment_data_manager
 uv run --frozen --all-extras python -m equipment_data_manager --check-config config.example.toml
 uv run --frozen --all-extras pytest
 ```
+
+Tests include real windows and need a desktop display. On a headless Linux runner,
+use `xvfb-run -a uv run --frozen --all-extras pytest`. Windows runs the same suite
+directly. The CLI remains usable without the optional desktop dependencies.
+
+## Preview the desktop
+
+For a developer launch from the repository root:
+
+```sh
+uv sync --frozen --extra desktop
+uv run --frozen --extra desktop equipment-data-manager-desktop
+```
+
+Select a report card, click **Load synthetic sample**, confirm **September 2026**,
+then click **Preview Processing** and **Process Reports**. Preview creates no
+outputs. Review warnings and use History to open a saved candidate's folder.
+
+For a nontechnical Windows preview, obtain the prototype ZIP from a **successful**
+Windows PR build artifact, extract the entire application folder, then double-click
+`EquipmentDataManager.exe`. No terminal or Python is needed for that packaged
+workflow. See [the employee guide](docs/user_guide.md) for the full steps.
 
 These commands work in PowerShell and POSIX shells from the repository root.
 Use `Copy-Item config.example.toml config.local.toml` on Windows, or

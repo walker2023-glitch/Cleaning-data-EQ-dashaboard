@@ -26,8 +26,15 @@ class ProcessingCoordinator:
         return tuple(self.process(request) for request in requests)
 
     def process(self, request: ProcessingRequest) -> ProcessingResult:
+        return self._run(request, preview=False)
+
+    def preview(self, request: ProcessingRequest) -> ProcessingResult:
+        """Use the same decisions/transformations without writing any outputs."""
+        return self._run(request, preview=True)
+
+    def _run(self, request: ProcessingRequest, *, preview: bool) -> ProcessingResult:
         try:
-            return self._process(request)
+            return self._process(request, preview=preview)
         except ProcessingError as exc:
             return ProcessingResult(ProcessingStatus.FAILURE, str(exc))
         except OSError:
@@ -39,7 +46,7 @@ class ProcessingCoordinator:
             # category; never log raw exceptions or cell contents to the GUI.
             return ProcessingResult(ProcessingStatus.FAILURE, "processing_failed")
 
-    def _process(self, request: ProcessingRequest) -> ProcessingResult:
+    def _process(self, request: ProcessingRequest, *, preview: bool = False) -> ProcessingResult:
         try:
             report_type = ReportType(request.report_type)
         except ValueError:
@@ -63,7 +70,8 @@ class ProcessingCoordinator:
         cleaner = self.cleaners[report_type]
         source_hash = sha256(raw).hexdigest()
         # Serialize decisions on this machine. This is not a SharePoint lease.
-        with self.store.transaction() as connection:
+        transaction = self.store.read_transaction if preview else self.store.transaction
+        with transaction() as connection:
             current, prior_warnings = self.store.current(connection, report_type, request.period)
             if current and current.source_hash == source_hash and current.cleaner_version == cleaner.version:
                 return ProcessingResult(
@@ -86,6 +94,10 @@ class ProcessingCoordinator:
                     )
             if not current and request.replacement_token is not None:
                 raise ProcessingError("replacement_target_missing")
+            if preview:
+                return ProcessingResult(
+                    ProcessingStatus.SUCCESS, "ready_to_process", cleaned.warnings, cleaned=cleaned,
+                )
             artifact = self.store.write_revision(report_type, request.period, source_hash, cleaned)
             self.store.select_revision(connection, report_type, request.period, artifact, cleaned.warnings)
             result = ProcessingResult(

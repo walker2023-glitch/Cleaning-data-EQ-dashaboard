@@ -1,5 +1,11 @@
 # Offline cleaning architecture (M1)
 
+M2 adds a local desktop caller; see `desktop_architecture.md`. M1's calculations,
+date rules, exclusions and source identity remain unchanged. The coordinator now
+also exposes `preview(request)`, using the same decision path with a read-only
+manifest and no artifact writes. `store.history()` returns recorded revisions.
+Preview and history do not create an absent output folder or manifest.
+
 ```mermaid
 flowchart LR
     Caller[CLI or future controller] --> Input[Explicit type, confirmed month, input bytes]
