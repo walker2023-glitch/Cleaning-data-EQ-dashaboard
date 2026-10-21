@@ -27,6 +27,8 @@ ERRORS = {
     "correction_not_approved": "This correction needs your explicit review and confirmation.",
     "replacement_confirmation_required": "This month has a different current output. Review the proposed correction.",
     "cancelled": "Stopped before this file was processed. Completed files remain saved.",
+    "invalid_service_order_summary": "The repeated service-order summary is missing or has an unrecognized format. Check the export.",
+    "service_order_summary_mismatch": "The report's service-order summary does not match its record count. Check the complete export before processing.",
 }
 
 
@@ -55,6 +57,7 @@ def warning_message(code: str):
         "rows_excluded_by_legacy": "Rows excluded by the existing cleaning rules",
         "unmapped_source_columns": "Source columns are not included in the cleaned output",
         "cross_period_output_dates": "Accepted service dates fall outside the selected month",
+        "estimated_price_unavailable": "This export has no cost field. Estimated Price is blank; no price has been inferred.",
     }
     text = messages.get(key, "The engine reported an additional warning requiring review.")
     return f"{text}: {count}" if count.isdigit() else text

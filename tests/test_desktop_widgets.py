@@ -203,3 +203,21 @@ def test_close_during_work_defers_destroy_until_active_job_finishes(app, monkeyp
     assert app.winfo_exists()
     app.close_pending = False
     app.worker.busy = False
+
+
+def test_february_service_export_previews_and_processes_all_five_records(app):
+    path = Path(__file__).parent / "fixtures/synthetic/service_orders_february_2026.csv"
+    app.report_buttons[1].invoke()
+    app.set_files([str(path)])
+    app.month.set("February")
+    app.year.set("2026")
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.previews[0].result.code == "ready_to_process"
+    assert app.previews[0].result.output_rows == 5
+    assert app.process_button.cget("state") == "normal"
+    app.process_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.results[0].result.status == Status.SUCCESS
+    assert app.results[0].result.input_rows == app.results[0].result.output_rows == 5

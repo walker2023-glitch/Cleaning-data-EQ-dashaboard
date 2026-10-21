@@ -1,11 +1,11 @@
 # Data contracts: provisional, source-derived
 
 **No report contract is verified yet.** The following columns come from inspected
-source code, not sanitized exports. Synthetic fixtures characterize limited code
-paths; they are not business approval or proof that source layouts match.
+source code and the observed February service export. Synthetic fixtures characterize
+limited code paths; they are not business approval or proof of production accuracy.
 
 M1 enables only header-first UTF-8 CSV repair and flat service candidates. The
-repair gate requires all seven input lookup fields listed below. Flat service
+repair gate requires all seven input lookup fields listed below. The older priced flat service layout
 requires `EquipmentId1`, `EquipmentName1`, `ScheduledDate`, `CompletedDate`,
 `Description`, `Cost`, `Textbox21`, and exactly one of `Name`/`Location`. These
 conservative guards define a supported subset; they do not declare organizational
@@ -34,6 +34,14 @@ fields, ID normalization, period selection, units/currency approval, acceptable
 duration defaults, exclusions and comparable source/Power BI totals.
 
 ## CompuClean service orders
+
+The observed no-price February export now has a specific adapter: exactly
+`AccountName2, EquipmentId1, EquipmentName1, VendorName, ScheduledDate,
+CompletedDate, Name, Description, Textbox21, Textbox56`. It reads equipment IDs
+as text, validates the repeated `Total Service Orders` value against raw row count,
+and emits the original eight-column schema with blank Estimated Price. It does
+not infer cost from the summary. See `service_orders_february_fix.md` for mappings,
+sanitized regression provenance, limitations and VS Code testing instructions.
 
 Flat-layout detection uses `EquipmentId1` or `EquipmentName1`. Aliases:
 `EquipmentId1` → `EquipmentId`, `EquipmentName1` → `EquipmentName`, `Textbox21`
