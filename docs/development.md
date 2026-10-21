@@ -119,3 +119,11 @@ candidate additionally warns of financial disagreement: do not treat that as a
 validated result. No trusted expected cleaned output was supplied. Inspect CSVs
 as text in VS Code to check leading zeros (spreadsheet auto-inference can hide them).
 See `edge_case_validation.md` for remaining months/XLS and unresolved questions.
+
+## January failure diagnostics
+
+See [January investigation and Windows VS Code steps](january_rejection_investigation.md)
+for the new branch, the isolated Windows test command, native XLSX/XLS filters,
+runtime checks and write-free CLI date/exclusion traces. The same supplied January
+inputs pass locally; the reported Windows CSV rejections remain unreproduced.
+Do not weaken period checks or change financial rules to force acceptance.

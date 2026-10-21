@@ -141,3 +141,16 @@ The store assumes a trusted application-controlled local directory and one local
 manifest. It does not provide a network-filesystem lease or multiuser SharePoint
 commit protocol. Future adapters can consume candidate bytes/metadata after
 approved validation and publication controls are implemented.
+
+## Local CSV rejection context
+
+CSV results and date/empty-output errors now carry optional `CleaningDiagnostics`.
+The observer reuses original helpers in first-exclusion order and verifies retained
+count parity with the original cleaner. It changes no parsing/filtering/calculation
+rules. Diagnostics contain period/fingerprint/version, source data-record numbers,
+reason counts and raw/parsed date observations; no identity/descriptive/money cells
+are collected. Raw date cells are excluded from repr/default CLI summaries, visible
+locally in the GUI or opt-in CLI trace, and never persisted in SQLite history.
+Failures still expose category-only exception strings and create no selected output.
+`process --preview` uses the existing read-only coordinator path. See
+`january_rejection_investigation.md` for scope, privacy and the pending reproduction.
