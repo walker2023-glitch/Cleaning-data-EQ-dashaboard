@@ -218,3 +218,38 @@ def test_tma_gui_workflow_uses_real_engine_and_preserves_source(tmp_path):
     assert preview[0].result.code == 'ready_to_process'
     result = workflow.process(preview, {}, lambda *_: None, Event())[0].result
     assert result.status == Status.SUCCESS and result.output_rows == 3
+
+
+def test_observed_repair_bare_numeric_id_retains_zeros():
+    frame = pd.read_csv(BytesIO(repair_csv(1, 3)), dtype=str, keep_default_na=False)
+    frame['PersonnelId1'] = '000439'
+    result = LegacyCsvCleaner(ReportType.REPAIRS).clean(frame.to_csv(index=False).encode(), source_name='raw.csv', period='2026-01')
+    out = pd.read_csv(BytesIO(result.output_bytes), skiprows=3, dtype=str)
+    assert out['Equipment ID'].eq('000439').all()
+
+
+def test_summary_service_invalid_dates_retain_original_exclusion_counts():
+    frame = pd.read_csv(BytesIO(service_csv(1, 3)), dtype=str, keep_default_na=False)
+    frame.loc[0, ['ScheduledDate', 'CompletedDate']] = 'invalid'
+    result = LegacyCsvCleaner(ReportType.SERVICE_ORDERS).clean(frame.to_csv(index=False).encode(), source_name='raw.csv', period='2026-01')
+    assert result.input_rows == 3 and result.output_rows == 2
+    assert 'invalid_source_dates:2' in result.warnings
+    assert 'rows_excluded_by_legacy:1' in result.warnings
+    assert {m.name: m.value for m in result.reconciliation_metrics} == {'Source service orders': 3, 'Retained service orders': 2}
+
+
+def test_tma_excel_date_values_and_empty_assignees():
+    from datetime import datetime
+    rows = tma_rows(1, 3)
+    for row in rows[2:-1]:
+        row[1] = datetime(2026, 1, 31, 23, 59)
+    result = TmaXlsxCleaner().clean(workbook_bytes(rows), source_name='raw.xlsx', period='2026-01')
+    out = pd.read_csv(BytesIO(result.output_bytes), skiprows=1, dtype=str, keep_default_na=False)
+    assert out['Request Date'].eq('01/31/2026').all()
+    assert out['Assigned To'].eq('').all()
+
+
+def test_bundled_tma_sample_is_the_reviewed_synthetic_fixture():
+    root = Path(__file__).resolve().parents[1]
+    assert (root / 'src/equipment_data_manager/resources/samples/tma_sample.xlsx').read_bytes() == (
+        root / 'tests/fixtures/synthetic/tma_title_header_footer.xlsx').read_bytes()

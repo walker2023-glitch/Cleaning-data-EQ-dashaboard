@@ -1,5 +1,7 @@
 # Offline cleaning architecture (M1)
 
+Multi-month compatibility adds strict repair metadata and provisional TMA XLSX
+candidates; see `format_compatibility.md` for current gates and evidence limits.
 M2 adds a local desktop caller; see `desktop_architecture.md`. M1's calculations,
 date rules, exclusions and source identity remain unchanged. The coordinator now
 also exposes `preview(request)`, using the same decision path with a read-only
@@ -57,12 +59,12 @@ the operator or provide an automatic business-data diff.
 
 The repair wrapper calls `clean_repairs_raw` and the original preamble writer.
 The service wrapper calls `clean_service_raw` with the confirmed month and retains
-the existing plain CSV serialization. Three modules are bundled under
+the existing plain CSV serialization. Four modules are bundled under
 `processing/_legacy`; only absolute `clean.row_clean_common` imports become
 relative imports. Tests compare copies with the preserved originals and compare
 wrapper outputs against the original transform/writer.
 
-Readers retain pandas type/NA inference. Duration defaults, 12.5 labor rate, repair
+Older layout readers retain pandas type/NA inference. Duration defaults, 12.5 labor rate, repair
 counts, costs, date parsing and exclusions are unchanged. Output names are the
 year-qualified design names, inside revision directories. Filename month/year
 inference and original local `main()`/`process_file()` workflows are never invoked.
@@ -73,17 +75,26 @@ metadata and adapts the absent price to the original blank-price path. The older
 priced-layout reader and original transforms remain unchanged. See
 `service_orders_february_fix.md`; this is not an arbitrary missing-column fallback.
 
-Only UTF-8/UTF-8-BOM header-first CSVs are enabled. Required columns are a
+CompuClean accepts only UTF-8/UTF-8-BOM header-first CSVs. Required columns are a
 conservative list of fields used by the supported transforms (`data_contracts.md`).
 Flat service lists may have `Name` or `Location`; competing aliases fail.
-Preambles, legacy service context layouts, XLS/XLSX, unknown schemas,
+CompuClean preambles, legacy service context layouts, Excel, unknown schemas,
 duplicate/blank headers, malformed row widths and unsupported encodings fail
 explicitly instead of guessing.
 
-The requests source handles work-order/request-shaped inputs, but **TMA
-compatibility cannot be established**. TMA selection fails with
-`report_type_awaiting_verified_fixtures`. No TMA adapter is invented. Inventory
-depends on missing `dashboard.taxonomy` and is outside this milestone.
+The exact 14-column repair layout reads the ID field as text and checks repeated
+count and labor/parts/cost metadata. Each reported total becomes one separate
+metric, not a per-row transaction. Disagreements with calculated totals warn;
+original mappings/calculations are untouched. The observed January disagreement
+is an unresolved business-data blocker, not a successful financial reconciliation.
+
+`TmaXlsxCleaner` reads bytes with pinned openpyxl, requires one sheet and the exact
+observed title/second-row headers/final summary, and calls the source-preserved
+requests transform/writer. Title/header/footer are not input records. Footer count
+must match body count; retained dates must match the confirmed month. Output is a
+provisional five-column CSV with its original title row and MM/DD/YYYY dates.
+Legacy XLS remains blocked pending an actual sample (xlrd is discovery-only).
+Inventory depends on missing `dashboard.taxonomy` and is outside this milestone.
 
 ## Validation policy
 
@@ -97,8 +108,9 @@ depends on missing `dashboard.taxonomy` and is outside this milestone.
   defaults and rate are explicitly unverified. Unknown source columns and excluded
   counts are reported; business records are not deduplicated.
 - Every candidate warns `production_accuracy_unverified`. Local success means
-  wrapper/structural checks passed, not approval to publish. No source-total
-  reconciliation, detailed rejected-row audit or real-world schema proof is claimed.
+  wrapper/structural checks passed, not approval to publish. Source counts and single reported repair totals are now exposed for the exact
+  observed layouts. Financial agreement, detailed rejected-row audit and business
+  approval remain unverified.
 
 ## Duplicate protection and durability
 

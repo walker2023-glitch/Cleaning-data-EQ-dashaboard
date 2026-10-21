@@ -1,3 +1,7 @@
+Current follow-up: see [format compatibility](format_compatibility.md) for the
+newly observed January inputs, provisional TMA XLSX adapter and repair financial
+blocker. The original discovery inventory below records earlier evidence.
+
 # M0/M1 source discovery inventory
 
 ## Evidence and status

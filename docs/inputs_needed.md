@@ -2,10 +2,22 @@
 
 ## What is needed after the desktop prototype
 
-M2 adds a local GUI around M1, plus invented sample reports and Windows packaging
-checks. It does not close the production-accuracy gate. Please provide the approved
-repair/service raw/expected pairs and baseline totals below, and confirm the actual
-TMA export/cleaner. The GUI keeps TMA processing blocked until then.
+January raw repair/service CSVs and TMA XLSX are now inspected, together with the
+prior February service sample. They are inputs only: no trusted cleaned output
+was supplied. See `format_compatibility.md` and `edge_case_validation.md` for the
+observed layouts, source-count checks and synthetic monthly cases.
+
+Still needed: the remaining February–June raw exports, actual legacy XLS exports
+(and their expected counts), and approved cleaned examples/baselines. Do not resend
+the already supplied January files or February service sample. TMA XLSX can now
+produce provisional candidates using the original requests writer; alternate
+layouts/XLS remain blocked. Confirm the candidate title/five-column CSV against
+the trusted downstream loader before departmental use.
+
+**Repair blocker:** January reported financial totals differ from the unchanged
+cleaner's totals. Explain Textbox38 versus Textbox16 and the intended parts/labor
+semantics, duration defaults and rate. Supply a trusted cleaned repair output and
+approved labor/parts/cost totals before any mapping/calculation change.
 
 For a desktop pilot, identify an authorized reviewer and IT-managed Windows 10/11
 PC without Python. Confirm allowed executable/signing policy, an approved local
@@ -19,13 +31,12 @@ synthetic samples. Microsoft/Graph work still needs separate approval.
 An offline coordinator and CLI wrap the supplied repair and flat-service CSV
 transforms without changing their calculations/exclusions. Synthetic tests cover
 the API, duplicates, corrected months, failed processing and preserved originals.
-Production accuracy remains unverified. TMA selection is explicitly blocked until
-the requests cleaner's relationship to the real Work Orders export is established.
-Legacy service context layouts, Excel and other encodings are not enabled.
+Production accuracy remains unverified. The observed TMA title/header/footer XLSX
+now uses the requests cleaner as a provisional candidate contract. Legacy XLS,
+service context layouts and other encodings are not enabled.
 
 The highest-priority next inputs are one approved raw/expected pair for repairs,
-one for flat service orders, and a confirmed TMA raw/expected pair plus identification
-of the correct cleaner. Include the counts/totals and policies described below.
+one for flat service orders, and a trusted cleaned TMA example to compare with the existing requests cleaner. Include the counts/totals and policies described below.
 No need to resend the six existing uploads.
 
 ## Source scripts
@@ -40,9 +51,9 @@ Still needed:
 - If inventory becomes in scope: original `dashboard/taxonomy.py` and any local
   dependencies it imports, plus a sanitized equipment `Type.csv` lookup and
   equipment sample. Inventory is optional and does not block the three-report M0.
-- Confirm whether the uploaded requests cleaner is used for TMA Work Orders.
-  If not, supply the actual TMA cleaner and its helper modules/dependency versions;
-  if no cleaner exists, say so and supply the schema before implementation.
+- Confirm that the supplied requests cleaner is the currently approved TMA cleaner.
+  The January input matches it structurally; trusted output approval is still open.
+  If a different production cleaner exists, supply its helpers/dependency versions.
 - Any existing approved output loader/schema definitions needed to interpret the
   legacy preambles (the repair source references `load_repairs`), plus prior
   dependency pins if available. Do not send dashboard credentials or private PBIX.
