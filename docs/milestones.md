@@ -7,7 +7,7 @@ requires separate approval; it is not implied by the milestone name below.
 | Milestone | Implemented | Still open |
 |---|---|---|
 | M0 discovery/setup | Python scaffold, pinned dependencies, six preserved cleaners, source inventory, safe config and offline tests | Approved raw/expected pairs, baseline totals, source/version confirmation and IT/location decisions |
-| M1 cleaning foundation | Offline path/bytes API/CLI; repair/flat-service wrappers; sequential results/counts/warnings/artifacts; layout guards; transactional local manifest, rerun skips, confirmed corrected revisions and synthetic safety tests | Production accuracy, full layouts/encodings, source reconciliation, detailed rejection audit, TMA compatibility/adapter and verified business contracts |
+| M1 cleaning foundation | Offline path/bytes API/CLI; repair/flat-service wrappers; sequential results/counts/warnings/artifacts; layout guards; transactional local manifest, rerun skips, confirmed corrected revisions and synthetic safety tests | Production accuracy, full layouts/encodings, source reconciliation, detailed rejection audit, legacy XLS and verified business contracts |
 | M2 local desktop prototype | CustomTkinter report selection, local file/source boundary, confirmed month, write-free preview, responsive worker/progress, explicit correction review, results/history/help, synthetic samples and Windows packaging/smoke configuration | Managed-PC usability/accessibility pilot, approved real-world baselines and employee distribution approval; actual Windows build results are recorded in PR CI |
 | Deferred identity/Graph | Interfaces and disabled Graph stub only | Separate approval, IT registration, test locations, authentication/cache, permissions, Graph operations and shared concurrency controls |
 | M3 connected employee workflow | Local prototype is available | Approved Microsoft connection, connected views and broader employee usability validation |
@@ -22,3 +22,14 @@ milestone here authorizes production SharePoint or Power BI modifications.
 M2's automated acceptance uses the actual native window and M1 to preview, process,
 skip duplicates, confirm corrections and view prior revisions using synthetic data.
 This is not a production accuracy claim or proof of employee-release readiness.
+
+## Multi-month compatibility follow-up
+
+Observed January repair/service CSVs and TMA XLSX are structurally supported;
+TMA remains a provisional candidate contract. Strict metadata checks expose source
+counts and one copy of each repair reported total. Original calculations and
+exclusions remain unchanged. Synthetic tests cover all stated January–June
+CompuClean counts and January–April TMA counts. This is not evidence for the
+unattached monthly files. The January repair financial discrepancy, trusted
+cleaned baselines, actual legacy XLS exports and managed-PC pilot remain open.
+See `format_compatibility.md` and `edge_case_validation.md`. Graph remains deferred.

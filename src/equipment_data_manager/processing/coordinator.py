@@ -7,6 +7,7 @@ import sqlite3
 
 from equipment_data_manager.processing.cleaners import LegacyCsvCleaner, validate_period
 from equipment_data_manager.processing.interfaces import Cleaner
+from equipment_data_manager.processing.work_orders import TmaXlsxCleaner
 from equipment_data_manager.processing.manifest import LocalOutputStore
 from equipment_data_manager.processing.models import (
     ProcessingError, ProcessingRequest, ProcessingResult, ProcessingStatus, ReportType,
@@ -20,6 +21,8 @@ class ProcessingCoordinator:
             kind: LegacyCsvCleaner(kind)
             for kind in (ReportType.REPAIRS, ReportType.SERVICE_ORDERS)
         }
+        if cleaners is None:
+            self.cleaners[ReportType.TMA_WORK_ORDERS] = TmaXlsxCleaner()
 
     def process_many(self, requests: Iterable[ProcessingRequest]) -> tuple[ProcessingResult, ...]:
         """Keep request order and continue after individual file failures."""
@@ -65,7 +68,11 @@ class ProcessingCoordinator:
             source_name, raw = request.source_name, request.raw_bytes
             if not isinstance(raw, bytes):
                 raise ProcessingError("input_must_be_bytes")
-        if Path(source_name).suffix.lower() != ".csv":
+        extension = Path(source_name).suffix.lower()
+        if report_type == ReportType.TMA_WORK_ORDERS and extension == ".xls":
+            raise ProcessingError("legacy_xls_awaiting_sample")
+        expected = ".xlsx" if report_type == ReportType.TMA_WORK_ORDERS else ".csv"
+        if extension != expected:
             raise ProcessingError("unsupported_file_format")
         cleaner = self.cleaners[report_type]
         source_hash = sha256(raw).hexdigest()

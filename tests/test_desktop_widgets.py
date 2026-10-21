@@ -133,13 +133,13 @@ def test_repeated_run_is_skipped_and_correction_requires_dialog_checkbox(app, tm
     assert original != app.results[0].result.output_location
 
 
-def test_unsupported_tma_cannot_be_processed_even_programmatically(app):
+def test_tma_rejects_compuclean_csv_even_programmatically(app):
     app.sample_button.invoke()
     app.report.set(ReportType.TMA_WORK_ORDERS.value)
     app.month_confirmed.set(True)
     app.start_preview()
     pump(app, lambda: not app.worker.busy)
-    assert app.previews[0].result.code == "report_type_awaiting_verified_fixtures"
+    assert app.previews[0].result.code == "unsupported_file_format"
     assert not app.can_process()
     app.start_process()
     assert not app.workflow.output_root.exists()
@@ -221,3 +221,28 @@ def test_february_service_export_previews_and_processes_all_five_records(app):
     pump(app, lambda: not app.worker.busy)
     assert app.results[0].result.status == Status.SUCCESS
     assert app.results[0].result.input_rows == app.results[0].result.output_rows == 5
+
+
+def test_tma_xlsx_card_sample_picker_preview_and_process(app, monkeypatch):
+    app.report_buttons[2].invoke()
+    app.sample_button.invoke()
+    path = Path(app.sources[0].reference)
+    assert path.suffix == '.xlsx'
+    assert app.month.get() == 'January'
+    observed = {}
+
+    def choose(**kwargs):
+        observed.update(kwargs)
+        return (str(path),)
+
+    monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilenames', choose)
+    app.select_button.invoke()
+    assert '*.xlsx' in observed['filetypes'][0][1]
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.previews[0].result.output_rows == 3
+    app.process_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.results[0].result.status == Status.SUCCESS
+    assert 'tma_output_contract_provisional' in app.results[0].result.warnings

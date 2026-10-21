@@ -1,3 +1,20 @@
+# Multi-month compatibility follow-up
+
+Adds strict 14-column repair summary/count checks and financial-review warnings,
+service status-fallback diagnostics, and a specific local TMA XLSX adapter using
+the original requests transform/writer. TMA candidates retain its five columns,
+title and MM/DD/YYYY dates. openpyxl is now a required pinned dependency; legacy
+XLS remains blocked pending an actual sample. GUI, wheel and Windows packaging
+include the adapter; no Microsoft/SharePoint/Power BI operations are added.
+
+All original sources and business calculations/exclusions remain unchanged.
+CompuClean cleaner versions advance so previously selected months require normal
+review after updating. No automatic overwrite/migration is performed. Synthetic
+monthly cases are not production approval; see `edge_case_validation.md` and the
+repair discrepancy in `format_compatibility.md`.
+
+The sections below describe earlier milestones as implemented at that time.
+
 # Release notes
 
 ## 0.2.0 — M2 local desktop prototype

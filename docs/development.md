@@ -23,7 +23,8 @@ uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-no
 
 GUI tests require a display. On headless Linux use `xvfb-run -a` before the pytest
 command; this cloud instance was tested with a local Xorg dummy display instead.
-All 117 tests passed locally, including 9 real-widget tests and the prior 89 tests.
+The multi-month follow-up passes 185 tests locally, including real-widget tests
+and the prior M0/M1/M2 suite.
 The desktop can also be launched with `python -m equipment_data_manager.ui.app`
 inside the uv environment. It opens a native window, not a web preview.
 
@@ -37,12 +38,12 @@ no global pandas installation is needed. CI bootstraps uv with the hosted Python
 3.12, then uses `uv python install 3.12.14` for the pinned project runtime;
 setup-python lacks that exact Windows build.
 
-The engine requires pinned pandas; the optional `legacy` extra supplies Excel
-readers for discovery, not TMA support.
+The engine requires pinned pandas and openpyxl for the observed TMA XLSX.
+The optional `legacy` extra supplies xlrd for discovery; XLS remains blocked.
 The `desktop` extra pins CustomTkinter/Pillow and `packaging` pins PyInstaller.
 The lockfile pins dependencies and artifact hashes. Update `uv.lock` only with
 reviewed dependency changes and rerun all tests. Build tooling is pinned in
-`pyproject.toml`. Bump the adapter's `wrapper-v2` version if reading, formatting or
+`pyproject.toml`. Bump the relevant adapter version if reading, formatting or
 validation behavior changes; source and pandas versions are already in its identity.
 
 ## Package layout
@@ -52,7 +53,7 @@ validation behavior changes; source and pandas versions are already in its ident
 | `processing/interfaces.py` | Cleaner and candidate CSV/schema/metric contracts |
 | `processing/models.py` | Requests, statuses and revision/result metadata |
 | `processing/cleaners.py` | Supported-layout guards and source-preserving wrappers |
-| `processing/_legacy/` | Three bundled original modules; only imports changed |
+| `processing/_legacy/` | Four bundled original modules; only imports changed |
 | `processing/coordinator.py` | Bytes/path inputs, sequential work and review decisions |
 | `processing/manifest.py` | Local SQLite selection and immutable CSV revisions |
 | `legacy/clean/` | All six untouched uploads with checked SHA-256 hashes |
@@ -76,7 +77,7 @@ settings belong in commits. SQLite manifests are ignored, but CSVs outside ignor
 paths are not automatically safe to commit. Commit only reviewed synthetic or
 explicitly sanitized fixtures under `tests/fixtures/`, with provenance, expected
 counts, exclusions, totals and tolerances. Current examples are source-derived,
-not production or TMA validation. Do not change calculation/date/exclusion behavior
+not approved production validation. Do not change calculation/date/exclusion behavior
 without verified fixtures and explicit approval. Tests verify the vendored copies
 differ from the untouched originals only in package-relative imports.
 
@@ -87,3 +88,34 @@ M2 adds the local GUI only. No MSAL, credentials, network client or token cache 
 stub still raises on every operation. Local locking protects this output store
 only; it is not a cross-computer SharePoint lease. IT approval, conditional Graph
 uploads and secure Windows token caching remain deferred until separately approved.
+
+## Test the multi-month branch in VS Code
+
+Fetch and check out `feature/multi-month-compatibility`. It is based on the February
+service fix; no parent PR is merged automatically. Select `.venv\Scripts\python.exe`
+as the Windows interpreter after the first command below. In VS Code's integrated
+PowerShell terminal, from the repository root:
+
+```powershell
+uv sync --frozen --all-extras
+uv run --frozen --all-extras pytest
+uv run --frozen --all-extras python tests/report_samples.py --output-dir data/monthly-samples
+uv run --frozen --extra desktop equipment-data-manager-desktop --output-dir data/monthly-review
+```
+
+Use a fresh sample directory: the generator refuses to overwrite files. For each
+sample, choose its report card and month/year, select the file, confirm the month,
+then preview/process. The generator creates six repair, six service and four TMA
+files using the stated counts and entirely invented content. Select one month at
+a time; the GUI intentionally does not infer a different month for every file.
+The bundled TMA sample uses January 2026; the two CompuClean bundled samples retain
+September 2026. Repeat a file to see a skip. A changed file for the same month
+requires correction review and keeps the previous output.
+
+To try the supplied **raw** inputs, store them in an authorized ignored local
+folder, select the correct report card and January 2026. Expect 29 repairs, 29
+service orders or 38 TMA work orders, plus unverified-accuracy warnings. The repair
+candidate additionally warns of financial disagreement: do not treat that as a
+validated result. No trusted expected cleaned output was supplied. Inspect CSVs
+as text in VS Code to check leading zeros (spreadsheet auto-inference can hide them).
+See `edge_case_validation.md` for remaining months/XLS and unresolved questions.

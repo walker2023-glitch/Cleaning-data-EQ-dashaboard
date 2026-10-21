@@ -24,3 +24,12 @@ Power BI reconciliation baseline. No production data was used to create them.
 Use `docs/inputs_needed.md` when supplying reviewed, authorized raw/expected pairs.
 Document provenance, sanitizer, month, grain, exclusions, counts, totals and
 tolerances alongside any later approved fixtures.
+
+Multi-month follow-up adds `repairs_summary_layout.csv` (three invented repair
+records with consistent repeated metadata) and `tma_title_header_footer.xlsx`
+(three invented work orders, title/headers/footer). `tests/report_samples.py`
+generates these layouts and the service layout for the user's stated monthly
+counts; they are synthetic, not sanitized copies of private records. The TMA
+workbook bundled in resources is an identical copy. No trusted cleaned baseline
+was provided. Expected arithmetic/mappings are asserted from the unchanged code;
+the January repair financial discrepancy remains unresolved.

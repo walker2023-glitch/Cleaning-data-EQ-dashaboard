@@ -29,7 +29,9 @@ Observed output order: `#`, `Completed Date`, `Equipment Name`, `Equipment ID`,
 ISO strings, hours numeric, labor rounded from hours × 12.5, and estimated total
 is parts plus labor. The file writer adds three preamble rows before the header.
 
-Unknown: actual raw row grain/header/export version, required versus optional
+Observed: January has the 14-column summary layout in the compatibility matrix.
+Its reported and calculated financial totals differ. Still unknown: export version,
+business-required versus optional
 fields, ID normalization, period selection, units/currency approval, acceptable
 duration defaults, exclusions and comparable source/Power BI totals.
 
@@ -57,21 +59,27 @@ An accepted row must match the supplied month in schedule OR completion when a
 month is passed; this is not yet an approved reporting-period rule. Output writer
 emits a plain header-first CSV.
 
-Unknown: which layout(s) are in use, official record grain, required fields,
+Observed: January and February use the ten-column summary layout. Still unknown:
+official record grain, business-required fields,
 scheduled/completed inclusion rules including last-day timestamps, cost meaning,
 description exclusions, status semantics, totals and target Power BI types.
 
 ## Requests / TMA work orders
 
-The uploaded request reader finds a `Work Order #` header within the first 25
-rows of CSV/XLS/XLSX inputs. The transform selects exactly `Work Order #`,
-`Request Date`, `Requestor`, `Request`, `Assigned To`. It requires the work-order
-column, filters blank/total IDs and invalid dates, fills a missing assignee with
-an empty string, and writes dates MM/DD/YYYY. Its file writer prepends a title.
+The supplied January TMA XLSX matches the original requests reader/transform:
+a report title, five headers on row two, work-order rows and a final total row.
+The strict adapter enables only this shape, not every layout the original reader
+could scan. See [the compatibility matrix](format_compatibility.md).
 
-**Association with TMA is unconfirmed.** No separate TMA schema, date semantics,
-cleaner, real export or approved cleaned output is available. Do not label the
-synthetic request fixture as a TMA contract.
+Input/output columns: `Work Order #`, `Request Date`, `Requestor`, `Request`,
+`Assigned To`. Existing logic excludes blank/`total` IDs and invalid dates, formats
+dates MM/DD/YYYY and retains blank assignees. The original writer prepends its
+`CU Repair WO History — <Month YYYY>` title. The adapter validates/excludes the
+footer and requires the title/retained dates to match the confirmed month.
+
+This establishes input compatibility, **not** approved TMA output accuracy or
+Power BI loader compatibility. No trusted cleaned example was supplied. Legacy
+XLS and other workbook/CSV variations require actual samples before enabling.
 
 ## Comparison baseline to complete
 

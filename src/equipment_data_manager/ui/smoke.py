@@ -31,7 +31,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"],
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -82,6 +82,17 @@ def run_smoke(directory: Path | None) -> int:
             elif phase == 7:
                 assert len(app.history_entries) == 2
                 assert sum(entry.is_current for entry in app.history_entries) == 1
+                app.report_buttons[2].invoke()
+                app.sample_button.invoke()
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 8:
+                assert app.previews[0].result.code == "ready_to_process"
+                assert app.previews[0].result.output_rows == 3
+                app.process_button.invoke()
+            elif phase == 9:
+                assert app.results[0].result.status == Status.SUCCESS
+                assert app.results[0].result.output_rows == 3
                 finish(True)
                 return
             state["phase"] += 1

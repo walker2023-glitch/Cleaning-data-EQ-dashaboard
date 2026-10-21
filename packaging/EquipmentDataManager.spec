@@ -6,11 +6,11 @@ root = Path(SPECPATH).parent
 # M1's version identity hashes these source bytes at runtime. PyInstaller normally
 # keeps only bytecode, so explicitly retain the unmodified vendored .py resources.
 data = collect_data_files("customtkinter")
-data += collect_data_files("equipment_data_manager", includes=["resources/samples/*.csv"])
+data += collect_data_files("equipment_data_manager", includes=["resources/samples/*.csv", "resources/samples/*.xlsx"])
 data += collect_data_files("equipment_data_manager.processing._legacy", include_py_files=True)
 analysis = Analysis(
     [str(root / "packaging/desktop_entry.py")], pathex=[str(root / "src")],
-    binaries=[], datas=data, hiddenimports=[], hookspath=[], hooksconfig={},
+    binaries=[], datas=data, hiddenimports=["openpyxl"], hookspath=[], hooksconfig={},
     runtime_hooks=[], excludes=[], noarchive=False,
 )
 archive = PYZ(analysis.pure)

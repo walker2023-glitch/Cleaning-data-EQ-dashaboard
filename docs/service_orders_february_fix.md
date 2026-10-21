@@ -86,4 +86,5 @@ The committed fixture uses invented account/equipment/location/description value
 the observed headers/BOM/date shape/count metadata, and the requested leading-zero
 example. Its expected CSV is a code/mapping regression, **not** a trusted departmental
 baseline. Full production accuracy remains unverified until comparison with an
-approved expected cleaned result and baseline totals. TMA remains blocked.
+approved expected cleaned result and baseline totals. TMA was blocked at this fix; the later multi-month follow-up
+adds provisional XLSX candidates (see `format_compatibility.md`).

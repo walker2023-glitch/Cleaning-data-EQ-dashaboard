@@ -23,15 +23,15 @@ and [Windows packaging instructions](docs/windows_packaging.md). This user-direc
 M2 is offline; the original design's M2 Microsoft/Graph milestone remains deferred.
 
 The application described in [design.md](design.md) is the target design.
-The offline coordinator accepts CSV bytes or local files, wraps the existing
+The offline coordinator accepts CSV/XLSX bytes or local files, wraps the existing
 CompuClean repair and flat Service Orders List transformations, and produces
 **candidate** CSVs with structured counts, warnings and artifacts. It processes
 files sequentially, skips identical reruns, and requires review before selecting
 a corrected monthly revision. Inputs and previous output revisions are retained.
 
 Production cleaning accuracy is **unverified**. Supported layouts are conservative,
-source-derived gates, not approved departmental schemas. TMA processing remains
-blocked because the requests cleaner's compatibility is unconfirmed. Inventory's
+source-derived gates, not approved departmental schemas. TMA processing is
+available as provisional XLSX candidates for the observed title/header/footer layout. Inventory's
 taxonomy dependency is missing. No sign-in, SharePoint operation or Power BI change
 is implemented. An automated packaged-window smoke check does not establish
 employee-release readiness; a managed-PC usability/security pilot remains required.
@@ -42,12 +42,16 @@ See [discovery](docs/discovery.md), [data contracts](docs/data_contracts.md), an
 [the supply checklist](docs/inputs_needed.md). See also [architecture](docs/cleaning_architecture.md)
 and [milestone status](docs/milestones.md).
 
+See the [format compatibility matrix](docs/format_compatibility.md) and
+[edge-case evidence](docs/edge_case_validation.md) for supported layouts, monthly
+count tests and the unresolved January repair financial discrepancy.
+
 ## Development
 
 Use Python **3.12.14** and **uv 0.12.23**. pandas is the pinned engine dependency.
 The `desktop` extra supplies CustomTkinter/Pillow; `packaging` supplies PyInstaller.
-The `legacy` extra adds Excel readers for source discovery only. The wheel bundles
-three source-preserved modules with package-relative import changes; all six
+openpyxl is a pinned runtime dependency for TMA XLSX. The `legacy` extra adds
+xlrd for XLS discovery only. The wheel bundles four source-preserved modules with package-relative import changes; all six
 untouched original uploads remain under `legacy/clean`.
 `uv.lock` pins the dependency resolution for Windows and Linux.
 
@@ -95,8 +99,7 @@ uv run --frozen --all-extras equipment-data-manager process tests/fixtures/synth
 ```
 
 `--period` is an explicitly confirmed month; the engine does not infer it from the
-filename. Report types: `repairs`, `service_orders`, and `tma_work_orders` (blocked
-pending verified fixtures). Pass multiple files for sequential processing. The CLI
+filename. Report types: `repairs`, `service_orders`, and `tma_work_orders` (specific XLSX layout, provisional output contract). Pass multiple files for sequential processing. The CLI
 prints JSON and exits 0 for success/skipped results or 1 for failure/needs-review.
 
 The result's `output_location` identifies its candidate artifact. The manifest

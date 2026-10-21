@@ -15,6 +15,7 @@ from equipment_data_manager.processing._legacy import repairs_row_clean as repai
 from equipment_data_manager.processing._legacy import service_row_clean as service
 from equipment_data_manager.processing.interfaces import CleanResult, ColumnSchema, ReconciliationMetric
 from equipment_data_manager.processing.models import ProcessingError, ReportType
+from equipment_data_manager.processing.repair_layouts import SummaryRepairsLayout
 from equipment_data_manager.processing.service_layouts import SummaryServiceOrdersLayout
 
 
@@ -23,7 +24,7 @@ def validate_period(period: str) -> None:
         raise ProcessingError("invalid_reporting_period")
 
 
-def read_csv(raw: bytes, *, service_export: bool = False) -> pd.DataFrame:
+def read_csv(raw: bytes, *, service_export: bool = False, repair_export: bool = False) -> pd.DataFrame:
     """Check layout before pandas can silently rename duplicate headers.
 
     Preserve legacy pandas inference/NA handling for accepted UTF-8 CSVs. Other
@@ -51,6 +52,8 @@ def read_csv(raw: bytes, *, service_export: bool = False) -> pd.DataFrame:
         # Only the newly observed layout uses an explicit ID dtype. Preserve
         # inference for previously supported layouts to keep their behavior stable.
         dtype = {"EquipmentId1": str} if service_export and SummaryServiceOrdersLayout.matches(header) else None
+        if repair_export and SummaryRepairsLayout.matches(header):
+            dtype = {"PersonnelId1": str}
         return pd.read_csv(BytesIO(raw), encoding_errors="replace", dtype=dtype)
     except (UnicodeError, csv.Error, StopIteration, pd.errors.ParserError, pd.errors.EmptyDataError):
         raise ProcessingError("invalid_csv_or_encoding") from None
@@ -71,19 +74,27 @@ class LegacyCsvCleaner:
         root = Path(__file__).parent / "_legacy"
         source_hash = sha256(b"".join((root / name).read_bytes() for name in source_files)).hexdigest()
         # Bump this version if reading, formatting or validation policy changes.
-        wrapper_version = "wrapper-v3-service-layout" if report_type == ReportType.SERVICE_ORDERS else "wrapper-v2"
+        wrapper_version = "wrapper-v4-service-diagnostics" if report_type == ReportType.SERVICE_ORDERS else "wrapper-v3-repair-summary"
         self.version = f"{wrapper_version}:pandas-{pd.__version__}:{source_hash}"
 
     def clean(self, raw_bytes: bytes, *, source_name: str, period: str) -> CleanResult:
         validate_period(period)
         if Path(source_name).suffix.lower() != ".csv":
             raise ProcessingError("unsupported_file_format")
-        frame = read_csv(raw_bytes, service_export=self.report_type == ReportType.SERVICE_ORDERS)
+        frame = read_csv(raw_bytes, service_export=self.report_type == ReportType.SERVICE_ORDERS,
+                         repair_export=self.report_type == ReportType.REPAIRS)
         notes = ["production_accuracy_unverified"]
         source_service_count = None
+        source_repair_metrics = ()
+        if self.report_type == ReportType.REPAIRS and SummaryRepairsLayout.matches(frame.columns):
+            source_repair_metrics = SummaryRepairsLayout.metrics(frame)
         if self.report_type == ReportType.SERVICE_ORDERS and SummaryServiceOrdersLayout.matches(frame.columns):
             frame, source_service_count = SummaryServiceOrdersLayout.prepare(frame)
             notes.append("estimated_price_unavailable")
+            fallback = sum(str(value).strip().lower() not in {"scheduled", "completed"}
+                           for value in frame["Textbox21"])
+            if fallback:
+                notes.append(f"service_status_inferred:{fallback}")
         if self.report_type == ReportType.REPAIRS:
             required = {
                 "PersonnelId5", "PersonnelId1", "CompletedDate1", "PersonnelId4",
@@ -108,6 +119,8 @@ class LegacyCsvCleaner:
         recognized = required | ({"Name", "Location"} if self.report_type == ReportType.SERVICE_ORDERS else set())
         if source_service_count is not None:
             recognized.add("Textbox56")  # Consumed as count metadata, never as a row or price.
+        if source_repair_metrics:
+            recognized |= {"Textbox10", "Textbox11", "Textbox12", "Textbox13"}
         unknown = len(set(frame.columns) - recognized)
         if unknown:
             notes.append(f"unmapped_source_columns:{unknown}")
@@ -166,6 +179,17 @@ class LegacyCsvCleaner:
                     ("Est. Total $", "legacy_dollars"),
                 )
             )
+            if source_repair_metrics:
+                reported = {metric.name: metric.value for metric in source_repair_metrics}
+                calculated = {metric.name: metric.value for metric in metrics}
+                if any(reported[source] != calculated[target] for source, target in (
+                    ("Source reported labor", "Total Labor $"),
+                    ("Source reported parts", "Parts Cost $"),
+                    ("Source reported cost", "Est. Total $"),
+                )):
+                    notes.append("repair_source_totals_differ")
+                notes.append("repair_cost_mapping_unverified")
+                metrics += source_repair_metrics
         else:
             cleaned.to_csv(output, index=False)
             metrics = (

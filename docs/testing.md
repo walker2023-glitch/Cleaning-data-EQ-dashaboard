@@ -1,7 +1,7 @@
 # Test instructions and evidence limits
 
 M2 adds workflow/background-worker and real CustomTkinter widget tests. The local
-full run passed **117 tests**, including every prior M0/M1 test. Widget tests need
+multi-month full run passed **185 tests**, including every prior M0/M1 test. Widget tests need
 a real/virtual display and do not silently skip when a display is missing.
 
 M1 local validation: **89 tests passed** on Linux / Python 3.12.14, with no skips.
@@ -27,9 +27,9 @@ uv run --frozen --all-extras python -m equipment_data_manager.ui.app --smoke-tes
 
 The smoke check creates an actual window and isolated synthetic inputs/outputs,
 then checks write-free preview, M1 processing, duplicates, explicit correction
-confirmation, retained revisions and history. It exits 0 and writes
+confirmation, retained revisions, history and TMA XLSX preview/process. It exits 0 and writes
 `desktop-smoke.json` with `passed` only when the complete flow finishes. GUI tests
-also exercise native selection adapters, invalid input/type/month, blocked TMA,
+also exercise native selection adapters, invalid input/type/month, TMA XLSX and rejection of unconfirmed TMA formats,
 input mutation after preview, stale corrections, long work without freezing,
 deferred close, cancellation and recoverable worker errors.
 
@@ -59,10 +59,29 @@ covered. Error tests check category-only messages rather than raw private detail
 
 `uv build` plus the isolated installed-wheel commands in `development.md` check
 the packaged engine without pytest's legacy import path. Windows/Linux CI runs the
-full suite and a wheel-based synthetic repair command. A workflow definition does
+full suite and wheel-based synthetic repair/TMA commands. A workflow definition does
 not prove remote CI or Windows completed; report observed results separately.
 
 These are code-derived synthetic characterizations. They do **not** establish
-production cleaning accuracy, approved source-total reconciliation, real export
-ID/type/date correctness, TMA compatibility, Graph permissions, Windows executable
-packaging or managed-PC behavior. Those checks require `inputs_needed.md` inputs.
+production cleaning accuracy, approved financial reconciliation, correctness of
+unseen exports or legacy XLS, Graph permissions or managed-PC behavior. Those checks require `inputs_needed.md` inputs.
+
+## Monthly regression scope
+
+`test_monthly_compatibility.py` exercises invented January–June CompuClean and
+January–April TMA count cases, strict metadata/layout guards, unchanged money/hours,
+IDs/text, dates/status, exclusion warnings, repeated transactions and corrected
+months. `tests/report_samples.py` is both the fixture factory and the optional
+local GUI sample generator. See `edge_case_validation.md` for the inventory and
+`format_compatibility.md` for precise supported formats. Matching source counts
+is not financial or production accuracy validation. CI outcomes are recorded on
+the PR; never infer Windows success from the local Linux run.
+
+Windows CI runs each real-widget case in a fresh Python process through
+`.github/run_tests.py`, avoiding Tcl interpreter reuse across destroyed test windows.
+The initial Windows PR attempts exposed intermittent init.tcl/tk.tcl loading
+errors while the same-commit push suite passed. This isolation runs every case
+once, preserves failures, and combines their JUnit reports; it does not retry or
+skip tests. Linux uses the normal single pytest run. To exercise the isolated
+runner locally (with a display on Linux), use
+`uv run --frozen --all-extras python .github/run_tests.py --isolate-gui`.

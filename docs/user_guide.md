@@ -1,6 +1,6 @@
 # Equipment Data Manager: local prototype
 
-This prototype processes local CompuClean CSVs. It does not connect to Microsoft
+This prototype processes supported local CompuClean CSVs and TMA XLSX candidates. It does not connect to Microsoft
 or SharePoint. Cleaning accuracy against departmental data is **unverified**;
 outputs are candidates for review, not production-validated reports.
 
@@ -18,24 +18,26 @@ PR's Windows build artifact. This is a review build, not an approved employee re
 
 ## Try the bundled synthetic sample first
 
-1. Select **Repair Reports** or **Service Orders List**.
+1. Select **Repair Reports**, **Service Orders List** or **TMA Work Orders**.
 2. Click **Load synthetic sample**. It contains invented values, not departmental data.
-3. The sample month is **September 2026**. Check **I confirmed this reporting month**.
+3. CompuClean samples use **September 2026**; TMA uses **January 2026**. Check **I confirmed this reporting month**.
 4. Click **Preview Processing**. It creates no outputs or history entries. Inspect
    the filename, report type, month, proposed row counts and warnings. Select a
    table row to read its details; scroll the detail panel to read every warning.
 5. Click **Process Reports**. The Results screen shows saved candidates, skipped
    files, corrections needing review and errors. Warnings do not mean production
-   validation passed. The samples deliberately include an excluded row.
+   validation passed. The CompuClean samples deliberately include an excluded row.
 6. Select a saved result and click **Open output folder** to find its CSV. For an
    earlier run use **History**, select the revision, then **Open selected revision folder**.
 
 ## Process a local report
 
-Use **Select local raw files** for supported UTF-8 CSV exports. Explicitly choose
+Use **Select local raw files** for supported UTF-8 CompuClean CSV or TMA XLSX exports. Explicitly choose
 the correct report type and month, confirm the month, then preview. Filenames do
-not establish the reporting month. TMA Work Orders are visibly blocked pending
-format validation. Excel and unverified layouts are unsupported.
+not establish the reporting month. For TMA choose the reviewed title/header/footer
+XLSX layout; its output is provisional. Legacy XLS and unverified layouts remain
+unsupported. A repair financial-disagreement warning requires review of the source
+and candidate totals; it does not authorize changing calculations or using the output.
 
 Select one version per report type/month. If different files are proposed for the
 same month, the application asks you to select one. Identical content is safely
