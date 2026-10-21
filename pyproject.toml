@@ -8,10 +8,10 @@ version = "0.2.0"
 description = "Offline equipment report cleaning engine and validation foundation"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = ["pandas==2.2.3"]
+dependencies = ["pandas==2.2.3", "openpyxl==3.1.5"]
 
 [project.optional-dependencies]
-# Excel readers are discovery-only until TMA formats are verified.
+# XLS is discovery-only until an actual legacy export is supplied.
 legacy = ["openpyxl==3.1.5", "xlrd==2.0.2"]
 desktop = ["customtkinter==5.2.2", "Pillow==11.3.0"]
 packaging = ["pyinstaller==6.16.0"]

@@ -19,7 +19,7 @@ def test_cli_success_repeat_and_failure_exit_codes(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)[0]["status"] == "skipped"
     arguments[arguments.index("repairs")] = "tma_work_orders"
     assert main(arguments) == 1
-    assert json.loads(capsys.readouterr().out)[0]["code"] == "report_type_awaiting_verified_fixtures"
+    assert json.loads(capsys.readouterr().out)[0]["code"] == "unsupported_file_format"
 
 
 def test_cli_correction_review_then_acknowledgement(tmp_path, capsys):

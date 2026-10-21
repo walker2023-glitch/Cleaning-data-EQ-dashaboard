@@ -4,7 +4,7 @@ from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
     "input_not_a_file": "This file is missing or is not a regular file. Select it again.",
-    "unsupported_file_format": "Select a CSV export. Excel files are not supported in this prototype.",
+    "unsupported_file_format": "Select CSV for CompuClean or the supported XLSX layout for TMA Work Orders.",
     "empty_input": "This report is empty. Select a report containing records.",
     "missing_required_columns": "The columns do not match this report type's supported layout. Check the report type and export.",
     "duplicate_headers": "The report has duplicate column headings. Supply a corrected export.",
@@ -14,6 +14,15 @@ ERRORS = {
     "unverified_header_layout": "This header layout has not been verified. Supply a representative sample for review.",
     "ambiguous_service_layout": "This service export has competing column names. The layout needs review.",
     "report_type_awaiting_verified_fixtures": "TMA Work Orders are awaiting format validation and cannot be processed.",
+    "legacy_xls_awaiting_sample": "Legacy XLS needs an actual export sample and format validation. Do not rename it to CSV or XLSX.",
+    "invalid_xlsx_file": "This is not a readable XLSX workbook. Check the original Excel export.",
+    "unsupported_work_order_layout": "TMA requires one worksheet with its title, five-column header, records and final summary.",
+    "work_order_title_period_mismatch": "The TMA report title does not match the supported title and selected reporting month.",
+    "invalid_work_order_summary": "The TMA final record-count summary is missing or invalid.",
+    "work_order_summary_count_mismatch": "The TMA summary does not match the number of source records.",
+    "invalid_repair_summary": "The repeated repair summary has an unrecognized value. Check the complete export.",
+    "inconsistent_repair_summary": "Repeated repair summaries disagree. Supply a consistent export.",
+    "repair_summary_count_mismatch": "The repair summary count does not match the source records.",
     "invalid_reporting_period": "Choose a valid reporting month and four-digit year.",
     "output_period_mismatch": "The cleaned records do not match the selected reporting month. Check the month and file.",
     "no_output_rows": "No eligible records remain after the existing cleaning rules. Check the report and month.",
@@ -57,6 +66,10 @@ def warning_message(code: str):
         "rows_excluded_by_legacy": "Rows excluded by the existing cleaning rules",
         "unmapped_source_columns": "Source columns are not included in the cleaned output",
         "cross_period_output_dates": "Accepted service dates fall outside the selected month",
+        "service_status_inferred": "Blank or unrecognized service statuses used the existing date-based fallback",
+        "repair_source_totals_differ": "Reported repair totals differ from the existing calculated totals. Review the cost mapping and labor rules before use.",
+        "repair_cost_mapping_unverified": "Repair source cost fields and calculated totals need a trusted expected result; existing calculations were preserved.",
+        "tma_output_contract_provisional": "TMA uses the original requests cleaner's candidate schema and title. Departmental output approval is still required.",
         "estimated_price_unavailable": "This export has no cost field. Estimated Price is blank; no price has been inferred.",
     }
     text = messages.get(key, "The engine reported an additional warning requiring review.")

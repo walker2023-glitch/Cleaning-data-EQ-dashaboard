@@ -15,6 +15,7 @@ from equipment_data_manager.processing.models import (
 SUPPORTED_REPORTS = {
     ReportType.REPAIRS: "Repair Reports",
     ReportType.SERVICE_ORDERS: "Service Orders List",
+    ReportType.TMA_WORK_ORDERS: "TMA Work Orders",
 }
 
 

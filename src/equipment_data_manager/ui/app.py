@@ -37,8 +37,10 @@ def default_output_root() -> Path:
 
 
 def sample_path(kind: ReportType) -> Path:
-    name = "repairs" if kind == ReportType.REPAIRS else "service"
-    return Path(str(files("equipment_data_manager").joinpath("resources", "samples", f"{name}_sample.csv")))
+    name = {ReportType.REPAIRS: "repairs_sample.csv",
+            ReportType.SERVICE_ORDERS: "service_sample.csv",
+            ReportType.TMA_WORK_ORDERS: "tma_sample.xlsx"}[kind]
+    return Path(str(files("equipment_data_manager").joinpath("resources", "samples", name)))
 
 
 def open_directory(path: Path):
@@ -75,7 +77,7 @@ class EquipmentDataManager(ctk.CTk):
         self.month = ctk.StringVar(value=MONTHS[date.today().month - 1])
         self.year = ctk.StringVar(value=str(date.today().year))
         self.month_confirmed = ctk.BooleanVar(value=False)
-        self.status = ctk.StringVar(value="Select a report type and local CSV files, or try a synthetic sample.")
+        self.status = ctk.StringVar(value="Select a report type and local report files, or try a synthetic sample.")
         self._build()
         self.report.trace_add("write", self._selection_changed)
         self.month.trace_add("write", self._selection_changed)
@@ -168,7 +170,7 @@ class EquipmentDataManager(ctk.CTk):
         help_text = (
             "A simple local workflow\n\n"
             "1. Select Repair Reports or Service Orders List.\n"
-            "2. Select local raw CSV files, or load a synthetic sample.\n"
+            "2. Select local raw CSV/XLSX files, or load a synthetic sample.\n"
             "3. Choose and confirm the report's month. Sample reports use September 2026.\n"
             "4. Preview Processing. Check filenames, type, month, counts and warnings.\n"
             "5. If a correction is flagged, review it and explicitly approve the new revision.\n"
@@ -178,7 +180,7 @@ class EquipmentDataManager(ctk.CTk):
             "Stop after current file finishes the active file, then stops the remaining files.\n\n"
             "Important limits\n\n"
             "Outputs are review candidates. Accuracy against departmental reports is unverified.\n"
-            "TMA Work Orders await format validation. Only supported UTF-8 CSV layouts are enabled.\n"
+            "TMA supports the reviewed title/header/footer XLSX layout as a provisional candidate. Legacy XLS remains blocked.\n"
             "The History view lists completed candidate revisions, not failed processing attempts.\n"
             "Do not combine all versions into Power BI; history includes superseded files.\n"
             "Microsoft sign-in, SharePoint and Power BI changes are not part of this prototype."
@@ -210,12 +212,8 @@ class EquipmentDataManager(ctk.CTk):
             card.grid(row=0, column=column, padx=(16 if column == 0 else 8, 8), pady=(16, 12), sticky="nsew")
             button = ctk.CTkRadioButton(card, text=title, variable=self.report, value=kind.value, fg_color=TEAL, text_color=NAVY, font=ctk.CTkFont(size=14, weight="bold"))
             button.pack(anchor="w", padx=14, pady=(14, 6))
-            ctk.CTkLabel(card, text="CompuClean | Local CSV", text_color=MUTED, font=ctk.CTkFont(size=12)).pack(anchor="w", padx=14, pady=(0, 12))
+            ctk.CTkLabel(card, text="TMA | XLSX candidate" if kind == ReportType.TMA_WORK_ORDERS else "CompuClean | Local CSV", text_color=MUTED, font=ctk.CTkFont(size=12)).pack(anchor="w", padx=14, pady=(0, 12))
             self.report_buttons.append(button)
-        blocked = ctk.CTkFrame(self.controls, fg_color="#F0F2F5", corner_radius=8)
-        blocked.grid(row=0, column=2, padx=(8, 16), pady=(16, 12), sticky="nsew")
-        ctk.CTkLabel(blocked, text="TMA Work Orders", text_color=MUTED, font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=14, pady=(10, 0))
-        ctk.CTkLabel(blocked, text="Awaiting format validation", text_color="#754C0B", font=ctk.CTkFont(size=12)).pack(anchor="w", padx=14, pady=(0, 10))
         row = ctk.CTkFrame(self.controls, fg_color="transparent")
         row.grid(row=1, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
         self.select_button = ctk.CTkButton(row, text="Select local raw files", command=self.select_files, fg_color=NAVY, height=36)
@@ -270,7 +268,11 @@ class EquipmentDataManager(ctk.CTk):
         self.status.set(f"{len(self.sources)} file(s) selected. Confirm the report type and month, then preview.")
 
     def select_files(self):
-        paths = filedialog.askopenfilenames(parent=self, title="Select raw CompuClean CSV reports", filetypes=[("CSV reports", "*.csv")])
+        is_tma = self.report.get() == ReportType.TMA_WORK_ORDERS.value
+        paths = filedialog.askopenfilenames(
+            parent=self, title="Select local raw reports",
+            filetypes=[("TMA Excel reports", "*.xlsx *.xls")] if is_tma else [("CSV reports", "*.csv")],
+        )
         if paths:
             self.set_files(paths)
 
@@ -278,13 +280,11 @@ class EquipmentDataManager(ctk.CTk):
         if self.worker.busy:
             return
         kind = ReportType(self.report.get())
-        if kind not in SUPPORTED_REPORTS:
-            self.status.set(error_message("report_type_awaiting_verified_fixtures"))
-            return
-        self.month.set("September")
+        month = "January" if kind == ReportType.TMA_WORK_ORDERS else "September"
+        self.month.set(month)
         self.year.set("2026")
         self.set_files([str(sample_path(kind))])
-        self.status.set("Synthetic sample loaded | September 2026. Confirm the month, then preview. No departmental data is included.")
+        self.status.set(f"Synthetic sample loaded | {month} 2026. Confirm the month, then preview. No departmental data is included.")
 
     def choose_output(self):
         if self.worker.busy:

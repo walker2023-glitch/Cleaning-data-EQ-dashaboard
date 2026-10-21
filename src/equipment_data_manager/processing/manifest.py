@@ -19,6 +19,7 @@ from equipment_data_manager.processing.models import HistoryEntry, OutputRevisio
 OUTPUT_NAMES = {
     ReportType.REPAIRS: "CompuClean_RepairReports",
     ReportType.SERVICE_ORDERS: "CompuClean_ServiceOrders",
+    ReportType.TMA_WORK_ORDERS: "TMA_WorkOrders",
 }
 
 

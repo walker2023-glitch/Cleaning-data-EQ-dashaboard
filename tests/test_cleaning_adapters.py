@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests/fixtures/synthetic"
 
 
-@pytest.mark.parametrize("name", ["row_clean_common.py", "repairs_row_clean.py", "service_row_clean.py"])
+@pytest.mark.parametrize("name", ["row_clean_common.py", "repairs_row_clean.py", "service_row_clean.py", "requests_row_clean.py"])
 def test_vendored_logic_differs_only_in_import_location(name):
     original = (ROOT / "legacy/clean" / name).read_bytes()
     packaged = (ROOT / "src/equipment_data_manager/processing/_legacy" / name).read_bytes()
