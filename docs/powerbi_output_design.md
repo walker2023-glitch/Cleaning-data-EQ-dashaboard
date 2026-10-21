@@ -109,8 +109,9 @@ local-output/versions/...              original legacy candidates/history
 local-output/powerbi_candidates/
   manifest.sqlite3                    selected normalized CANDIDATE per type/month
   versions/<revision>/...csv           immutable normalized candidates/history
-future-approved-current/<report>/     NOT CREATED by this milestone
-future-approved-history/...           NOT CREATED; outside ingestion roots
+future-approved-current/current.json NOT CREATED; approved snapshot pointer only
+future-approved-snapshots/<id>/<report>/  NOT CREATED; immutable monthly CSV set
+future-approved-history/...           NOT CREATED; review/audit history
 ```
 
 GUI mode selection and CLI `--output-format powerbi` use an independent normalized
@@ -125,17 +126,29 @@ atomic commit. Neither candidate versions directory is a Power BI ingestion root
 warns production publication is blocked. A future publisher must require trusted
 raw/expected comparisons, reconciled financial meanings/totals, explicit schema
 and month approval and reviewer identity; then stage/validate complete exports,
-archive old approved versions outside the ingestion root and atomically select
-one approved revision per type/month. Stale correction approvals must fail. Local
-filesystem replacement/lease is not a Graph transaction: future storage interfaces
-need conditional ETag updates, shared concurrency and recoverable publication
-manifests. Failure must leave the last approved export selected. Publishing a batch
-requires an explicit complete-set selection; no partial batch may be presented as
-approved. Microsoft identity and SharePoint work require separate authorization.
+retain old approved snapshots outside the selected ingestion root and atomically
+select one complete approved snapshot. The proposed publisher prepares a complete
+snapshot manifest keyed uniquely by report type/month, containing only approved
+schema versions, artifact hashes/counts, financial comparison evidence and reviewer
+approval references. Validate every file before exposing the snapshot. Failed or
+partial uploads remain unselected. A single conditional pointer update selects the
+complete new set; stale approvals/current-pointer versions fail without replacement.
+
+Power Query must read that approved pointer once per refresh, then use its manifest
+and **exact snapshot/report folder** (one current file per month), not a recursive
+scan of all snapshots. Prior snapshot paths remain immutable and readable for
+in-progress refreshes/retention; they are outside the newly selected ingestion
+root and are never combined with it. This avoids pretending that a series of file
+replacements or uploads is an atomic batch. Future Graph storage needs ETag compare-
+and-swap on the pointer plus shared concurrency controls and recovery of orphaned,
+unselected uploads. An approved local publisher would need equivalent local
+atomic selection and locking. No such publisher/pointer API is implemented here.
+Microsoft identity and SharePoint work require separate authorization.
 
 ## Power Query folder ingestion (design/test guidance only)
 
-Use a separate approved-current folder per schema/report type. Filter exact folder
+Resolve the approved snapshot once, then use a separate exact report folder per
+schema/report type. Filter exact folder
 and `.csv`, hidden/temp files out; never recursively combine candidates/history.
 Promote each file's first row exactly once, verify the ordered schema, combine rows
 once across distinct ReportMonth files and apply explicit column types. Use
