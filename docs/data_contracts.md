@@ -97,3 +97,14 @@ in [inputs_needed.md](inputs_needed.md).
 The desired `Source_ReportType_YYYY-MM.csv` convention is a design target;
 legacy writers differ. Resolve the header/preamble/type contract with the
 existing Power BI baseline before any adapter changes or PBIX modification.
+
+## Opt-in normalized candidate contracts (schema v1)
+
+The separate export design in [powerbi_output_design.md](powerbi_output_design.md)
+defines ordered header-first Repair History, Service Orders and TMA tables with
+ISO dates, typed numeric contracts, text identifiers, ReportMonth and provenance.
+Legacy cleaners/CSV contracts above remain available and unchanged. Missing source
+money is represented as null in the normalized business fields, with explicit
+legacy calculated columns retained for comparison. Description/tag metadata is
+preserved; no classifier is implemented. Publication remains blocked pending
+financial reconciliation, trusted outputs and schema approval.

@@ -75,3 +75,13 @@ required to resolve this.
 
 See [edge-case evidence](edge_case_validation.md), [input requests](inputs_needed.md)
 and [VS Code instructions](development.md#test-the-multi-month-branch-in-vs-code).
+
+## Separate normalized output mode
+
+The input matrix above is unchanged. An opt-in export layer produces the schema-v1
+header-first UTF-8 candidates in [powerbi_output_design.md](powerbi_output_design.md)
+only after the existing adapter succeeds. It does not enable new raw layouts/XLS,
+change cleaning rules or approve financial totals. Legacy mode remains available.
+Normalized candidate history is separate from legacy history and from any future
+approved-current Power BI ingestion folder. The maintenance classifier is design
+only: see [maintenance_classification_design.md](maintenance_classification_design.md).
