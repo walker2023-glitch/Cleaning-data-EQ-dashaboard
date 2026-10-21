@@ -23,6 +23,11 @@ ERRORS = {
     "invalid_repair_summary": "The repeated repair summary has an unrecognized value. Check the complete export.",
     "inconsistent_repair_summary": "Repeated repair summaries disagree. Supply a consistent export.",
     "repair_summary_count_mismatch": "The repair summary count does not match the source records.",
+    "invalid_legacy_export_schema": "The legacy candidate does not match its known output schema. Normalized export stopped.",
+    "invalid_normalized_schema": "The Power BI candidate schema failed validation. No candidate was selected.",
+    "invalid_normalized_number": "A candidate number cannot be represented safely in the normalized schema.",
+    "invalid_normalized_date": "A candidate date does not match the known legacy date format.",
+    "normalization_source_alignment_failed": "Source records could not be paired reliably with the cleaned candidate. Export stopped rather than guessing.",
     "invalid_reporting_period": "Choose a valid reporting month and four-digit year.",
     "output_period_mismatch": "The cleaned records do not match the selected reporting month. Check the month and file.",
     "no_output_rows": "No eligible records remain after the existing cleaning rules. Check the report and month.",
@@ -58,6 +63,11 @@ def error_message(code: str):
 def warning_message(code: str):
     key, _, count = code.partition(":")
     messages = {
+        "production_publication_blocked": "Power BI CSV candidate only. Production publication is blocked until financial reconciliation and trusted-output approval.",
+        "normalized_financial_values_unavailable": "Rows with unavailable source parts/total values left blank; original calculated values remain in the Legacy columns",
+        "source_record_numbers_unavailable": "TMA exclusions prevent a verified source-record mapping. SourceRecordNumber is blank; candidate ordinals remain available.",
+        "legacy_unmapped_source_columns": "Source columns omitted by the legacy candidate; the normalized export restores supported metadata in explicit columns",
+        "normalized_unmapped_source_columns": "Additional source columns are outside the normalized contract and remain only in the original input",
         "production_accuracy_unverified": "Accuracy against departmental reports has not been verified. Review this candidate before use.",
         "legacy_duration_defaults_and_rate_unverified": "Existing duration defaults and labor rate were retained; they still need departmental approval.",
         "legacy_parser_warnings": "The existing date parser reported a warning. Review date interpretation.",

@@ -20,6 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     process.add_argument("--period", required=True, help="Operator-confirmed YYYY-MM")
     process.add_argument("--output-dir", required=True, type=Path)
     process.add_argument("--replacement-token", help="Token from the reviewed corrected-file result (single file only)")
+    process.add_argument("--output-format", choices=["legacy", "powerbi"], default="legacy", help="Candidate CSV format; Power BI mode does not publish")
     process.add_argument("--preview", action="store_true", help="Validate without writing candidate files or history")
     process.add_argument("--include-date-values", action="store_true", help="Include private source date cells/record numbers in local diagnostics; do not publish this output")
     args = parser.parse_args(argv)
@@ -31,7 +32,11 @@ def main(argv: list[str] | None = None) -> int:
         from equipment_data_manager.processing.coordinator import ProcessingCoordinator
         from equipment_data_manager.processing.models import ProcessingRequest, ProcessingStatus
 
-        coordinator = ProcessingCoordinator(args.output_dir)
+        if args.output_format == "powerbi":
+            from equipment_data_manager.processing.powerbi import powerbi_coordinator
+            coordinator = powerbi_coordinator(args.output_dir)
+        else:
+            coordinator = ProcessingCoordinator(args.output_dir)
         operation = coordinator.preview if args.preview else coordinator.process
         results = tuple(operation(ProcessingRequest(args.report_type, args.period, input_path=path,
                               replacement_token=args.replacement_token))

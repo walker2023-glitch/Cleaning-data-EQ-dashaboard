@@ -295,3 +295,46 @@ def test_tma_legacy_xls_filter_returns_useful_engine_error(app, tmp_path, monkey
     assert 'TmaXlsxCleaner' in app.runtime_info and 'January diagnostics v1' in app.runtime_info
     assert source.read_bytes().startswith(b'\xd0\xcf\x11\xe0')
     assert not app.workflow.output_root.exists()
+
+
+@pytest.mark.parametrize('kind,factory,extension', [
+    (ReportType.REPAIRS, 'repair_csv', 'csv'),
+    (ReportType.SERVICE_ORDERS, 'service_csv', 'csv'),
+    (ReportType.TMA_WORK_ORDERS, 'tma_xlsx', 'xlsx'),
+])
+def test_powerbi_output_mode_uses_real_cleaner_and_separate_candidate_history(app, tmp_path, kind, factory, extension):
+    import csv
+    from io import StringIO
+    import report_samples
+    source = tmp_path / f'synthetic.{extension}'
+    raw = getattr(report_samples, factory)(1, 3)
+    source.write_bytes(raw)
+    base_root = app.workflow.output_root
+    app.report.set(kind.value)
+    app.set_files([str(source)])
+    app.format_selector.set('Power BI CSV candidate')
+    app._output_format_changed()
+    assert app.previews == () and not app.month_confirmed.get()
+    assert app.workflow.output_root == base_root / 'powerbi_candidates'
+    app.month_selector.set('January')
+    app.year.set('2026')
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.previews[0].result.code == 'ready_to_process'
+    assert 'production_publication_blocked' in app.previews[0].result.warnings
+    assert app.format_selector.cget('state') == 'readonly'
+    assert not base_root.exists()
+    app.process_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    result = app.results[0].result
+    assert result.status == Status.SUCCESS and result.output_rows == 3
+    rows = list(csv.DictReader(StringIO(result.output_location.read_bytes().decode('utf-8'))))
+    assert len(rows) == 3 and rows[0]['ReportMonth'] == '2026-01'
+    assert rows[0]['ValidationStatus'] == 'CandidateUnverified'
+    assert source.read_bytes() == raw
+    app.format_selector.set('Legacy candidate')
+    app._output_format_changed()
+    assert app.workflow.output_root == base_root
+    assert not (base_root / 'manifest.sqlite3').exists()
+    assert not app.previews and not app.approvals and app.process_button.cget('state') == 'disabled'

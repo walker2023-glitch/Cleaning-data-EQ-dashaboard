@@ -68,11 +68,12 @@ meaning is unconfirmed. Description/Details/AccountName are source text.
 ### Service Orders
 
 ```text
-EquipmentId,EquipmentName,ScheduledDate,CompletedDate,Location,Description,Status,EstimatedPrice,RawDescription,SourceMaintenanceTag,AccountName,SourceVendorName,RawCost,RawEquipmentId
+EquipmentId,EquipmentName,ScheduledDate,CompletedDate,Location,Description,Status,RawStatus,EstimatedPrice,RawDescription,SourceMaintenanceTag,AccountName,SourceVendorName,RawCost,RawEquipmentId
 ```
 
 ScheduledDate/CompletedDate: nullable dates. EstimatedPrice: nullable decimal,
 retaining the original blank/nonpositive convention. Other business columns: text.
+RawStatus preserves Textbox21 before the existing status fallback.
 Description is the existing cleaned description; RawDescription preserves the
 entire source cell. SourceMaintenanceTag records a final `(PM)` or `(Repair)` token
 as `PM`/`Repair`, otherwise blank. This is source metadata, not a maintenance class.
