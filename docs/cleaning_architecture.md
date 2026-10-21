@@ -67,6 +67,12 @@ counts, costs, date parsing and exclusions are unchanged. Output names are the
 year-qualified design names, inside revision directories. Filename month/year
 inference and original local `main()`/`process_file()` workflows are never invoked.
 
+Exception: the specific observed no-price Service Orders export now reads
+`EquipmentId1` as text to retain leading zeros, checks repeated report-count
+metadata and adapts the absent price to the original blank-price path. The older
+priced-layout reader and original transforms remain unchanged. See
+`service_orders_february_fix.md`; this is not an arbitrary missing-column fallback.
+
 Only UTF-8/UTF-8-BOM header-first CSVs are enabled. Required columns are a
 conservative list of fields used by the supported transforms (`data_contracts.md`).
 Flat service lists may have `Name` or `Location`; competing aliases fail.

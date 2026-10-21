@@ -15,6 +15,7 @@ from equipment_data_manager.processing._legacy import repairs_row_clean as repai
 from equipment_data_manager.processing._legacy import service_row_clean as service
 from equipment_data_manager.processing.interfaces import CleanResult, ColumnSchema, ReconciliationMetric
 from equipment_data_manager.processing.models import ProcessingError, ReportType
+from equipment_data_manager.processing.service_layouts import SummaryServiceOrdersLayout
 
 
 def validate_period(period: str) -> None:
@@ -22,7 +23,7 @@ def validate_period(period: str) -> None:
         raise ProcessingError("invalid_reporting_period")
 
 
-def read_csv(raw: bytes) -> pd.DataFrame:
+def read_csv(raw: bytes, *, service_export: bool = False) -> pd.DataFrame:
     """Check layout before pandas can silently rename duplicate headers.
 
     Preserve legacy pandas inference/NA handling for accepted UTF-8 CSVs. Other
@@ -47,7 +48,10 @@ def read_csv(raw: bytes) -> pd.DataFrame:
         for row in records:
             if row and len(row) != len(header):
                 raise ProcessingError("invalid_csv_row_width")
-        return pd.read_csv(BytesIO(raw), encoding_errors="replace")
+        # Only the newly observed layout uses an explicit ID dtype. Preserve
+        # inference for previously supported layouts to keep their behavior stable.
+        dtype = {"EquipmentId1": str} if service_export and SummaryServiceOrdersLayout.matches(header) else None
+        return pd.read_csv(BytesIO(raw), encoding_errors="replace", dtype=dtype)
     except (UnicodeError, csv.Error, StopIteration, pd.errors.ParserError, pd.errors.EmptyDataError):
         raise ProcessingError("invalid_csv_or_encoding") from None
 
@@ -67,14 +71,19 @@ class LegacyCsvCleaner:
         root = Path(__file__).parent / "_legacy"
         source_hash = sha256(b"".join((root / name).read_bytes() for name in source_files)).hexdigest()
         # Bump this version if reading, formatting or validation policy changes.
-        self.version = f"wrapper-v2:pandas-{pd.__version__}:{source_hash}"
+        wrapper_version = "wrapper-v3-service-layout" if report_type == ReportType.SERVICE_ORDERS else "wrapper-v2"
+        self.version = f"{wrapper_version}:pandas-{pd.__version__}:{source_hash}"
 
     def clean(self, raw_bytes: bytes, *, source_name: str, period: str) -> CleanResult:
         validate_period(period)
         if Path(source_name).suffix.lower() != ".csv":
             raise ProcessingError("unsupported_file_format")
-        frame = read_csv(raw_bytes)
+        frame = read_csv(raw_bytes, service_export=self.report_type == ReportType.SERVICE_ORDERS)
         notes = ["production_accuracy_unverified"]
+        source_service_count = None
+        if self.report_type == ReportType.SERVICE_ORDERS and SummaryServiceOrdersLayout.matches(frame.columns):
+            frame, source_service_count = SummaryServiceOrdersLayout.prepare(frame)
+            notes.append("estimated_price_unavailable")
         if self.report_type == ReportType.REPAIRS:
             required = {
                 "PersonnelId5", "PersonnelId1", "CompletedDate1", "PersonnelId4",
@@ -97,6 +106,8 @@ class LegacyCsvCleaner:
         if not required <= set(frame.columns):
             raise ProcessingError("missing_required_columns")
         recognized = required | ({"Name", "Location"} if self.report_type == ReportType.SERVICE_ORDERS else set())
+        if source_service_count is not None:
+            recognized.add("Textbox56")  # Consumed as count metadata, never as a row or price.
         unknown = len(set(frame.columns) - recognized)
         if unknown:
             notes.append(f"unmapped_source_columns:{unknown}")
@@ -157,7 +168,10 @@ class LegacyCsvCleaner:
             )
         else:
             cleaned.to_csv(output, index=False)
-            metrics = ()
+            metrics = (
+                ReconciliationMetric("Source service orders", Decimal(source_service_count), "count"),
+                ReconciliationMetric("Retained service orders", Decimal(len(cleaned)), "count"),
+            ) if source_service_count is not None else ()
         return CleanResult(
             output.getvalue().encode("utf-8"), len(frame), len(cleaned),
             tuple(ColumnSchema(str(name), str(dtype)) for name, dtype in cleaned.dtypes.items()),

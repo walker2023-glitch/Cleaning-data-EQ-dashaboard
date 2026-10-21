@@ -1,5 +1,13 @@
 # Test fixture provenance
 
+`synthetic/service_orders_february_2026.csv` is a newly authored sanitized shape
+regression for the user-supplied ten-column, five-record BOM export. Account,
+equipment names, locations and descriptions are invented; IDs are synthetic,
+including the user-requested `000439` example. The repeated count and February
+date shapes match the observed structure. The paired expected CSV records the
+specified mapping and unchanged cleaner rules, not a trusted departmental golden.
+The actual uploaded report and local validation outputs are not committed.
+
 `synthetic/` contains invented, nonprivate values in column layouts observed in
 the uploaded source. Expected CSVs capture a small subset of the source behavior:
 repairs calculate two hours at the existing 12.5 rate and omit an invalid date;
