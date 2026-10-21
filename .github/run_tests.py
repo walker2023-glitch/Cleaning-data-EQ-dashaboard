@@ -1,6 +1,6 @@
 """Run every synthetic test and surface failures as annotations.
 
-Windows GUI cases use fresh processes: each case owns one Tcl interpreter, just
+Windows GUI cases (and Linux CI with --isolate-gui) use fresh processes: each case owns one Tcl interpreter, just
 like an application launch. Repeated Tk destruction/recreation in one process
 has produced intermittent init.tcl/tk.tcl loading errors on the Windows runner.
 No test is skipped or retried, and all subprocess outcomes are preserved.

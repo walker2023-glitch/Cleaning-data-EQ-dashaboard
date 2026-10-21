@@ -116,3 +116,10 @@ repair/TMA commands. Remote results belong to the specific PR commit. Pandas-bas
 synthetic folder tests check CSV structural combination, not execution of a real
 Power Query model or modification of an actual PBIX. No trusted production golden
 output, financial approval, classification engine or publisher is supplied.
+
+The normalized-export PR's later Linux run exited with a native process crash
+before a completed JUnit report (while its same-commit push run passed both OSes).
+Linux CI now also uses `--isolate-gui` under xvfb, the same fresh-interpreter runner
+already tested locally for all 237 cases and used by Windows. Each GUI case runs
+once; failures are preserved, with no retries or skips. This contains repeated Tk
+interpreter state in the test harness without changing application/cleaning rules.
