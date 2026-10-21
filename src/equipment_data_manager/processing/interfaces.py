@@ -1,8 +1,13 @@
 """Contracts independent of pandas, the desktop UI, and Microsoft Graph."""
 
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from equipment_data_manager.processing.diagnostics import CleaningDiagnostics
 
 
 @dataclass(frozen=True)
@@ -34,6 +39,7 @@ class CleanResult:
     source_period: str
     cleaner_version: str
     reconciliation_metrics: tuple[ReconciliationMetric, ...]
+    diagnostics: CleaningDiagnostics | None = field(default=None, repr=False)
 
 
 class Cleaner(Protocol):

@@ -1,10 +1,15 @@
 """GUI-independent requests/results; no source contents in error messages."""
 
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from equipment_data_manager.processing.interfaces import CleanResult
+if TYPE_CHECKING:
+    from equipment_data_manager.processing.diagnostics import CleaningDiagnostics
 
 
 class ReportType(StrEnum):
@@ -22,6 +27,10 @@ class ProcessingStatus(StrEnum):
 
 class ProcessingError(ValueError):
     """Category-only failure safe to show in UI/CLI, without raw cell data."""
+
+    def __init__(self, code: str, *, diagnostics: CleaningDiagnostics | None = None):
+        super().__init__(code)
+        self.diagnostics = diagnostics
 
 
 @dataclass(frozen=True)
@@ -65,6 +74,11 @@ class ProcessingResult:
     artifact: OutputRevision | None = None
     previous: OutputRevision | None = None
     replacement_token: str | None = None
+    rejection_diagnostics: CleaningDiagnostics | None = field(default=None, repr=False)
+
+    @property
+    def diagnostics(self):
+        return self.cleaned.diagnostics if self.cleaned else self.rejection_diagnostics
 
     @property
     def output_location(self) -> Path | None:

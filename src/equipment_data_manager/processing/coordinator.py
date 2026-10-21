@@ -39,7 +39,7 @@ class ProcessingCoordinator:
         try:
             return self._process(request, preview=preview)
         except ProcessingError as exc:
-            return ProcessingResult(ProcessingStatus.FAILURE, str(exc))
+            return ProcessingResult(ProcessingStatus.FAILURE, str(exc), rejection_diagnostics=exc.diagnostics)
         except OSError:
             return ProcessingResult(ProcessingStatus.FAILURE, "file_or_storage_unavailable")
         except sqlite3.Error:

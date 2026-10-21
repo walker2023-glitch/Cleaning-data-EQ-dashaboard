@@ -14,7 +14,7 @@ import customtkinter as ctk
 
 from equipment_data_manager.processing.cleaners import validate_period
 from equipment_data_manager.processing.models import ProcessingError, ProcessingStatus, ReportType
-from equipment_data_manager.ui.messages import error_message, result_label, warning_message
+from equipment_data_manager.ui.messages import diagnostic_lines, error_message, result_label, warning_message
 from equipment_data_manager.ui.worker import BackgroundWorker
 from equipment_data_manager.ui.workflow import DesktopWorkflow, SUPPORTED_REPORTS, selected_files
 
@@ -167,11 +167,19 @@ class EquipmentDataManager(ctk.CTk):
         ctk.CTkButton(actions, text="Refresh history", command=self.load_history, fg_color=TEAL).pack(side="left")
         ctk.CTkButton(actions, text="Open selected revision folder", command=self.open_history_output, fg_color=NAVY).pack(side="left", padx=12)
         self.help_page = ctk.CTkFrame(self.body, fg_color="white", corner_radius=10)
+        import platform
+        import pandas as pd
+        from equipment_data_manager.processing import coordinator as engine_module
+        from equipment_data_manager.processing.models import ReportType as Kind
+        adapter = self.workflow.coordinator.cleaners.get(Kind.TMA_WORK_ORDERS)
+        self.runtime_info = (f"January diagnostics v1 | Python {platform.python_version()} | pandas {pd.__version__}\n"
+                             f"Engine: {engine_module.__file__}\n"
+                             f"TMA adapter: {type(adapter).__name__ if adapter else 'Unavailable'}")
         help_text = (
             "A simple local workflow\n\n"
-            "1. Select Repair Reports or Service Orders List.\n"
+            "1. Select Repair Reports, Service Orders List or TMA Work Orders.\n"
             "2. Select local raw CSV/XLSX files, or load a synthetic sample.\n"
-            "3. Choose and confirm the report's month. Sample reports use September 2026.\n"
+            "3. Confirm the month: CompuClean samples use September; TMA uses January 2026.\n"
             "4. Preview Processing. Check filenames, type, month, counts and warnings.\n"
             "5. If a correction is flagged, review it and explicitly approve the new revision.\n"
             "6. Process Reports. Read the results and use Open output folder.\n\n"
@@ -183,7 +191,8 @@ class EquipmentDataManager(ctk.CTk):
             "TMA supports the reviewed title/header/footer XLSX layout as a provisional candidate. Legacy XLS remains blocked.\n"
             "The History view lists completed candidate revisions, not failed processing attempts.\n"
             "Do not combine all versions into Power BI; history includes superseded files.\n"
-            "Microsoft sign-in, SharePoint and Power BI changes are not part of this prototype."
+            "Microsoft sign-in, SharePoint and Power BI changes are not part of this prototype.\n\n"
+            + self.runtime_info
         )
         ctk.CTkLabel(self.help_page, text=help_text, justify="left", anchor="nw", text_color=TEXT, font=ctk.CTkFont(size=14), wraplength=830).pack(fill="both", expand=True, padx=28, pady=24)
 
@@ -271,7 +280,7 @@ class EquipmentDataManager(ctk.CTk):
         is_tma = self.report.get() == ReportType.TMA_WORK_ORDERS.value
         paths = filedialog.askopenfilenames(
             parent=self, title="Select local raw reports",
-            filetypes=[("TMA Excel reports", "*.xlsx *.xls")] if is_tma else [("CSV reports", "*.csv")],
+            filetypes=[("TMA XLSX reports", "*.xlsx"), ("Legacy XLS (unsupported)", "*.xls")] if is_tma else [("CSV reports", "*.csv")],
         )
         if paths:
             self.set_files(paths)
@@ -478,6 +487,8 @@ class EquipmentDataManager(ctk.CTk):
             text.append(error_message(result.code))
         if result.previous:
             text.append(f"Current output: {result.previous.output_rows} rows. Previous revision will be retained.")
+        if result.diagnostics:
+            text.extend(diagnostic_lines(result.diagnostics))
         text.extend(warning_message(warning) for warning in result.warnings)
         if result.cleaned:
             for metric in result.cleaned.reconciliation_metrics:

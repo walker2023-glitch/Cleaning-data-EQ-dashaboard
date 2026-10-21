@@ -246,3 +246,52 @@ def test_tma_xlsx_card_sample_picker_preview_and_process(app, monkeypatch):
     pump(app, lambda: not app.worker.busy)
     assert app.results[0].result.status == Status.SUCCESS
     assert 'tma_output_contract_provisional' in app.results[0].result.warnings
+
+
+@pytest.mark.parametrize('kind,factory,code,trace', [
+    (ReportType.REPAIRS, 'repair_csv', 'output_period_mismatch', "'2/15/2026' -> 2026-02-15"),
+    (ReportType.SERVICE_ORDERS, 'service_csv', 'no_output_rows', "'2/15/2026' -> 2026-02-15"),
+])
+def test_rejection_detail_shows_engine_month_and_source_date_trace(app, tmp_path, kind, factory, code, trace):
+    import report_samples
+    source = tmp_path / 'synthetic.csv'
+    source.write_bytes(getattr(report_samples, factory)(2, 3))
+    app.report.set(kind.value)
+    app.set_files([str(source)])
+    app.month_selector.set('January')
+    app.year.set('2026')
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.previews[0].period == '2026-01'
+    assert app.previews[0].result.code == code
+    detail = app.detail.get('1.0', 'end')
+    assert 'Engine reporting month: 2026-01' in detail
+    assert trace in detail and 'Record 1:' in detail
+    assert app.process_button.cget('state') == 'disabled'
+    assert not app.workflow.output_root.exists()
+
+
+def test_tma_legacy_xls_filter_returns_useful_engine_error(app, tmp_path, monkeypatch):
+    source = tmp_path / 'legacy.xls'
+    source.write_bytes(b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1SYNTHETIC-NOT-A-REAL-XLS')
+    observed = {}
+
+    def choose(**kwargs):
+        observed.update(kwargs)
+        return (str(source),)
+
+    monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilenames', choose)
+    app.report_buttons[2].invoke()
+    app.select_button.invoke()
+    assert observed['filetypes'] == [('TMA XLSX reports', '*.xlsx'), ('Legacy XLS (unsupported)', '*.xls')]
+    app.month_selector.set('January')
+    app.year.set('2026')
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.previews[0].result.code == 'legacy_xls_awaiting_sample'
+    assert 'Do not rename' in app.detail.get('1.0', 'end')
+    assert 'TmaXlsxCleaner' in app.runtime_info and 'January diagnostics v1' in app.runtime_info
+    assert source.read_bytes().startswith(b'\xd0\xcf\x11\xe0')
+    assert not app.workflow.output_root.exists()
