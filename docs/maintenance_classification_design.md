@@ -23,6 +23,14 @@ is not interchangeable with service completion. Text mentions may be clues but
 are not verified keys. A matching TMA work order does not prove corrective repair;
 even the repair report's title is not an approved class label.
 
+The current exporter preserves raw description/tag metadata only for **retained**
+service records. Excluded placeholders remain in the original raw file, not the
+normalized transaction CSV. An exclusion is not evidence that no maintenance took
+place and is not a maintenance class. The future classifier must define its target
+population and report coverage against both raw and retained records. Include
+excluded/tag-only cases in labeled review to detect selection bias; any change to
+existing exclusions requires a separately approved business-rule change.
+
 ## Separate matching from classification
 
 Proposed stages:
