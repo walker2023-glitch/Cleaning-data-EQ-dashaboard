@@ -20,6 +20,8 @@ def main(argv: list[str] | None = None) -> int:
     process.add_argument("--period", required=True, help="Operator-confirmed YYYY-MM")
     process.add_argument("--output-dir", required=True, type=Path)
     process.add_argument("--replacement-token", help="Token from the reviewed corrected-file result (single file only)")
+    process.add_argument("--preview", action="store_true", help="Validate without writing candidate files or history")
+    process.add_argument("--include-date-values", action="store_true", help="Include private source date cells/record numbers in local diagnostics; do not publish this output")
     args = parser.parse_args(argv)
     if args.command == "process":
         if args.check_config is not None:
@@ -30,9 +32,9 @@ def main(argv: list[str] | None = None) -> int:
         from equipment_data_manager.processing.models import ProcessingRequest, ProcessingStatus
 
         coordinator = ProcessingCoordinator(args.output_dir)
-        results = coordinator.process_many(
-            ProcessingRequest(args.report_type, args.period, input_path=path,
-                              replacement_token=args.replacement_token)
+        operation = coordinator.preview if args.preview else coordinator.process
+        results = tuple(operation(ProcessingRequest(args.report_type, args.period, input_path=path,
+                              replacement_token=args.replacement_token))
             for path in args.files
         )
         print(json.dumps([
@@ -51,6 +53,7 @@ def main(argv: list[str] | None = None) -> int:
                     for metric in result.cleaned.reconciliation_metrics
                 ] if result.cleaned else [],
                 "replacement_token": result.replacement_token, "warnings": result.warnings,
+                "diagnostics": result.diagnostics.summary(include_date_values=args.include_date_values) if result.diagnostics else None,
             }
             for result in results
         ], indent=2))

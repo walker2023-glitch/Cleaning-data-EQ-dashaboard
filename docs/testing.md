@@ -85,3 +85,14 @@ once, preserves failures, and combines their JUnit reports; it does not retry or
 skip tests. Linux uses the normal single pytest run. To exercise the isolated
 runner locally (with a display on Linux), use
 `uv run --frozen --all-extras python .github/run_tests.py --isolate-gui`.
+
+## January rejection diagnostics follow-up
+
+The current local suite passes 200 tests. `test_rejection_diagnostics.py` and added
+widget cases check per-record dates/reasons surviving failures, every service
+first-exclusion category, valid January process/preview, default date-cell privacy,
+write-free CLI preview, correction safety and explicit TMA XLSX/XLS routing.
+See `january_rejection_investigation.md` for the unreproduced Windows symptoms,
+actual local January findings, and commands. On Windows prefer
+`python -m uv run --frozen --all-extras python .github/run_tests.py` over plain pytest
+to isolate each GUI case's Tcl interpreter; no tests are skipped or retried.

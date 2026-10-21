@@ -15,6 +15,7 @@ from equipment_data_manager.processing._legacy import repairs_row_clean as repai
 from equipment_data_manager.processing._legacy import service_row_clean as service
 from equipment_data_manager.processing.interfaces import CleanResult, ColumnSchema, ReconciliationMetric
 from equipment_data_manager.processing.models import ProcessingError, ReportType
+from equipment_data_manager.processing.diagnostics import explain_rows
 from equipment_data_manager.processing.repair_layouts import SummaryRepairsLayout
 from equipment_data_manager.processing.service_layouts import SummaryServiceOrdersLayout
 
@@ -74,7 +75,7 @@ class LegacyCsvCleaner:
         root = Path(__file__).parent / "_legacy"
         source_hash = sha256(b"".join((root / name).read_bytes() for name in source_files)).hexdigest()
         # Bump this version if reading, formatting or validation policy changes.
-        wrapper_version = "wrapper-v4-service-diagnostics" if report_type == ReportType.SERVICE_ORDERS else "wrapper-v3-repair-summary"
+        wrapper_version = "wrapper-v5-january-diagnostics"
         self.version = f"{wrapper_version}:pandas-{pd.__version__}:{source_hash}"
 
     def clean(self, raw_bytes: bytes, *, source_name: str, period: str) -> CleanResult:
@@ -125,6 +126,12 @@ class LegacyCsvCleaner:
         if unknown:
             notes.append(f"unmapped_source_columns:{unknown}")
 
+        # Preserve exact CSV date cells for diagnostics, including NA-like tokens
+        # that the unchanged pandas reader intentionally converts to missing.
+        raw_records = [{column: row[column] for column in date_fields}
+                       for row in csv.DictReader(StringIO(raw_bytes.decode("utf-8-sig"), newline=""))]
+        if len(raw_records) != len(frame):
+            raise ProcessingError("diagnostic_contract_mismatch")
         # Diagnostics observe parsing; they do not replace or change legacy rules.
         with warnings.catch_warnings(record=True) as parser_warnings:
             warnings.simplefilter("always")
@@ -139,6 +146,10 @@ class LegacyCsvCleaner:
                 if self.report_type == ReportType.REPAIRS
                 else service.clean_service_raw(frame, period)
             )
+            diagnostics = explain_rows(frame, raw_records=raw_records, report_type=self.report_type, period=period,
+                                       source_hash=sha256(raw_bytes).hexdigest(), cleaner_version=self.version)
+        if diagnostics.retained_rows != len(cleaned):
+            raise ProcessingError("diagnostic_contract_mismatch")
         if parser_warnings:
             notes.append("legacy_parser_warnings")
         if bad_dates:
@@ -156,9 +167,12 @@ class LegacyCsvCleaner:
         if len(cleaned) < len(frame):
             notes.append(f"rows_excluded_by_legacy:{len(frame) - len(cleaned)}")
         if cleaned.empty:
-            raise ProcessingError("no_output_rows")
+            raise ProcessingError("no_output_rows", diagnostics=diagnostics)
 
-        self._validate_candidate(cleaned, period)
+        try:
+            self._validate_candidate(cleaned, period)
+        except ProcessingError as exc:
+            raise ProcessingError(str(exc), diagnostics=diagnostics) from None
         if self.report_type == ReportType.SERVICE_ORDERS:
             cross_period = sum(
                 bool(value) and str(value)[:7] != period
@@ -199,7 +213,7 @@ class LegacyCsvCleaner:
         return CleanResult(
             output.getvalue().encode("utf-8"), len(frame), len(cleaned),
             tuple(ColumnSchema(str(name), str(dtype)) for name, dtype in cleaned.dtypes.items()),
-            tuple(notes), period, self.version, metrics,
+            tuple(notes), period, self.version, metrics, diagnostics,
         )
 
     def _validate_candidate(self, frame: pd.DataFrame, period: str) -> None:

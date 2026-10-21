@@ -46,6 +46,9 @@ See the [format compatibility matrix](docs/format_compatibility.md) and
 [edge-case evidence](docs/edge_case_validation.md) for supported layouts, monthly
 count tests and the unresolved January repair financial discrepancy.
 
+See [January rejection diagnostics](docs/january_rejection_investigation.md) for
+Windows runtime checks, per-record date/exclusion traces and explicit TMA filters.
+
 ## Development
 
 Use Python **3.12.14** and **uv 0.12.23**. pandas is the pinned engine dependency.

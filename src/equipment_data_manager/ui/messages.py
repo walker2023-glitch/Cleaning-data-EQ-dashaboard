@@ -74,3 +74,34 @@ def warning_message(code: str):
     }
     text = messages.get(key, "The engine reported an additional warning requiring review.")
     return f"{text}: {count}" if count.isdigit() else text
+
+
+REASONS = {
+    'accepted': 'Accepted by existing rules',
+    'missing_equipment_identity': 'Excluded: both equipment ID and name missing',
+    'invalid_completed_date': 'Excluded: completed date missing or invalid',
+    'outside_reporting_period': 'Parsed dates outside confirmed reporting month',
+    'missing_equipment_id': 'Excluded: equipment ID missing',
+    'missing_scheduled_date': 'Excluded: scheduled date missing',
+    'placeholder_description': 'Excluded: placeholder description',
+    'no_parseable_service_date': 'Excluded: neither service date parses',
+    'empty_cleaned_description': 'Excluded: description empty after existing suffix removal',
+    'delete_duplicate_description': 'Excluded: description starts with delete duplicate',
+}
+
+
+def diagnostic_lines(diagnostics):
+    """Private date cells are visible locally, never saved to history or logs."""
+    summary = diagnostics.summary()
+    lines = [f"Engine reporting month: {diagnostics.selected_period}",
+             f"Source SHA-256: {diagnostics.source_sha256}",
+             f"Cleaner: {diagnostics.cleaner_version}",
+             f"Source records: {len(diagnostics.records)} | Retained by cleaner before validation: {diagnostics.retained_rows}"]
+    lines.extend(f"{REASONS.get(reason, 'Unclassified reason')}: {count}"
+                 for reason, count in summary['reason_counts'].items())
+    lines.append("Local date trace (data-record numbers, not CSV line numbers):")
+    for row in diagnostics.records:
+        values = '; '.join(f"{date.column} {date.raw_value!r} -> {date.parsed_value or 'invalid/blank'}"
+                           for date in row.dates)
+        lines.append(f"Record {row.record}: {REASONS.get(row.reason, 'Unclassified reason')} | {values}")
+    return lines
