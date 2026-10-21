@@ -88,7 +88,7 @@ runner locally (with a display on Linux), use
 
 ## January rejection diagnostics follow-up
 
-The current local suite passes 196 tests. `test_rejection_diagnostics.py` and added
+The current local suite passes 200 tests. `test_rejection_diagnostics.py` and added
 widget cases check per-record dates/reasons surviving failures, every service
 first-exclusion category, valid January process/preview, default date-cell privacy,
 write-free CLI preview, correction safety and explicit TMA XLSX/XLS routing.

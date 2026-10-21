@@ -46,7 +46,8 @@ cleaner version, input/retained counts, first-match reason counts and each sourc
 data record's raw date values and parsed ISO dates. Record 1 means the first data
 record after the CSV header, **not** physical line 2: quoted descriptions can span
 lines. Dates use the same scalar pandas parsing as the original CSV cleaners;
-ISO values match the existing cleaned date formatting. For repairs, a retained
+Literal CSV date cells (including `NA`, `NULL` and blanks) are retained separately
+from pandas-inferred missing values. ISO values match the existing cleaned date formatting. For repairs, a retained
 row outside the confirmed month rejects the whole candidate. For services, the
 existing period rule excludes rows with neither date in the selected month.
 
@@ -145,7 +146,7 @@ outside-month dates and each original service exclusion. They are not claimed to
 explain the user's still-unreproduced failures. Tests assert exact record/date
 traces, safe default summaries, no-write preview, blocked processing, preserved
 failed corrections, valid January processing, GUI month propagation and both TMA
-filters/adapter routing. All prior tests remain. Current local suite: 196 passed;
+filters/adapter routing. All prior tests remain. Current local suite: 200 passed;
 Windows/Linux CI and packaged smoke outcomes are recorded on the PR.
 
 Business questions remain: repair cost-field meanings/labor policy (separate

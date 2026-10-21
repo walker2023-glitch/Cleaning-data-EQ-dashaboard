@@ -126,6 +126,12 @@ class LegacyCsvCleaner:
         if unknown:
             notes.append(f"unmapped_source_columns:{unknown}")
 
+        # Preserve exact CSV date cells for diagnostics, including NA-like tokens
+        # that the unchanged pandas reader intentionally converts to missing.
+        raw_records = [{column: row[column] for column in date_fields}
+                       for row in csv.DictReader(StringIO(raw_bytes.decode("utf-8-sig"), newline=""))]
+        if len(raw_records) != len(frame):
+            raise ProcessingError("diagnostic_contract_mismatch")
         # Diagnostics observe parsing; they do not replace or change legacy rules.
         with warnings.catch_warnings(record=True) as parser_warnings:
             warnings.simplefilter("always")
@@ -140,7 +146,7 @@ class LegacyCsvCleaner:
                 if self.report_type == ReportType.REPAIRS
                 else service.clean_service_raw(frame, period)
             )
-            diagnostics = explain_rows(frame, report_type=self.report_type, period=period,
+            diagnostics = explain_rows(frame, raw_records=raw_records, report_type=self.report_type, period=period,
                                        source_hash=sha256(raw_bytes).hexdigest(), cleaner_version=self.version)
         if diagnostics.retained_rows != len(cleaned):
             raise ProcessingError("diagnostic_contract_mismatch")

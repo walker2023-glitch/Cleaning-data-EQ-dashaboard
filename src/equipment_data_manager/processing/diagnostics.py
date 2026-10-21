@@ -62,14 +62,14 @@ class CleaningDiagnostics:
         return result
 
 
-def observe_date(row, column):
+def observe_date(row, column, raw_record):
     value = row.get(column)
     parsed = pd.to_datetime(value, errors='coerce')
-    return DateObservation(column, '' if pd.isna(value) else str(value),
+    return DateObservation(column, raw_record[column],
                            None if pd.isna(parsed) else parsed.strftime('%Y-%m-%d'))
 
 
-def explain_rows(frame, *, report_type, period, source_hash, cleaner_version):
+def explain_rows(frame, *, raw_records, report_type, period, source_hash, cleaner_version):
     """Observe first exclusion in the original flat-layout rule order.
 
     Reuse original predicates; caller checks retained-count parity against the
@@ -77,8 +77,9 @@ def explain_rows(frame, *, report_type, period, source_hash, cleaner_version):
     """
     records = []
     for number, (_, row) in enumerate(frame.iterrows(), 1):
+        raw_record = raw_records[number - 1]
         if report_type == 'repairs':
-            dates = (observe_date(row, 'CompletedDate1'),)
+            dates = (observe_date(row, 'CompletedDate1', raw_record),)
             name = repairs.extract_label(row.get('PersonnelId5'), 'Equip. Name')
             identifier = repairs.extract_label(row.get('PersonnelId1'), 'Equipment Id')
             retained = False
@@ -91,7 +92,7 @@ def explain_rows(frame, *, report_type, period, source_hash, cleaner_version):
                 reason = 'accepted' if dates[0].parsed_value[:7] == period else 'outside_reporting_period'
         else:
             # The wrapper only enables flat exports, including the Name alias.
-            dates = (observe_date(row, 'ScheduledDate'), observe_date(row, 'CompletedDate'))
+            dates = (observe_date(row, 'ScheduledDate', raw_record), observe_date(row, 'CompletedDate', raw_record))
             identifier, schedule, description = row.get('EquipmentId1'), row.get('ScheduledDate'), row.get('Description')
             retained = False
             if pd.isna(identifier) or not str(identifier).strip():

@@ -142,3 +142,14 @@ def test_cli_preview_keeps_date_values_private_by_default_and_writes_nothing(tmp
     detailed = json.loads(capsys.readouterr().out)[0]['diagnostics']['records']
     assert detailed[2]['dates'][0]['raw'] == 'SYNTHETIC_PRIVATE_DATE_CELL'
     assert not (tmp_path / 'out').exists()
+
+
+@pytest.mark.parametrize('token', ['NA', 'NULL', 'nan', ''])
+def test_trace_preserves_literal_csv_date_even_when_original_reader_treats_it_as_missing(tmp_path, token):
+    frame = pd.read_csv(BytesIO(repair_csv(1, 3)), dtype=str, keep_default_na=False)
+    frame.loc[0, 'CompletedDate1'] = token
+    result = ProcessingCoordinator(tmp_path / 'out').preview(request('repairs', frame.to_csv(index=False).encode('utf-8-sig')))
+    assert result.status == Status.SUCCESS and result.output_rows == 2
+    row = result.diagnostics.records[0]
+    assert row.reason == 'invalid_completed_date'
+    assert row.dates[0].raw_value == token and row.dates[0].parsed_value is None
