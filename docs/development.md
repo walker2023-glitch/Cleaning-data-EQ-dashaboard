@@ -127,3 +127,45 @@ for the new branch, the isolated Windows test command, native XLSX/XLS filters,
 runtime checks and write-free CLI date/exclusion traces. The same supplied January
 inputs pass locally; the reported Windows CSV rejections remain unreproduced.
 Do not weaken period checks or change financial rules to force acceptance.
+
+## Power BI candidate branch in VS Code
+
+Close the app before syncing, open the repository (not an extracted prototype ZIP),
+then use its integrated PowerShell terminal:
+
+```powershell
+git fetch origin
+git switch feature/powerbi-candidate-exports
+python -m uv sync --frozen --all-extras
+python -m uv run --frozen --all-extras python .github/run_tests.py
+python -m uv run --frozen --extra desktop python -m equipment_data_manager.ui.app --output-dir data/export-review
+```
+
+Select a report and **Load synthetic sample**. CompuClean samples use September
+2026; TMA uses January 2026. Legacy candidate is still the default. Preview/process
+it first if you want a saved comparison. Then choose **Power BI CSV candidate** in
+Output format, reconfirm the month and preview/process. Format changes clear prior
+previews/correction confirmations. Both modes use the existing cleaners; each has
+an independent candidate history. The base output folder's powerbi_candidates
+subdirectory holds normalized revisions; no approved-current folder is created.
+
+Open the selected result's CSV in VS Code as text. Expect one header, ReportMonth,
+ISO dates and text IDs with their source zeros. No repair/TMA title or summary rows
+should appear. RawDescription and SourceMaintenanceTag preserve service evidence;
+they are not classifications. Missing repair parts/estimated totals are blank in
+the normalized fields, with original arithmetic retained in explicit Legacy columns.
+Keep real inputs/outputs private under an approved ignored location.
+
+CLI preview example (remove `--preview` to save a candidate):
+
+```powershell
+python -m uv run --frozen equipment-data-manager process tests/fixtures/synthetic/repairs_summary_layout.csv --report-type repairs --period 2026-01 --output-dir data/export-review --output-format powerbi --preview
+```
+
+Use `service_orders` with the February service fixture/month, or `tma_work_orders`
+with `tma_title_header_footer.xlsx`/January 2026. Omitting `--output-format powerbi`
+uses legacy mode. Repeats skip; corrected months require the existing bound review
+workflow independently in each mode. Production publication is blocked regardless
+of local correction acknowledgement. Never combine candidate versions directories
+in Power BI. See `powerbi_output_design.md` for schemas/folder design and
+`maintenance_classification_design.md` for the future, unimplemented classifier.

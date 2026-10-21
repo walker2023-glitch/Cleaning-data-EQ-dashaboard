@@ -23,7 +23,7 @@ jobs:
       - run: uv python install 3.12.14
       - run: uv sync --frozen --all-extras
       - if: runner.os == 'Linux'
-        run: xvfb-run -a uv run --frozen --all-extras python .github/run_tests.py
+        run: xvfb-run -a uv run --frozen --all-extras python .github/run_tests.py --isolate-gui
       - if: runner.os == 'Windows'
         run: uv run --frozen --all-extras python .github/run_tests.py
       - run: uv run --frozen --all-extras equipment-data-manager --check-config config.example.toml
@@ -31,6 +31,8 @@ jobs:
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/ci-wheel-smoke
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/tma_title_header_footer.xlsx --report-type tma_work_orders --period 2026-01 --output-dir data/ci-wheel-smoke
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/ci-wheel-smoke --output-format powerbi
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/tma_title_header_footer.xlsx --report-type tma_work_orders --period 2026-01 --output-dir data/ci-wheel-smoke --output-format powerbi
       - if: runner.os == 'Windows' && github.event_name == 'pull_request'
         run: ./packaging/build.ps1
       - if: runner.os == 'Windows' && github.event_name == 'pull_request'

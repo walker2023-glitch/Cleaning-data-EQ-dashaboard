@@ -31,7 +31,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"],
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -93,6 +93,42 @@ def run_smoke(directory: Path | None) -> int:
             elif phase == 9:
                 assert app.results[0].result.status == Status.SUCCESS
                 assert app.results[0].result.output_rows == 3
+                app.format_selector.set("Power BI CSV candidate")
+                app._output_format_changed()
+                app.show_page("Process Reports")
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 10:
+                assert app.previews[0].result.code == "ready_to_process"
+                assert app.previews[0].result.cleaned.schema[0].name == "WorkOrderId"
+                assert "production_publication_blocked" in app.previews[0].result.warnings
+                app.process_button.invoke()
+            elif phase == 11:
+                assert app.results[0].result.status == Status.SUCCESS
+                assert app.results[0].result.output_rows == 3
+                app.report_buttons[0].invoke()
+                app.sample_button.invoke()
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 12:
+                assert app.previews[0].result.code == "ready_to_process"
+                assert app.previews[0].result.cleaned.schema[0].name == "LegacyRowNumber"
+                app.process_button.invoke()
+            elif phase == 13:
+                assert app.results[0].result.status == Status.SUCCESS
+                assert app.results[0].result.output_location.read_text(encoding="utf-8").startswith("LegacyRowNumber,")
+                app.report_buttons[1].invoke()
+                app.sample_button.invoke()
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 14:
+                assert app.previews[0].result.code == "ready_to_process"
+                assert app.previews[0].result.cleaned.schema[0].name == "EquipmentId"
+                app.process_button.invoke()
+            elif phase == 15:
+                assert app.results[0].result.status == Status.SUCCESS
+                assert len(app.workflow.coordinator.store.history()) == 3
+                assert state["first_artifact"].is_file()
                 finish(True)
                 return
             state["phase"] += 1

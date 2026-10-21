@@ -96,3 +96,30 @@ See `january_rejection_investigation.md` for the unreproduced Windows symptoms,
 actual local January findings, and commands. On Windows prefer
 `python -m uv run --frozen --all-extras python .github/run_tests.py` over plain pytest
 to isolate each GUI case's Tcl interpreter; no tests are skipped or retried.
+
+## Normalized export follow-up
+
+`test_powerbi_exports.py` covers all 16 synthetic monthly count cases and stable
+contracts, dates/numbers, source-bound IDs, leading zeros, Unicode/quotes/newlines,
+missing/invalid/zero financial values, legacy-value preservation, source alignment,
+raw descriptions/status/tags, real duplicate transactions, malformed candidates,
+independent histories/correction confirmation, no-write preview and simulated flat
+folder combination. New real-widget cases select each report's Power BI candidate
+mode, preview/process with the real engine and switch safely back to legacy.
+The current local suite has 237 tests. All previous M0–M2/compatibility/diagnostic
+tests remain. No manually labeled classification accuracy test is claimed.
+
+The visible-window smoke now runs all three report types in normalized mode after
+its existing legacy/duplicate/correction/history checks. Windows PR CI builds and
+runs the actual executable; both OS jobs run isolated installed-wheel normalized
+repair/TMA commands. Remote results belong to the specific PR commit. Pandas-based
+synthetic folder tests check CSV structural combination, not execution of a real
+Power Query model or modification of an actual PBIX. No trusted production golden
+output, financial approval, classification engine or publisher is supplied.
+
+The normalized-export PR's later Linux run exited with a native process crash
+before a completed JUnit report (while its same-commit push run passed both OSes).
+Linux CI now also uses `--isolate-gui` under xvfb, the same fresh-interpreter runner
+already tested locally for all 237 cases and used by Windows. Each GUI case runs
+once; failures are preserved, with no retries or skips. This contains repeated Tk
+interpreter state in the test harness without changing application/cleaning rules.

@@ -1,3 +1,21 @@
+# Power BI CSV candidate exports — schema v1
+
+Adds an opt-in GUI/CLI export layer after the existing cleaners: header-first
+Repair History/Service Orders/TMA tables, ISO dates, numeric contracts, text IDs,
+ReportMonth, provenance and raw description/status/tag fields. It creates separate
+unapproved normalized candidate revisions; legacy mode/bytes remain available.
+Missing/invalid parts and related totals are blank in normalized business fields,
+while explicit Legacy columns retain the unchanged calculated values. No formula,
+date, exclusion, source script or financial meaning is silently changed.
+
+Original preambles are omitted only by the separate exporter. Unknown candidate
+schemas fail; extra raw fields outside the normalized contract produce a warning.
+Unicode is UTF-8; consumers must apply explicit encoding and identifier types.
+Repeated report totals remain metrics, never per-transaction numeric columns.
+Production publication is blocked and no approved-current folder is created.
+Maintenance matching/classification is a future design only. No Graph, Microsoft
+authentication, production SharePoint or Power BI modifications are included.
+
 # Multi-month compatibility follow-up
 
 Adds strict 14-column repair summary/count checks and financial-review warnings,

@@ -73,6 +73,7 @@ class EquipmentDataManager(ctk.CTk):
         self.close_pending = False
         self.dialog = None
         self.page = "Process Reports"
+        self.output_format = ctk.StringVar(value="Power BI CSV candidate" if self.workflow.output_format == "powerbi" else "Legacy candidate")
         self.report = ctk.StringVar(value=ReportType.REPAIRS.value)
         self.month = ctk.StringVar(value=MONTHS[date.today().month - 1])
         self.year = ctk.StringVar(value=str(date.today().year))
@@ -181,7 +182,8 @@ class EquipmentDataManager(ctk.CTk):
             "2. Select local raw CSV/XLSX files, or load a synthetic sample.\n"
             "3. Confirm the month: CompuClean samples use September; TMA uses January 2026.\n"
             "4. Preview Processing. Check filenames, type, month, counts and warnings.\n"
-            "5. If a correction is flagged, review it and explicitly approve the new revision.\n"
+            "5. Choose Legacy candidate or Power BI CSV candidate. Both are unapproved candidates.\n"
+            "If a correction is flagged, review it and explicitly confirm the new revision.\n"
             "6. Process Reports. Read the results and use Open output folder.\n\n"
             "Your original files and previous outputs stay unchanged. Identical reports are skipped.\n"
             "Select one version per report type and month. Different monthly files need separate runs.\n"
@@ -240,8 +242,16 @@ class EquipmentDataManager(ctk.CTk):
         self.year_entry.pack(side="left", padx=8)
         self.month_check = ctk.CTkCheckBox(settings, text="I confirmed this reporting month", variable=self.month_confirmed, fg_color=TEAL, text_color=TEXT, command=self._confirmation_changed)
         self.month_check.pack(side="left", padx=12)
+        formats = ctk.CTkFrame(self.controls, fg_color="transparent")
+        formats.grid(row=3, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
+        ctk.CTkLabel(formats, text="Output format", text_color=TEXT).pack(side="left", padx=(0, 12))
+        self.format_selector = ctk.CTkComboBox(formats, variable=self.output_format,
+            values=["Legacy candidate", "Power BI CSV candidate"], state="readonly", width=210,
+            command=self._output_format_changed)
+        self.format_selector.pack(side="left")
+        ctk.CTkLabel(formats, text="Candidates only | Production publication blocked", text_color="#754C0B").pack(side="left", padx=12)
         buttons = ctk.CTkFrame(self.controls, fg_color="transparent")
-        buttons.grid(row=3, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 16))
+        buttons.grid(row=4, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 16))
         self.preview_button = ctk.CTkButton(buttons, text="1  Preview Processing", command=self.start_preview, fg_color=NAVY, height=40, width=200)
         self.preview_button.pack(side="left")
         self.process_button = ctk.CTkButton(buttons, text="2  Process Reports", command=self.start_process, fg_color=TEAL, height=40, width=200, state="disabled")
@@ -295,12 +305,23 @@ class EquipmentDataManager(ctk.CTk):
         self.set_files([str(sample_path(kind))])
         self.status.set(f"Synthetic sample loaded | {month} 2026. Confirm the month, then preview. No departmental data is included.")
 
+    def _output_format_changed(self, *_):
+        if self.worker.busy:
+            return
+        kind = "powerbi" if self.output_format.get() == "Power BI CSV candidate" else "legacy"
+        self.workflow = DesktopWorkflow(self.workflow.base_output_root, source=self.workflow.source, output_format=kind)
+        self.results = ()
+        self._selection_changed()
+        self.folder_label.configure(text=f"Local output: {self.workflow.output_root}")
+        self.status.set("Output format changed. Confirm the month and preview again. Production publication is blocked.")
+
     def choose_output(self):
         if self.worker.busy:
             return
         folder = filedialog.askdirectory(parent=self, title="Choose local candidate output folder")
         if folder:
-            self.workflow = DesktopWorkflow(Path(folder))
+            kind = "powerbi" if self.output_format.get() == "Power BI CSV candidate" else "legacy"
+            self.workflow = DesktopWorkflow(Path(folder), output_format=kind)
             self.results = ()
             self._selection_changed()
             self.folder_label.configure(text=f"Local output: {self.workflow.output_root}")
@@ -357,6 +378,7 @@ class EquipmentDataManager(ctk.CTk):
                        self.year_entry, self.month_check, *self.report_buttons, *self.navigation.values()):
             widget.configure(state=state)
         self.month_selector.configure(state="disabled" if busy else "readonly")
+        self.format_selector.configure(state="disabled" if busy else "readonly")
         self.process_button.configure(state="normal" if not busy and self.can_process() else "disabled")
         self.review_button.configure(state="disabled")
         self.stop_button.configure(state="normal" if busy else "disabled")
@@ -481,7 +503,7 @@ class EquipmentDataManager(ctk.CTk):
         item = entries[index]
         entry = item if self.page == "Process Reports" else item.preview
         result = item.result
-        text = [f"{entry.source.name}  |  {entry.period}",
+        text = [f"{entry.source.name}  |  {entry.period}  |  {self.output_format.get()}",
                 f"Rows read: {result.input_rows if result.input_rows is not None else 'Not available'}  |  Rows out: {result.output_rows if result.output_rows is not None else 'Not available'}"]
         if result.status in (ProcessingStatus.FAILURE, ProcessingStatus.NEEDS_REVIEW):
             text.append(error_message(result.code))
