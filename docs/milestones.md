@@ -33,3 +33,16 @@ CompuClean counts and January–April TMA counts. This is not evidence for the
 unattached monthly files. The January repair financial discrepancy, trusted
 cleaned baselines, actual legacy XLS exports and managed-PC pilot remain open.
 See `format_compatibility.md` and `edge_case_validation.md`. Graph remains deferred.
+
+## Power BI candidate export and maintenance design follow-up
+
+Opt-in schema-v1 normalized candidates are available through GUI/CLI using the
+same validated cleaning adapters. Legacy mode remains available; normalized
+candidate history/corrections are independent. Source descriptions/status/tags
+and provenance are retained, missing financial values remain null with explicit
+legacy arithmetic for comparison. Schemas and a future approved-current/history
+publication workflow are documented. No production publisher is implemented.
+Maintenance matching/classification has a design and labeled-validation plan only,
+with no matching/classification code. Financial reconciliation, trusted output
+comparisons, schema approval, real Power Query pilot and human labeling remain
+open. Graph/authentication/SharePoint/Power BI production changes stay deferred.

@@ -58,3 +58,11 @@ maintainer action. This task does not upload anything there. If approved later,
 distribute the complete versioned ZIP, checksum, release notes and user guide;
 employees download/extract locally and run the executable, not SharePoint preview.
 The prototype remains offline and its production cleaning accuracy unverified.
+
+Normalized export follow-up: the packaged-window smoke also previews/processes
+Repair History, Service Orders and TMA Work Orders in Power BI CSV candidate mode,
+checks the header-first output and publication-blocked warning, and retains its
+legacy revision checks. No new dependency is needed for the exporter. Download
+only a successful build for this feature PR; earlier 0.2.0 artifacts do not gain
+new code when a separate Git checkout is updated. The feature still requires
+managed-PC testing and approval before employee distribution/publication.

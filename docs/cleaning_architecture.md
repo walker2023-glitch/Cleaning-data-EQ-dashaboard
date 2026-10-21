@@ -154,3 +154,25 @@ locally in the GUI or opt-in CLI trace, and never persisted in SQLite history.
 Failures still expose category-only exception strings and create no selected output.
 `process --preview` uses the existing read-only coordinator path. See
 `january_rejection_investigation.md` for scope, privacy and the pending reproduction.
+
+## Separate Power BI table exporter
+
+`processing/powerbi.py` wraps an existing adapter, verifies its exact candidate
+schema/count and uses CSV diagnostic source ordinals for supported raw-field
+preservation. It serializes the schema-v1 header-first tables independently of the
+original writers. It does not alter source filtering, dates or financial formulas.
+TMA uses the known legacy date representation; excluded TMA rows do not get guessed
+source ordinals. Optional raw metadata remains in private candidate artifacts.
+
+`powerbi_coordinator(base_root)` uses the same ProcessingCoordinator and immutable
+local store at base_root/powerbi_candidates with independent cleaner identities,
+skips and correction tokens. `DesktopWorkflow(output_format='powerbi')` and CLI
+`--output-format powerbi` call this factory; legacy remains the default. Original
+legacy adapters/outputs/history remain available. Normalized metrics are labeled
+Legacy where copied from the original candidate. Normalized missing financial
+values are explicitly null with original calculated numbers retained separately.
+
+There is no publisher or approved-current folder API. Every normalized candidate
+carries CandidateUnverified and a publication-blocked warning. See
+`powerbi_output_design.md` for schema/folder/approval design. Matching and maintenance
+classification remain documentation only in `maintenance_classification_design.md`.

@@ -49,6 +49,14 @@ count tests and the unresolved January repair financial discrepancy.
 See [January rejection diagnostics](docs/january_rejection_investigation.md) for
 Windows runtime checks, per-record date/exclusion traces and explicit TMA filters.
 
+The opt-in **Power BI CSV candidate** output format adds schema-v1 header-first
+exports with ISO dates, text IDs, ReportMonth and provenance. Legacy mode remains
+the default. See [output contracts/publication design](docs/powerbi_output_design.md),
+[future maintenance classification design](docs/maintenance_classification_design.md)
+and [VS Code preview steps](docs/development.md#power-bi-candidate-branch-in-vs-code).
+The classifier and production publisher are not implemented; publication remains
+blocked by financial and trusted-output validation gates.
+
 ## Development
 
 Use Python **3.12.14** and **uv 0.12.23**. pandas is the pinned engine dependency.

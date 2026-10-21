@@ -10,8 +10,8 @@ The original service cleaner removes trailing `- (PM)` and `- (Repair)` with
 case-insensitive regexes, and removes placeholder/`delete duplicate...` records.
 RawDescription must therefore survive separately before suffix stripping. A final
 PM/Repair token can be recorded without asserting its business meaning. The
-inspected January service sample has untagged descriptions; it cannot establish
-tag reliability. Synthetic suffix examples test preservation, not label accuracy.
+inspected January and February service samples have untagged descriptions; they
+cannot establish tag reliability. Synthetic suffix examples test preservation, not label accuracy.
 
 CompuClean repair/service inputs have equipment IDs and dates, descriptive text
 and locations; services lack a structured shared work-order ID. The inspected

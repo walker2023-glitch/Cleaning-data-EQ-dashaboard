@@ -106,3 +106,21 @@ settings in ignored configuration or approved environment settings:
 
 Actual tokens, passwords, client secrets, private exports, and personal data must
 never be supplied through chat or committed as fixtures/configuration.
+
+## Before normalized exports or classification can be published
+
+Review the proposed schema-v1 contracts in `powerbi_output_design.md`, especially
+null financial presentation versus explicit Legacy calculated fields, text IDs,
+raw descriptions/status/tags and source-bound row IDs. Supply trusted cleaned
+comparisons and approve Power Query types/decimal precision only after resolving
+the repair money-field/rate/default-hours questions. No current-approved publisher
+or ingestion-folder migration is enabled by producing these candidates.
+
+For the separate classifier milestone, supply authorized manually labeled match
+and class examples (including unmatched/conflicting/cross-month/PM-with-TMA cases),
+confirm whether PM/Repair suffixes actually occur and their reliability, define
+other-maintenance taxonomy and review ownership, and approve date windows and
+false-match/review-workload thresholds. TMA currently lacks structured shared
+equipment/location/event keys; identify any additional supported fields before
+proposing exact joins. See `maintenance_classification_design.md`. No employee
+identity/authentication is invented for the offline review design.

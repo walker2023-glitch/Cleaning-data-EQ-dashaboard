@@ -83,3 +83,19 @@ after interruption. No Power BI refresh or report modification occurs here.
 Approved raw/cleaned example pairs, baseline totals, Windows managed-PC testing,
 retention decisions and IT distribution approval remain required. SharePoint,
 Microsoft sign-in and production publishing are deferred.
+
+## Power BI CSV candidates
+
+The **Output format** selector offers Legacy candidate (the existing reports) and
+Power BI CSV candidate (one header, standardized columns and dates). Changing it
+requires another month confirmation and preview. Use Legacy mode to save a
+comparison/rollback CSV; the Power BI mode does not replace those artifacts.
+Both modes retain the original cleaning/exclusion rules and process only local
+supported reports. Power BI candidates have their own history under the base
+folder's powerbi_candidates directory.
+
+These exports are **unapproved candidates**. The financial discrepancy and trusted
+cleaned-output comparisons are unresolved, so the application does not publish
+approved monthly exports. Do not point a production Power BI query at either
+candidate/history directory. SourceMaintenanceTag is a preserved description tag,
+not an approved maintenance classification. No classifier is implemented.

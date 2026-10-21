@@ -73,7 +73,7 @@ class EquipmentDataManager(ctk.CTk):
         self.close_pending = False
         self.dialog = None
         self.page = "Process Reports"
-        self.output_format = ctk.StringVar(value="Legacy candidate")
+        self.output_format = ctk.StringVar(value="Power BI CSV candidate" if self.workflow.output_format == "powerbi" else "Legacy candidate")
         self.report = ctk.StringVar(value=ReportType.REPAIRS.value)
         self.month = ctk.StringVar(value=MONTHS[date.today().month - 1])
         self.year = ctk.StringVar(value=str(date.today().year))

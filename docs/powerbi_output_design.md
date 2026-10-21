@@ -61,7 +61,8 @@ LegacyEstimatedTotalCost. Other columns are text. Original `#`, vendor default,
 counts and hours/labor calculations remain available. PartsCost retains the
 **unverified original Textbox38 mapping**, with null for unavailable/malformed
 source money. EstimatedTotalCost is null in that case too; its legacy number is
-retained explicitly. LaborCost remains the original estimate, including original
+retained explicitly. Legacy fields are comparison copies, not additional charges.
+LaborCost remains the original estimate, including original
 hour defaults. RawTextbox16 is deliberately not labeled parts/labor: its business
 meaning is unconfirmed. Description/Details/AccountName are source text.
 
