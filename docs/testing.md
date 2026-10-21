@@ -76,3 +76,12 @@ local GUI sample generator. See `edge_case_validation.md` for the inventory and
 `format_compatibility.md` for precise supported formats. Matching source counts
 is not financial or production accuracy validation. CI outcomes are recorded on
 the PR; never infer Windows success from the local Linux run.
+
+Windows CI runs each real-widget case in a fresh Python process through
+`.github/run_tests.py`, avoiding Tcl interpreter reuse across destroyed test windows.
+The initial Windows PR attempts exposed intermittent init.tcl/tk.tcl loading
+errors while the same-commit push suite passed. This isolation runs every case
+once, preserves failures, and combines their JUnit reports; it does not retry or
+skip tests. Linux uses the normal single pytest run. To exercise the isolated
+runner locally (with a display on Linux), use
+`uv run --frozen --all-extras python .github/run_tests.py --isolate-gui`.
