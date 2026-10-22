@@ -7,6 +7,7 @@ from time import monotonic
 import pytest
 
 from equipment_data_manager.processing.models import ProcessingStatus as Status, ReportType
+from equipment_data_manager.ui.workflow import DesktopWorkflow
 from equipment_data_manager.ui.app import EquipmentDataManager
 
 
@@ -22,7 +23,7 @@ def pump(app, predicate, timeout=8):
 
 @pytest.fixture
 def app(tmp_path):
-    window = EquipmentDataManager(tmp_path / "outputs")
+    window = EquipmentDataManager(tmp_path / "outputs", workflow=DesktopWorkflow(tmp_path / "outputs"))
     window.update()
     yield window
     if window.worker.busy:
@@ -338,3 +339,66 @@ def test_powerbi_output_mode_uses_real_cleaner_and_separate_candidate_history(ap
     assert app.workflow.output_root == base_root
     assert not (base_root / 'manifest.sqlite3').exists()
     assert not app.previews and not app.approvals and app.process_button.cget('state') == 'disabled'
+
+
+def test_application_defaults_to_recommended_powerbi_candidates(tmp_path):
+    window = EquipmentDataManager(tmp_path / 'outputs')
+    try:
+        window.update()
+        assert window.workflow.output_format == 'powerbi'
+        assert window.output_format.get() == 'Power BI CSV candidate'
+        assert not window.workflow.output_root.exists()
+    finally:
+        window._close()
+
+
+def test_monthly_discovery_preview_process_export_and_missing_feedback(app, tmp_path, monkeypatch):
+    from equipment_data_manager.monthly import Workspace
+    from test_monthly_workflow import populate
+    workspace = Workspace(tmp_path / 'raw', tmp_path / 'candidate', tmp_path / 'approved')
+    populate(workspace)
+    config = tmp_path / 'workspace.toml'
+    config.write_text('raw_folder="raw"\ncandidate_folder="candidate"\napproved_folder="approved"\n')
+    monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilename', lambda **kwargs: str(config))
+    app.workspace_button.invoke()
+    assert app.workflow.output_format == 'powerbi'
+    app.month.set('January'); app.year.set('2026')
+    app.scan_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert len(app.sources) == 3 and len(app.monthly_selection.missing) == 0
+    assert 'Missing reports: none' in app.checklist.cget('text')
+    assert {app.table.item(str(i), 'values')[1] for i in range(3)} == {'Repair Reports', 'Service Orders List', 'TMA Work Orders'}
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert app.can_process() and len(app.previews) == 3
+    app.process_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert len(app.results) == 3 and all(e.result.status == Status.SUCCESS for e in app.results)
+    app.packet_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert 'Candidate review packet saved' in app.status.get()
+    assert not workspace.approved_folder.exists()
+    assert len(list((workspace.candidate_folder / 'review_packets').iterdir())) == 1
+    app.month.set('February'); app.month_confirmed.set(True)
+    app.start_preview()
+    assert 'Discover month again' in app.status.get()
+    app.scan_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert len(app.monthly_selection.missing) == 3
+    assert 'Repair Reports' in app.checklist.cget('text')
+    app.packet_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert 'all three current Power BI candidates' in app.status.get()
+    assert not workspace.approved_folder.exists()
+
+
+def test_monthly_configuration_and_discovery_errors_are_actionable(app, tmp_path, monkeypatch):
+    app.scan_button.invoke()
+    assert 'Load folder configuration first' in app.status.get()
+    config = tmp_path / 'invalid.toml'; config.write_text('private_setting="SYNTHETIC_PRIVATE"')
+    monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilename', lambda **kwargs: str(config))
+    app.workspace_button.invoke()
+    assert 'Invalid folder configuration' in app.status.get()
+    assert 'SYNTHETIC_PRIVATE' not in app.status.get()
+    assert app.workspace is None

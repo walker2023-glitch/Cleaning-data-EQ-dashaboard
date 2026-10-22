@@ -14,6 +14,7 @@ import customtkinter as ctk
 
 from equipment_data_manager.processing.cleaners import validate_period
 from equipment_data_manager.processing.models import ProcessingError, ProcessingStatus, ReportType
+from equipment_data_manager.monthly import discover, export_review_packet, load_workspace
 from equipment_data_manager.ui.messages import diagnostic_lines, error_message, result_label, warning_message
 from equipment_data_manager.ui.worker import BackgroundWorker
 from equipment_data_manager.ui.workflow import DesktopWorkflow, SUPPORTED_REPORTS, selected_files
@@ -62,8 +63,10 @@ class EquipmentDataManager(ctk.CTk):
         self.geometry("1280x920")
         self.minsize(1100, 800)
         self.configure(fg_color=BACKGROUND)
-        self.workflow = workflow or DesktopWorkflow(output_root or default_output_root())
+        self.workflow = workflow or DesktopWorkflow(output_root or default_output_root(), output_format="powerbi")
         self.worker = BackgroundWorker()
+        self.workspace = None
+        self.monthly_selection = None
         self.sources = ()
         self.previews = ()
         self.results = ()
@@ -80,7 +83,7 @@ class EquipmentDataManager(ctk.CTk):
         self.month_confirmed = ctk.BooleanVar(value=False)
         self.status = ctk.StringVar(value="Select a report type and local report files, or try a synthetic sample.")
         self._build()
-        self.report.trace_add("write", self._selection_changed)
+        self.report.trace_add("write", self._report_changed)
         self.month.trace_add("write", self._selection_changed)
         self.year.trace_add("write", self._selection_changed)
         self.protocol("WM_DELETE_WINDOW", self.request_close)
@@ -182,11 +185,12 @@ class EquipmentDataManager(ctk.CTk):
             "2. Select local raw CSV/XLSX files, or load a synthetic sample.\n"
             "3. Confirm the month: CompuClean samples use September; TMA uses January 2026.\n"
             "4. Preview Processing. Check filenames, type, month, counts and warnings.\n"
-            "5. Choose Legacy candidate or Power BI CSV candidate. Both are unapproved candidates.\n"
+            "5. Power BI CSV candidate is recommended; Legacy candidate remains available.\n"
             "If a correction is flagged, review it and explicitly confirm the new revision.\n"
             "6. Process Reports. Read the results and use Open output folder.\n\n"
             "Your original files and previous outputs stay unchanged. Identical reports are skipped.\n"
-            "Select one version per report type and month. Different monthly files need separate runs.\n"
+            "Folder workflow: load workspace TOML, Discover month, confirm, preview and process.\n"
+            "Export review packet requires all three current candidates. Nothing is approved automatically.\n"
             "Stop after current file finishes the active file, then stops the remaining files.\n\n"
             "Important limits\n\n"
             "Outputs are review candidates. Accuracy against departmental reports is unverified.\n"
@@ -246,16 +250,85 @@ class EquipmentDataManager(ctk.CTk):
         formats.grid(row=3, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
         ctk.CTkLabel(formats, text="Output format", text_color=TEXT).pack(side="left", padx=(0, 12))
         self.format_selector = ctk.CTkComboBox(formats, variable=self.output_format,
-            values=["Legacy candidate", "Power BI CSV candidate"], state="readonly", width=210,
+            values=["Power BI CSV candidate", "Legacy candidate"], state="readonly", width=210,
             command=self._output_format_changed)
         self.format_selector.pack(side="left")
-        ctk.CTkLabel(formats, text="Candidates only | Production publication blocked", text_color="#754C0B").pack(side="left", padx=12)
+        ctk.CTkLabel(formats, text="Power BI format recommended | Candidates require validation", text_color="#754C0B").pack(side="left", padx=12)
         buttons = ctk.CTkFrame(self.controls, fg_color="transparent")
         buttons.grid(row=4, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 16))
         self.preview_button = ctk.CTkButton(buttons, text="1  Preview Processing", command=self.start_preview, fg_color=NAVY, height=40, width=200)
         self.preview_button.pack(side="left")
         self.process_button = ctk.CTkButton(buttons, text="2  Process Reports", command=self.start_process, fg_color=TEAL, height=40, width=200, state="disabled")
         self.process_button.pack(side="left", padx=12)
+        self.packet_button = ctk.CTkButton(buttons, text="Export review packet", command=self.export_packet,
+            fg_color=NAVY, height=40, width=165)
+        self.packet_button.pack(side="left")
+        monthly = ctk.CTkFrame(self.controls, fg_color="transparent")
+        monthly.grid(row=5, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 8))
+        self.workspace_button = ctk.CTkButton(monthly, text="Load folder configuration", command=self.choose_workspace, fg_color=NAVY)
+        self.workspace_button.pack(side="left")
+        self.scan_button = ctk.CTkButton(monthly, text="Discover month", command=self.scan_month, fg_color=TEAL)
+        self.scan_button.pack(side="left", padx=10)
+        self.checklist = ctk.CTkLabel(self.controls, text="Monthly checklist: load a folder configuration to discover all three reports.",
+            text_color=MUTED, wraplength=850, anchor="w", justify="left")
+        self.checklist.grid(row=6, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
+
+    def _report_changed(self, *_):
+        if self.monthly_selection is not None:
+            self.sources = ()
+        self.monthly_selection = None
+        self._selection_changed()
+
+    def choose_workspace(self):
+        if self.worker.busy:
+            return
+        path = filedialog.askopenfilename(parent=self, title="Load local folder configuration", filetypes=[("TOML configuration", "*.toml")])
+        if path:
+            try:
+                workspace = load_workspace(Path(path))
+            except ProcessingError:
+                self.status.set("Invalid folder configuration. Supply three separate raw, candidate and approved folders; see the monthly workflow guide.")
+                return
+            self.workspace = workspace
+            self.monthly_selection = None
+            self.sources = ()
+            self.workflow = DesktopWorkflow(workspace.candidate_folder, output_format="powerbi")
+            self.output_format.set("Power BI CSV candidate")
+            self._selection_changed()
+            self.folder_label.configure(text=f"Local candidates: {self.workflow.output_root}")
+            self.checklist.configure(text="Folder configuration loaded. Select a month, then Discover month. Approved folder is reserved and never written.")
+            self.status.set("Configuration loaded. Synchronization has not been verified.")
+
+    def scan_month(self):
+        if self.worker.busy:
+            return
+        if self.workspace is None:
+            self.status.set("Load folder configuration first. See workspace.example.toml and docs/monthly_workflow.md.")
+            return
+        try:
+            period = self.period()
+        except ProcessingError:
+            self.status.set(error_message("invalid_reporting_period"))
+            return
+        workspace = self.workspace
+        self.previews = ()
+        self.approvals.clear()
+        self.month_confirmed.set(False)
+        self._start("discover", lambda progress, stop: discover(workspace, period))
+
+    def export_packet(self):
+        if self.worker.busy:
+            return
+        if self.workspace is None or self.workflow.output_format != "powerbi":
+            self.status.set("Load a folder configuration and use Power BI CSV candidate mode before exporting a review packet.")
+            return
+        try:
+            period = self.period()
+        except ProcessingError:
+            self.status.set(error_message("invalid_reporting_period"))
+            return
+        workspace, coordinator = self.workspace, self.workflow.coordinator
+        self._start("packet", lambda progress, stop: export_review_packet(workspace, coordinator, period))
 
     def period(self):
         if self.month.get() not in MONTHS:
@@ -281,6 +354,7 @@ class EquipmentDataManager(ctk.CTk):
     def set_files(self, paths):
         if self.worker.busy:
             return
+        self.monthly_selection = None
         self.sources = selected_files(paths)
         self._selection_changed()
         self.show_page("Process Reports")
@@ -321,6 +395,8 @@ class EquipmentDataManager(ctk.CTk):
         folder = filedialog.askdirectory(parent=self, title="Choose local candidate output folder")
         if folder:
             kind = "powerbi" if self.output_format.get() == "Power BI CSV candidate" else "legacy"
+            self.workspace = None
+            self.monthly_selection = None
             self.workflow = DesktopWorkflow(Path(folder), output_format=kind)
             self.results = ()
             self._selection_changed()
@@ -344,9 +420,16 @@ class EquipmentDataManager(ctk.CTk):
         except (ProcessingError, ValueError):
             self.status.set(error_message("invalid_reporting_period"))
             return
+        if self.monthly_selection and self.monthly_selection.period != period:
+            self.status.set("Reporting month changed. Discover month again before previewing.")
+            return
         sources = self.sources
         self.show_page("Process Reports")
-        self._start("preview", lambda progress, stop: self.workflow.preview(sources, kind, period, progress, stop))
+        if self.monthly_selection:
+            selection = self.monthly_selection
+            self._start("preview", lambda progress, stop: self.workflow.preview_month(selection, progress, stop))
+        else:
+            self._start("preview", lambda progress, stop: self.workflow.preview(sources, kind, period, progress, stop))
 
     def can_process(self):
         return bool(self.previews) and self.month_confirmed.get() and all(
@@ -375,6 +458,7 @@ class EquipmentDataManager(ctk.CTk):
     def _busy_controls(self, busy):
         state = "disabled" if busy else "normal"
         for widget in (self.select_button, self.sample_button, self.folder_button, self.preview_button,
+                       self.workspace_button, self.scan_button, self.packet_button,
                        self.year_entry, self.month_check, *self.report_buttons, *self.navigation.values()):
             widget.configure(state=state)
         self.month_selector.configure(state="disabled" if busy else "readonly")
@@ -397,7 +481,15 @@ class EquipmentDataManager(ctk.CTk):
                     if event.kind == "error":
                         self.previews = ()
                         self.process_button.configure(state="disabled")
-                        self.status.set(event.payload)
+                        self.status.set(event.payload + (" Check local folder availability; synchronization is unverified." if self.job in ("discover", "packet") else ""))
+                    elif self.job == "discover":
+                        self.monthly_selection = event.payload
+                        self.sources = tuple(source for _, source in self.monthly_selection.files)
+                        self.show_page("Process Reports")
+                        self.checklist.configure(text=self.monthly_selection.summary + " No outputs are approved for Power BI.")
+                        self.status.set("Discovery complete. Confirm the month, then preview all discovered reports. Sync is unverified.")
+                    elif self.job == "packet":
+                        self.status.set(f"Candidate review packet saved: {event.payload}. Not approved for production Power BI. Sync is unverified.")
                     elif self.job == "preview":
                         self.previews = event.payload
                         self.show_page("Process Reports")
@@ -457,8 +549,9 @@ class EquipmentDataManager(ctk.CTk):
             period = self.period()
         except ProcessingError:
             period = "Choose month"
+        kinds = dict((source, kind) for kind, source in self.monthly_selection.files) if self.monthly_selection else {}
         for index, source in enumerate(self.sources):
-            self.table.insert("", "end", iid=str(index), values=(source.name, SUPPORTED_REPORTS.get(self.report.get(), "Unsupported"), period, "Preview required", "-"))
+            self.table.insert("", "end", iid=str(index), values=(source.name, SUPPORTED_REPORTS.get(kinds.get(source, self.report.get()), "Unsupported"), period, "Preview required", "-"))
         self.summary.configure(text=f"Selected files  |  {len(self.sources)}")
         self._detail_text("Confirm the reporting month, then Preview Processing. No output is created during preview.")
 

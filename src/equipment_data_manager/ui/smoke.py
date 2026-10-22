@@ -19,7 +19,8 @@ def run_smoke(directory: Path | None) -> int:
     workspace = Path(mkdtemp(prefix="desktop-check-", dir=directory))
     source = workspace / "synthetic.csv"
     source.write_bytes(sample_path(ReportType.REPAIRS).read_bytes())
-    app = EquipmentDataManager(workspace / "candidates")
+    from equipment_data_manager.ui.workflow import DesktopWorkflow
+    app = EquipmentDataManager(workspace / "candidates", workflow=DesktopWorkflow(workspace / "candidates"))
     state = {"phase": 0, "started": monotonic(), "first_artifact": None, "status": "failed"}
     app.set_files([str(source)])
     app.month.set("September")

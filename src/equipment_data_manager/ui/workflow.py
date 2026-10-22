@@ -118,6 +118,17 @@ class DesktopWorkflow:
                        for entry in entries]
         return tuple(entries)
 
+    def preview_month(self, selection, progress, cancelled):
+        """Mixed report types, with the existing per-type conflict checks intact."""
+        entries = []
+        total = len(selection.files)
+        for kind in SUPPORTED_REPORTS:
+            sources = tuple(source for report, source in selection.files if report == kind)
+            offset = len(entries)
+            entries.extend(self.preview(sources, kind, selection.period,
+                lambda done, count, offset=offset: progress(offset + done, total), cancelled))
+        return tuple(entries)
+
     def process(self, entries: Sequence[PreviewEntry], approvals: Mapping[int, str],
                 progress: Callable[[int, int], None], cancelled: Event) -> tuple[RunEntry, ...]:
         results = []
