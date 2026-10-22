@@ -41,8 +41,9 @@ jobs:
           $checkDir = Join-Path $PWD "data/packaged-smoke"
           $process = Start-Process -FilePath "dist/EquipmentDataManager/EquipmentDataManager.exe" -ArgumentList @("--smoke-test", "--smoke-dir", $checkDir) -PassThru
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw "Desktop smoke timed out" }
-          if ($process.ExitCode -ne 0) { throw "Desktop smoke failed with exit code $($process.ExitCode)" }
+          if (-not (Test-Path "$checkDir/desktop-smoke.json")) { throw "Desktop smoke exited without a report; exit code $($process.ExitCode)" }
           $report = Get-Content "$checkDir/desktop-smoke.json" | ConvertFrom-Json
+          if ($process.ExitCode -ne 0) { throw "Desktop smoke failed: phase=$($report.phase), kind=$($report.failure_kind), exit=$($process.ExitCode)" }
           if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
       - if: runner.os == 'Windows' && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
@@ -52,3 +53,12 @@ jobs:
             dist/EquipmentDataManager_v0.2.0_win64.zip
             dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
             data/packaged-smoke/desktop-smoke.json
+
+      - if: always() && runner.os == 'Windows' && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke-diagnostics
+          if-no-files-found: ignore
+          path: |
+            data/packaged-smoke/desktop-smoke.json
+            data/packaged-smoke/restore-smoke.json

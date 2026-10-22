@@ -30,7 +30,7 @@ def run_smoke(directory: Path | None) -> int:
     def finish(passed):
         state["status"] = "passed" if passed else "failed"
         (directory / "desktop-smoke.json").write_text(json.dumps({
-            "status": state["status"], "phase": state["phase"],
+            "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
                        "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings"],
         }, indent=2), encoding="utf-8")
@@ -214,7 +214,8 @@ def run_smoke(directory: Path | None) -> int:
                 return
             state["phase"] += 1
             app.after(50, advance)
-        except Exception:
+        except Exception as exc:
+            state["failure_kind"]=type(exc).__name__
             finish(False)
 
     app.after(100, advance)
@@ -226,7 +227,7 @@ def run_smoke(directory: Path | None) -> int:
     import sys
     launch=[sys.executable] if getattr(sys,'frozen',False) else [sys.executable,'-m','equipment_data_manager.ui.app']
     try:
-        outcome={'passed':subprocess.run(launch+['--smoke-restore-settings',str(app.settings_store.path)],timeout=35).returncode==0}
+        outcome={'passed':subprocess.run(launch+['--smoke-restore-settings',str(app.settings_store.path),'--smoke-dir',str(directory)],timeout=35).returncode==0}
     except (OSError,subprocess.TimeoutExpired):
         outcome={'passed':False}
     if not outcome['passed']:
@@ -236,7 +237,7 @@ def run_smoke(directory: Path | None) -> int:
     return 0 if outcome['passed'] else 1
 
 
-def run_restore_smoke(settings_path):
+def run_restore_smoke(settings_path, report_directory=None):
     """Fresh-process source/executable restart; reads only synthetic settings."""
     from equipment_data_manager.ui.app import EquipmentDataManager
     restored=EquipmentDataManager(settings_path=settings_path)
@@ -248,6 +249,10 @@ def run_restore_smoke(settings_path):
         outcome['passed']=(not restored.settings_worker.busy and restored.workspace is not None
             and restored.page=='Process Reports' and not restored.guided.get()
             and restored.explanation_level.get()=='Detailed')
+        if report_directory is not None:
+            report=dict(passed=outcome['passed'],page=restored.page,workspace_configured=restored.workspace is not None,
+                guided=restored.guided.get(),detail=restored.explanation_level.get(),settings_busy=restored.settings_worker.busy)
+            (Path(report_directory)/'restore-smoke.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         restored._close()
     restored.after(100,check)
     restored.mainloop()

@@ -911,7 +911,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.smoke_restore_settings:
         from equipment_data_manager.ui.smoke import run_restore_smoke
-        return run_restore_smoke(args.smoke_restore_settings)
+        return run_restore_smoke(args.smoke_restore_settings,args.smoke_dir)
     if args.smoke_test:
         from equipment_data_manager.ui.smoke import run_smoke
         return run_smoke(args.smoke_dir)
