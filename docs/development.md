@@ -213,3 +213,50 @@ groups mixed-type previews through existing per-type conflict checks; the engine
 and original cleaners are untouched. `powerquery_contract.py` supplies offline
 reference validation; the M example is in powerquery/. See the integration guide
 for the explicit candidate-only sandbox procedure and remaining real-M pilot gate.
+
+## Settings and Guided Mode preview
+
+Close the app, open the Git repository in VS Code (not a downloaded prototype
+folder), and use PowerShell:
+
+```powershell
+git fetch origin
+git switch feature/settings-guided-mode
+python -m uv sync --frozen --all-extras
+python -m uv run --frozen --all-extras python .github/run_tests.py
+python -m uv run --frozen --extra desktop python -m equipment_data_manager.ui.app --settings-file data/ux-preview/settings.toml
+```
+
+Use a fresh .toml path under ignored data/ for a genuine first-run test without
+changing the normal profile settings. Use another filename for a second fresh
+setup; do not delete personal configuration/history. Browse to private local pilot
+folders (the existing synthetic monthly generator can populate raw folders).
+Save once, select a month and run the ordinary discovery/preview/process/packet
+workflow. Change Guided Mode/detail, wait for the preferences operation to finish,
+close and rerun the exact same command: folder choices and help preferences should
+restore, with no setup page if locations remain valid. Without --settings-file and
+--output-dir, the app uses its normal per-user preferences path. --output-dir is a
+developer isolated-session override; it intentionally does not auto-apply normal
+profile workspace settings. Injected workflows likewise remain isolated for tests.
+
+To test errors, select overlapping folders, a known sync candidate location or a
+missing location and decline creation. Existing config/data must remain intact.
+Use Reset to Defaults (with confirmation) to return this preview profile to setup.
+For corrupt-file recovery, use an invented malformed **test** TOML under data/,
+not a real user's configuration. The UI retains it until explicit valid Save/Reset.
+Advanced import accepts the prior workspace format; imported locations are a draft
+and require local-storage reconfirmation. The legacy session-only loader remains
+available under Advanced Settings for compatibility.
+
+Hover/focus a disabled Process button, press F1, compare Brief/Detailed, switch
+Guided Mode off and use manual Help. On Results inspect date/exclusion failures,
+financial warnings, duplicates and correction guidance. Changing help preferences
+must preserve preview entries and correction tokens. See guided_mode.md for adding
+registry content and settings_guide.md for storage/check limitations.
+
+Build on Windows with packaging/build.ps1. The actual executable smoke now saves
+visual form settings, changes guidance preferences, reads its bundled employee
+guide and starts a fresh executable process to verify persisted startup, in
+addition to the existing cleaning/monthly/correction/export checks. No real user
+profile config or departmental reports are used. Obtain the **new branch's** build
+artifact; switching Git branches does not update an earlier downloaded ZIP.

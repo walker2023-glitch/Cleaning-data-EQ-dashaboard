@@ -77,3 +77,15 @@ Windows build and this executable smoke at the PR head justify using that build
 for a review pilot. A previously downloaded ZIP is not updated by switching Git
 branches. Supply a private local workspace TOML separately; never bundle tenant
 configuration or raw/cleaned departmental reports into the application ZIP.
+
+## Visual settings and Guided Mode build
+
+The packaged app includes an offline Employee guide resource. START_HERE.md and
+supplementary settings/monthly/guidance documents with synthetic UI screenshots
+are included in the ZIP. No local preferences or departmental paths/data are
+bundled. Normal first launch opens Settings and later restores profile preferences.
+The packaged smoke now also saves settings/preferences, opens F1/Employee guide,
+and starts a fresh executable instance using the same synthetic local preferences.
+Use the successful settings-guided-mode PR artifact, not an older v0.2.0 ZIP.
+The versioned prototype artifact name stays v0.2.0; identify a review build by its
+PR head/checksum. This is not authorization for general employee distribution.

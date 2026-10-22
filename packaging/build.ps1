@@ -9,6 +9,8 @@ try {
     uv run --frozen --all-extras pyinstaller --noconfirm packaging/EquipmentDataManager.spec
     if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
     Copy-Item docs/user_guide.md dist/EquipmentDataManager/START_HERE.md
+    Copy-Item docs/settings_guide.md,docs/monthly_workflow.md,docs/guided_mode.md,docs/validation_checklist.md dist/EquipmentDataManager/
+    Copy-Item docs/images dist/EquipmentDataManager/images -Recurse -Force
     Compress-Archive -Path dist/EquipmentDataManager -DestinationPath dist/EquipmentDataManager_v0.2.0_win64.zip -Force
     Get-FileHash dist/EquipmentDataManager_v0.2.0_win64.zip -Algorithm SHA256 |
         Format-List | Out-File dist/EquipmentDataManager_v0.2.0_win64.sha256.txt

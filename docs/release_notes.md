@@ -96,3 +96,18 @@ acceptance remains open until approved raw/expected pairs and baselines arrive.
   M runtime evaluation, authenticated publication and live Microsoft remain deferred.
 - Original cleaning calculations, exclusions and production Power BI/SharePoint
   are unchanged. The January repair-cost discrepancy remains a production blocker.
+
+## Settings and Guided Mode follow-up
+
+Visual Settings replaces mandatory manual TOML editing. Added first-run setup,
+Browse/recommended local storage, validation/confirmed creation, atomic private
+preferences, automatic restore, confirmed reset and advanced import/sanitized
+export. Known sync/network candidate stores are blocked; custom locations still
+need trusted local/IT confirmation. Existing reports/history are never migrated.
+Guided Mode defaults to Detailed and remembers Brief/off choices. Hover/focus,
+F1/topic help and a bundled Employee guide explain sources, workflow states,
+disabled actions, errors, corrections and financial/production limits. Short/scaled
+displays use adaptive sizes/scrolling; a managed-PC accessibility pilot remains.
+Cleaning/calculations/exclusions/schemas, revision safeguards and packet contracts
+are unchanged. No Graph/auth, production publishing, Power BI or sync-completion
+claim is added. The repair-cost discrepancy remains unresolved.

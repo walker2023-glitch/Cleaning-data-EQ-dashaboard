@@ -165,3 +165,40 @@ configuration/discovery, three-type preview/process, review-packet export and
 untouched approved root). Wheel/sdist build and offline-config checks also passed.
 Windows/Linux hosted results are recorded on the PR for its exact head; do not
 infer Windows success from this Linux result.
+
+## Settings and Guided Mode regression scope
+
+New backend tests cover no-write first-run defaults, existing/missing/invalid/
+overlapping paths, access/probe/create failures, explicit creation policy,
+known-sync/UNC/non-fixed-drive rejection, required local confirmation, atomic
+replacement failure, strict/corrupt settings recovery, legacy relative-path import,
+reset data preservation and sanitized templates. The Windows drive rejection is
+also simulated portably without admin privileges. No test needs real sync/auth.
+
+Real-widget tests cover Browse/save/confirmed creation, settings and Brief/Guided
+preferences restored in another window, invalid/corrupt/unavailable configuration,
+reset confirmation, draft import, template sanitization, known sync rejection,
+failed saves retaining active workspace, original candidate byte equality with
+Guided Mode off, disabled hover/focus/F1, keyboard activation, bounded tooltip
+placement, missing/error context, and responsive slow folder checks. Registry tests
+check required source/business caveats, both detail levels, scaled-window sizing
+and exact bundled-guide freshness. Every previous test is retained.
+
+The first sizing implementation exposed a distinction between CTk window and
+widget scaling APIs. The edge-placement test caught it; the tooltip now uses the
+framework scaling tracker with a bounded styled Tk popup, not short-lived CTk
+windows with delayed titlebar callbacks. Tests were corrected through code changes,
+not omissions/retries. Fresh-process isolated test collection remains unchanged.
+
+Run the full existing isolated runner on Windows; add --isolate-gui with a display
+on Linux. The extended actual-window smoke through phase 24 covers visual save,
+Brief/Detailed/off settings, F1, bundled employee guide and persisted startup in a
+fresh **process** (source Python or the packaged exe). This avoids pretending that
+reusing Tk's global trackers is an operating-system app restart. Windows PR CI must
+build and run the actual executable before a review build is considered tested.
+Automated checks do not replace employee usability/accessibility/scaling or trusted
+financial/data validation. Hosted outcomes belong to their exact PR head.
+
+Local post-fix result: **321 passed, 0 skipped**, plus the phase-24 actual-window
+smoke and fresh-process settings restore. Hosted Windows/Linux tests and Windows
+executable build/smoke must be assessed separately on this PR's exact head.

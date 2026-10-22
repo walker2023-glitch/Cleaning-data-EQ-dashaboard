@@ -82,3 +82,37 @@ single-window process policy prevents automatic worker-thread Tcl finalization;
 it does not modify pandas or cleaning behavior. A regression check verifies worker
 GC state/main-thread collection and restoration. Fresh-process test isolation is
 retained, with no failure retries or skipped cases.
+
+## Visual settings and offline guidance
+
+| File | New responsibility |
+|---|---|
+| settings.py | Versioned strict user preferences, legacy import parsing, atomic local saves, folder checks and conservative candidate-storage policy |
+| ui/settings_page.py | Scrollable visual form, native Browse callbacks, readonly paths, validation indicators and pinned Save/Check/Reset actions |
+| ui/preferences.py | SettingsMixin event orchestration: separate serial worker, first-run/startup validation, confirmed creation, apply/reset/import/template and coalesced help-preference writes |
+| ui/help_content.py | Structured centralized brief/detailed/dashboard/affected-files/next-step/warning/guide registry |
+| ui/guidance.py | Main-thread hover/focus timers, disabled-control bindings, bounded styled Tk popup and F1 alternative |
+| ui/app.py | New Settings/navigation/global guide controls, state-aware help, adaptive compact layout and bindings to unchanged monthly workflow |
+| resources/guides/user_guide.md | Exact offline copy of maintained employee instructions |
+| ui/smoke.py | Actual-window settings/help exercises and a fresh-process persisted-startup check |
+| packaging/EquipmentDataManager.spec, packaging/build.ps1 | Include offline guide resource and employee-facing supplementary guides in Windows distribution |
+| tests/test_user_settings.py, tests/test_guided_help.py, tests/test_desktop_widgets.py | Settings safety, help contracts and real-window integration regressions |
+
+Processing and settings have independent workers/queues. Workers never call Tk;
+filesystem validation/creation and atomic preference writes run off the GUI thread.
+Folder changes apply only after valid Save, clearing source/previews/correction
+acknowledgements. Help-only preference writes preserve saved folder choices and
+processing state; rapid changes coalesce into the latest serial write. While a
+folder operation blocks settings changes, the global help toggle/manual Help
+remain available. Closing waits for active work through deferred completion.
+
+Normal startup loads/checks profile settings; explicit output-root/injected callers
+preserve isolated M2 test/developer behavior. A --settings-file override exercises
+full startup in a separate test profile. Corrupt configuration remains untouched
+by automatic help-preference writes until explicit Save/Reset. Imported settings
+are a draft and require local-storage reconfirmation. The old session-only loader
+is retained in Advanced Settings and still checks candidate storage policy.
+
+Settings persistence is a separate versioned file, not an engine manifest migration.
+No cleaning adapter/calculation/schema, SQLite revision/correction logic or monthly
+packet content contract is changed. No Microsoft or production publisher is added.

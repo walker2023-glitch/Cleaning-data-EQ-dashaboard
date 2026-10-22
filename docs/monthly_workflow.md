@@ -7,11 +7,17 @@ compatibility. Cleaning calculations, date rules and exclusions are unchanged.
 
 ## Configure once
 
-Copy `workspace.example.toml` to ignored `workspace.local.toml`, then edit its
-three paths. Relative paths resolve beside the TOML file; absolute paths also
-work. Do not commit departmental paths. Raw, candidate and reserved approved
-folders must be separate, with no nesting/overlap, including resolved links.
-The separate M0 `config.example.toml` remains offline-only and unchanged.
+Open **Settings** (automatic on a normal first run). Select Raw Data, Candidate
+Output and the reserved Approved Output using Browse; the candidate field also
+offers **Use recommended local folder**. Confirm local candidate storage, Check
+Locations and Save Settings. Choices restore on subsequent launches; no TOML
+editing is required. See [Settings and recovery](settings_guide.md).
+
+Raw, candidate and reserved approved folders must be separate, with no parent/
+child overlap, including resolved links. The reserved approved folder can be
+created empty only after explicit confirmation; no report is published there.
+Advanced import supports the prior workspace TOML as a draft. Keep actual paths
+private. The separate M0 Microsoft config remains inert/offline-only.
 
 Arrange locally available inputs like this (filenames are unrestricted):
 
@@ -25,7 +31,7 @@ raw_folder/
 candidate_folder/        trusted LOCAL disk, single operator
   powerbi_candidates/   SQLite + immutable candidate versions
   review_packets/       immutable, explicitly exported candidate snapshots
-approved_folder/        reserved; NOT created or written by this application
+approved_folder/        reserved; no report outputs are written here
 ```
 
 Only direct CSV/XLSX files in the selected month/type folders are discovered.
@@ -39,8 +45,8 @@ policy. Do not invent blank reports to satisfy that gate.
 
 ## Employee monthly procedure
 
-1. Open the application. Click **Load folder configuration**, select your local
-   TOML file, then select the reporting month/year.
+1. Open the application. Saved valid settings restore automatically. If setup is
+   needed, use Settings and Save Settings first. Select the reporting month/year.
 2. Click **Discover month**. Read the missing-report checklist and availability
    messages. Get the correct raw exports for missing types. Discovery does not
    download files or verify synchronization.
