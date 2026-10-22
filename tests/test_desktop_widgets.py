@@ -713,3 +713,13 @@ def test_guided_toggle_does_not_replace_unreadable_configuration(tmp_path):
         assert 'this session' in app.settings_page.message.cget('text')
     finally:
         wait_settings(app);app._close()
+
+
+def test_tooltip_stays_visible_when_anchor_is_outside_screen(app,monkeypatch):
+    # Windows CI exposed an anchor whose initial window extended past a short
+    # display. The popup must clamp independently of the anchor's placement.
+    monkeypatch.setattr(app.output_button,'winfo_rooty',lambda:app.winfo_screenheight()+40)
+    app.guidance.schedule(app.output_button,'output');app.guidance.show();app.update()
+    popup=app.guidance.popup
+    assert popup.winfo_rooty()>=0
+    assert popup.winfo_rooty()+popup.winfo_height()<=app.winfo_screenheight()

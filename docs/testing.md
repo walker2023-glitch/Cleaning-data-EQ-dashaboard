@@ -202,3 +202,11 @@ financial/data validation. Hosted outcomes belong to their exact PR head.
 Local post-fix result: **321 passed, 0 skipped**, plus the phase-24 actual-window
 smoke and fresh-process settings restore. Hosted Windows/Linux tests and Windows
 executable build/smoke must be assessed separately on this PR's exact head.
+
+The initial Windows runs caught a second placement issue on their 768-pixel-high
+display: the source window's default position could put an anchor below the screen,
+so placing a tooltip above it was still too low. The app now positions its initial
+window within the primary display and clamps the popup independently of anchor
+position. An additional real-widget regression simulates an offscreen anchor;
+the original edge assertion is retained unchanged. Post-fix results supersede the
+initial Windows failures; no case is skipped or retried by the runner.

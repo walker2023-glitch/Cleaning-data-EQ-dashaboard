@@ -99,6 +99,8 @@ class Guidance:
         y = self.anchor.winfo_rooty() + self.anchor.winfo_height() + 8
         if y + height > screen_h - 8:
             y = max(8, self.anchor.winfo_rooty() - height - 8)
+        # An anchor can itself be partly outside the display/work area.
+        y=min(max(8,y),max(8,screen_h-height-8))
         tk.Toplevel.geometry(popup,f'+{x}+{y}')
         popup.deiconify()
         popup.lift()

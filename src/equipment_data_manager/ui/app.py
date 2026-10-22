@@ -74,7 +74,10 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.title("Equipment Data Manager")
         width,height=window_size(self.winfo_screenwidth(),self.winfo_screenheight(),self._get_window_scaling())
         self.compact_layout=height<800
-        self.geometry(f'{width}x{height}')
+        scale=self._get_window_scaling()
+        left=max(0,int((self.winfo_screenwidth()-width*scale)/2))
+        top=max(0,int((self.winfo_screenheight()-height*scale)/2)-16)
+        self.geometry(f'{width}x{height}+{left}+{top}')
         self.minsize(min(1100,width),min(800,height))
         self.configure(fg_color=BACKGROUND)
         self.workflow = workflow or DesktopWorkflow(output_root or default_output_root(), output_format="powerbi")
