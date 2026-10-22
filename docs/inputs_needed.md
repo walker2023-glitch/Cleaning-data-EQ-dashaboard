@@ -124,3 +124,20 @@ false-match/review-workload thresholds. TMA currently lacks structured shared
 equipment/location/event keys; identify any additional supported fields before
 proposing exact joins. See `maintenance_classification_design.md`. No employee
 identity/authentication is invented for the offline review design.
+
+## Monthly departmental workflow decisions
+
+- Confirm whether all three reports are required every month and how a genuine
+  zero-activity month is evidenced; current packet export requires all three
+  nonempty supported candidates. Do not supply fabricated blank reports.
+- Choose private local raw/candidate roots and a reserved approved destination,
+  local/synced availability policy, single operator, backup/retention/support owner.
+  Keep SQLite local; no OneDrive synchronization verification is implemented.
+- Name business/finance/model reviewers for `validation_checklist.md`; supply
+  trusted cleaned pairs and comparable counts/hours/parts/labor/estimated totals.
+  Resolve repair Textbox38/Textbox16/default/rate semantics before production use.
+- Approve a separate Power Query review PBIX pilot and precision/null policy;
+  the M example/offline contract tests do not authorize production migration.
+- For connected work, provide IT's decisions in `sharepoint_integration_plan.md`
+  plus separate authorization for registration/test-site auth and operations.
+  Do not send secrets, tokens or production access to unblock a local prototype.

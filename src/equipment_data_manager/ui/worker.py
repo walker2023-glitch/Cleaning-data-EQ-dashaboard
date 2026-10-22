@@ -6,6 +6,9 @@ from queue import Queue
 from threading import Event
 from typing import Any, Callable
 
+from equipment_data_manager.processing.models import ProcessingError
+from equipment_data_manager.ui.messages import error_message
+
 
 @dataclass(frozen=True, repr=False)
 class JobEvent:
@@ -33,6 +36,8 @@ class BackgroundWorker:
                     self.cancelled,
                 )
                 self.events.put(JobEvent("done", result))
+            except ProcessingError as exc:
+                self.events.put(JobEvent("error", error_message(str(exc))))
             except Exception:
                 # A raw exception may expose source values. The view gets a safe category.
                 self.events.put(JobEvent("error", "The operation could not finish. Preview again before processing."))
@@ -44,6 +49,6 @@ class BackgroundWorker:
         """Stop between files; never interrupt an active M1 commit."""
         self.cancelled.set()
 
-    def close(self):
+    def close(self, *, wait=False):
         self.stop()
-        self.executor.shutdown(wait=False)
+        self.executor.shutdown(wait=wait)

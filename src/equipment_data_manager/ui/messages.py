@@ -3,6 +3,12 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    "review_packet_missing_reports": "A complete review packet requires all three current Power BI candidates for this month. Process the missing reports first.",
+    "review_packet_requires_powerbi_workspace": "Load the matching folder configuration and use Power BI CSV candidate mode before exporting.",
+    "review_packet_contract_mismatch": "A selected candidate failed the packet schema/count/month checks. Keep the store intact and contact your maintainer.",
+    "folder_ingestion_contract_rejected": "The candidate failed the folder-ingestion schema/type/status checks. No review packet was exported.",
+    "unsafe_review_packet_folder": "The review packet folder redirects outside the candidate workspace. Choose a trusted local folder.",
+    "workspace_folders_overlap": "Raw, candidate and approved folders must be separate and must not contain each other.",
     "input_not_a_file": "This file is missing or is not a regular file. Select it again.",
     "unsupported_file_format": "Select CSV for CompuClean or the supported XLSX layout for TMA Work Orders.",
     "empty_input": "This report is empty. Select a report containing records.",

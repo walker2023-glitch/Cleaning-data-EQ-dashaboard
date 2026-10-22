@@ -1,7 +1,7 @@
 # Power BI candidate export design — schema v1
 
-This milestone adds an opt-in **Power BI CSV candidate** mode after the existing
-cleaner validates a supported input. Legacy mode remains the default and keeps its
+The desktop now recommends/defaults to **Power BI CSV candidate** after the existing
+cleaner validates a supported input. Legacy mode stays available and keeps its
 original bytes, writers, manifest and revisions. The new layer does not authorize
 publication, change Power BI, or close the financial/trusted-output gates.
 
@@ -161,3 +161,14 @@ versus decimal-number types. CSV cannot force Excel to preserve text identifiers
 Tests simulate folder combination with invented files only; they do not modify a
 PBIX or create a production approved-current folder. Current candidates are format
 ready, **not production approved**.
+
+
+## Monthly workflow additions
+
+The reserved approved snapshot/pointer remains unimplemented. Monthly review
+packets now copy only the three manifest-selected current normalized artifacts to
+an exclusive immutable local folder with a candidate manifest. They are not approved
+snapshots or a production ingestion root. See `monthly_workflow.md`.
+The full M example and offline reference tests are described in
+`powerquery_integration.md`; real Power BI evaluation and business/schema approval
+remain required. CLI/API defaults remain legacy for compatibility.

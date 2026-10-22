@@ -1,0 +1,8 @@
+# Copy to an ignored local TOML file. Paths are relative to that file, or absolute.
+# These three folders must be separate, with no parent/child overlap.
+# Raw can be a locally available synced folder. SQLite candidate state should be
+# on a trusted local disk, single operator; it is NOT a shared OneDrive database.
+raw_folder = "data/monthly-raw"
+candidate_folder = "data/monthly-candidates"
+approved_folder = "data/approved-current"
+# Approved is reserved only. This application never creates/writes that folder.

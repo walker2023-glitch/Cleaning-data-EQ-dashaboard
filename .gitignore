@@ -40,3 +40,6 @@ htmlcov/
 # Editor files
 .vscode/
 .idea/
+
+# Department-local folder configuration
+workspace.local.toml

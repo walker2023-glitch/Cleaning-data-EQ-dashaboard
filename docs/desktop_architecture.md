@@ -58,3 +58,27 @@ a manual accessibility/usability pilot or a managed-PC test without Python.
 
 No local web server, Microsoft SDK, token cache, SharePoint path or Power BI change
 is part of this milestone. See `windows_packaging.md` and `user_guide.md` for handoff.
+
+## Departmental local workflow follow-up
+
+The default desktop format is now normalized Power BI CSV candidate; injected
+DesktopWorkflow callers and CLI retain legacy defaults. Folder configuration and
+month discovery add a mixed-type selection mode; the visible checklist identifies
+missing types. The worker handles discovery, mixed preview/process and explicit
+review-packet export. Existing per-entry correction UI/tokens are reused; no
+cleaning rule is implemented in the new event handlers. Changing report cards
+leaves mixed mode, and changing month requires rescanning before mixed preview.
+Single-file picker/history flows remain available. Choosing another output root
+leaves workspace mode; loading a workspace always selects its normalized store.
+Packets and outputs remain explicitly unapproved, and sync is never claimed.
+
+A local full-suite correction test exposed a native CPython/Tk crash: automatic
+cyclic GC invoked a Tk font finalizer on the pandas worker thread. The app now
+disables automatic cyclic GC during the GUI lifetime and performs periodic cyclic
+collection on the Tk/main thread (including while the worker is active). Normal
+reference counting still operates. Closing joins the finished worker, collects
+remaining cycles on the main thread and restores the prior GC setting. This
+single-window process policy prevents automatic worker-thread Tcl finalization;
+it does not modify pandas or cleaning behavior. A regression check verifies worker
+GC state/main-thread collection and restoration. Fresh-process test isolation is
+retained, with no failure retries or skipped cases.
