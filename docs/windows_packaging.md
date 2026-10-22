@@ -66,3 +66,14 @@ legacy revision checks. No new dependency is needed for the exporter. Download
 only a successful build for this feature PR; earlier 0.2.0 artifacts do not gain
 new code when a separate Git checkout is updated. The feature still requires
 managed-PC testing and approval before employee distribution/publication.
+
+## Monthly workflow build follow-up
+
+The same build script packages the new local monthly modules; no Graph/auth SDK
+or secret is added. The executable smoke now also loads a synthetic workspace,
+discovers all three January report types, previews/processes them together, exports
+a candidate packet and verifies the approved folder is untouched. Only a successful
+Windows build and this executable smoke at the PR head justify using that build
+for a review pilot. A previously downloaded ZIP is not updated by switching Git
+branches. Supply a private local workspace TOML separately; never bundle tenant
+configuration or raw/cleaned departmental reports into the application ZIP.

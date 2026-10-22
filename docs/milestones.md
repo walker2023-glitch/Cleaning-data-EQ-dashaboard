@@ -12,7 +12,7 @@ requires separate approval; it is not implied by the milestone name below.
 | Deferred identity/Graph | Interfaces and disabled Graph stub only | Separate approval, IT registration, test locations, authentication/cache, permissions, Graph operations and shared concurrency controls |
 | M3 connected employee workflow | Local prototype is available | Approved Microsoft connection, connected views and broader employee usability validation |
 | M4 pilot/release | Python wheel/sdist and CI configuration | Verified historical/new report comparisons, Windows executable, managed-PC pilot, recovery/signing |
-| M5 Power BI ingestion | No PBIX changes | Separate approval, backup-model query migration and reconciliation |
+| M5 Power BI ingestion | Candidate M example/offline contract checks; no PBIX changes | Separate approval, backup-model query migration and reconciliation |
 
 M1 meets the **synthetic foundation** objective: a tested interface and safe local
 workflow are ready for approved real-world fixture validation. It does not close
@@ -36,7 +36,7 @@ See `format_compatibility.md` and `edge_case_validation.md`. Graph remains defer
 
 ## Power BI candidate export and maintenance design follow-up
 
-Opt-in schema-v1 normalized candidates are available through GUI/CLI using the
+Schema-v1 normalized candidates are available through GUI/CLI using the
 same validated cleaning adapters. Legacy mode remains available; normalized
 candidate history/corrections are independent. Source descriptions/status/tags
 and provenance are retained, missing financial values remain null with explicit
@@ -46,3 +46,19 @@ Maintenance matching/classification has a design and labeled-validation plan onl
 with no matching/classification code. Financial reconciliation, trusted output
 comparisons, schema approval, real Power Query pilot and human labeling remain
 open. Graph/authentication/SharePoint/Power BI production changes stay deferred.
+
+## Departmental monthly workflow follow-up
+
+Implemented: configurable separate local raw/candidate/reserved-approved roots,
+nonrecursive month/type discovery, missing-report checklist, grouped real-engine
+preview/process, recommended/default desktop Power BI candidate mode and explicit
+immutable complete-month review packets from verified current manifest selections.
+The approved root is never created/written. Added offline folder-contract tests
+and a syntax-checked M query example, employee SOP, business-validation checklist,
+reviewed branch/PR roadmap and delegated Graph integration requirements.
+
+Still blocked: repair financial meanings/totals, trusted outputs for all types,
+zero-activity completeness policy, actual M evaluation/model regression, approved
+publisher/audited business approvals, sync verification, IT/MSAL/Graph permissions,
+shared concurrency and managed-PC release. See `roadmap.md` for next gates. Existing
+cleaning calculations and production Power BI/SharePoint are unchanged.

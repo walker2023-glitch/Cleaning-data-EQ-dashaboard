@@ -41,7 +41,8 @@ and candidate totals; it does not authorize changing calculations or using the o
 
 Select one version per report type/month. If different files are proposed for the
 same month, the application asks you to select one. Identical content is safely
-skipped even if renamed. Use separate runs for different months or report types.
+skipped even if renamed. Use separate runs for different months. Individual file selection handles one type;
+folder discovery can preview/process all three types together.
 Changing the selection, month, type or output folder requires another preview.
 
 Use **Choose output folder** to choose an approved local folder if the default
@@ -86,8 +87,9 @@ Microsoft sign-in and production publishing are deferred.
 
 ## Power BI CSV candidates
 
-The **Output format** selector offers Legacy candidate (the existing reports) and
-Power BI CSV candidate (one header, standardized columns and dates). Changing it
+The **Output format** selector defaults to the recommended Power BI CSV candidate
+(one header, standardized columns and dates). Legacy candidate remains available
+for compatibility and comparison. Changing it
 requires another month confirmation and preview. Use Legacy mode to save a
 comparison/rollback CSV; the Power BI mode does not replace those artifacts.
 Both modes retain the original cleaning/exclusion rules and process only local
@@ -99,3 +101,21 @@ cleaned-output comparisons are unresolved, so the application does not publish
 approved monthly exports. Do not point a production Power BI query at either
 candidate/history directory. SourceMaintenanceTag is a preserved description tag,
 not an approved maintenance classification. No classifier is implemented.
+
+## Monthly folder checklist and review packets
+
+Ask the maintainer for an authorized local workspace TOML with separate raw,
+candidate and reserved approved folders. Click **Load folder configuration**, select
+the month, then **Discover month**. Read the missing-report checklist, confirm the
+month and preview all discovered files. Resolve errors and review corrections,
+then process and check every result. Click **Export review packet** only after the
+intended current candidates for all three types have been saved. It exports current
+manifest selections, so a failed newer attempt does not replace the last success.
+
+Each new packet contains three report folders and packet.json with hashes/counts/
+warnings. It is unapproved and does not belong in production Power BI. Exporting
+never writes the reserved approved folder. Files in nested history folders are
+not discovered. Synchronization is unverified: unreadable or cloud-only files need
+local availability checks through the approved sync client/IT procedure. Keep
+candidate history on a local disk, single operator. Full steps and recovery limits:
+[monthly workflow](monthly_workflow.md). Approval checks: [validation checklist](validation_checklist.md).

@@ -49,13 +49,27 @@ count tests and the unresolved January repair financial discrepancy.
 See [January rejection diagnostics](docs/january_rejection_investigation.md) for
 Windows runtime checks, per-record date/exclusion traces and explicit TMA filters.
 
-The opt-in **Power BI CSV candidate** output format adds schema-v1 header-first
+The recommended/default desktop **Power BI CSV candidate** output format adds schema-v1 header-first
 exports with ISO dates, text IDs, ReportMonth and provenance. Legacy mode remains
-the default. See [output contracts/publication design](docs/powerbi_output_design.md),
+available for compatibility. See [output contracts/publication design](docs/powerbi_output_design.md),
 [future maintenance classification design](docs/maintenance_classification_design.md)
 and [VS Code preview steps](docs/development.md#power-bi-candidate-branch-in-vs-code).
 The classifier and production publisher are not implemented; publication remains
 blocked by financial and trusted-output validation gates.
+
+## Monthly departmental workflow
+
+Load `workspace.local.toml` using **Load folder configuration**, select a month,
+then **Discover month**, confirm, preview and process. The checklist identifies
+missing report types. **Export review packet** copies one current normalized
+candidate per type into a new immutable review folder, with hashes and warnings;
+it never writes the reserved approved location. Original inputs remain unchanged.
+
+See the [monthly SOP](docs/monthly_workflow.md), [status and roadmap](docs/roadmap.md),
+[validation checklist](docs/validation_checklist.md),
+[Power Query example and offline checks](docs/powerquery_integration.md), and
+[delegated Graph requirements](docs/sharepoint_integration_plan.md).
+Synchronization, business approval and production publication are not implemented.
 
 ## Development
 
@@ -71,11 +85,11 @@ python -m pip install uv==0.12.23
 uv sync --frozen --all-extras
 uv run --frozen --all-extras python -m equipment_data_manager
 uv run --frozen --all-extras python -m equipment_data_manager --check-config config.example.toml
-uv run --frozen --all-extras pytest
+uv run --frozen --all-extras python .github/run_tests.py
 ```
 
 Tests include real windows and need a desktop display. On a headless Linux runner,
-use `xvfb-run -a uv run --frozen --all-extras pytest`. Windows runs the same suite
+use `xvfb-run -a uv run --frozen --all-extras python .github/run_tests.py`. Windows runs the same suite
 directly. The CLI remains usable without the optional desktop dependencies.
 
 ## Preview the desktop

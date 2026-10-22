@@ -167,7 +167,8 @@ source ordinals. Optional raw metadata remains in private candidate artifacts.
 `powerbi_coordinator(base_root)` uses the same ProcessingCoordinator and immutable
 local store at base_root/powerbi_candidates with independent cleaner identities,
 skips and correction tokens. `DesktopWorkflow(output_format='powerbi')` and CLI
-`--output-format powerbi` call this factory; legacy remains the default. Original
+`--output-format powerbi` call this factory; the desktop recommends/defaults to
+Power BI candidates, while CLI/API defaults remain legacy. Original
 legacy adapters/outputs/history remain available. Normalized metrics are labeled
 Legacy where copied from the original candidate. Normalized missing financial
 values are explicitly null with original calculated numbers retained separately.
@@ -176,3 +177,17 @@ There is no publisher or approved-current folder API. Every normalized candidate
 carries CandidateUnverified and a publication-blocked warning. See
 `powerbi_output_design.md` for schema/folder/approval design. Matching and maintenance
 classification remain documentation only in `maintenance_classification_design.md`.
+
+## Monthly local orchestration
+
+`monthly.py` validates separate configurable roots and discovers only direct files
+in raw/YYYY-MM/type. `DesktopWorkflow.preview_month` delegates each type group to
+the existing write-free preview and conflict logic, then uses the same sequential
+process API and source-bound correction tokens. Missing-report coverage is explicit;
+no filenames override content validation or month rules. `export_review_packet`
+reads all three selected normalized candidates in one read-only SQLite transaction,
+verifies hashes/schema/count/month, and copies them to an exclusive staged packet
+before local rename. It never writes approved outputs. Packets are monthly candidate
+snapshots, not an approved-current pointer or a rolling multi-month publisher.
+Power Query must use an explicit snapshot/report folder, never revision discovery.
+See `monthly_workflow.md` and `powerquery_integration.md` for exact guarantees/limits.

@@ -32,7 +32,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"],
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -130,6 +130,47 @@ def run_smoke(directory: Path | None) -> int:
                 assert app.results[0].result.status == Status.SUCCESS
                 assert len(app.workflow.coordinator.store.history()) == 3
                 assert state["first_artifact"].is_file()
+                # Route bundled synthetic inputs through the actual monthly UI.
+                for kind in ReportType:
+                    folder = workspace / "raw" / "2026-01" / kind.value
+                    folder.mkdir(parents=True)
+                    sample = sample_path(kind)
+                    raw = sample.read_bytes()
+                    if sample.suffix == ".csv":
+                        raw = raw.replace(b"2026-09", b"2026-01")
+                    (folder / sample.name).write_bytes(raw)
+                config = workspace / "workspace.toml"
+                config.write_text('raw_folder="raw"\ncandidate_folder="monthly-candidates"\napproved_folder="approved"\n', encoding="utf-8")
+                from tkinter import filedialog
+                original_picker = filedialog.askopenfilename
+                try:
+                    filedialog.askopenfilename = lambda **kwargs: str(config)
+                    app.workspace_button.invoke()
+                finally:
+                    filedialog.askopenfilename = original_picker
+                assert app.workflow.output_format == "powerbi"
+                app.month.set("January")
+                app.scan_button.invoke()
+            elif phase == 16:
+                assert len(app.sources) == 3 and not app.monthly_selection.missing
+                assert not app.workflow.output_root.exists()
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 17:
+                assert len(app.previews) == 3 and app.can_process()
+                assert not app.workflow.output_root.exists()
+                app.process_button.invoke()
+            elif phase == 18:
+                assert len(app.results) == 3 and all(e.result.status == Status.SUCCESS for e in app.results)
+                app.packet_button.invoke()
+            elif phase == 19:
+                packets = tuple((app.workspace.candidate_folder / "review_packets").iterdir())
+                assert len(packets) == 1
+                packet = json.loads((packets[0] / "packet.json").read_text(encoding="utf-8"))
+                assert packet["status"] == "CandidateUnverified" and packet["production_ready"] is False
+                assert packet["sync_verified"] is False and len(packet["files"]) == 3
+                assert not app.workspace.approved_folder.exists()
+                assert "Candidate review packet saved" in app.status.get()
                 finish(True)
                 return
             state["phase"] += 1

@@ -123,3 +123,45 @@ Linux CI now also uses `--isolate-gui` under xvfb, the same fresh-interpreter ru
 already tested locally for all 237 cases and used by Windows. Each GUI case runs
 once; failures are preserved, with no retries or skips. This contains repeated Tk
 interpreter state in the test harness without changing application/cleaning rules.
+
+## Departmental monthly workflow
+
+`test_monthly_workflow.py` adds synthetic mixed-type discovery/preview/process,
+missing/unavailable folders, strict separate-root configuration, no recursive
+history ingestion, per-type conflicts, unchanged reruns, corrected month selection,
+input mutation/partial failures, read-only previews, immutable review packets,
+failed staging cleanup and tampered-output blocking. Redirect guards are simulated
+on all platforms without requiring privileged Windows symlink creation. Real-widget
+cases cover the new default, configuration/discovery/checklist, all-three processing,
+explicit packet export, changed-month rescanning and safe output destination errors.
+The prior legacy UI cases explicitly inject legacy mode to preserve their original
+compatibility coverage; the packaged smoke likewise tests legacy then normalized.
+
+`powerquery_contract.py` tests use the real normalized cleaners and synthetic data.
+They validate exact schemas, UTF-8 text IDs, null money, ISO dates, finite numbers,
+distinct-month combination, duplicate-month/status rejection and nonrecursive folder
+reading. Tests also compare every M column/type specification to the Python schema.
+Microsoft's `@microsoft/powerquery-parser` 4.0.0 accepted the example's syntax in a
+separate temporary development tool installation; it is not an app dependency.
+Neither that parser nor Python reference tests execute Power BI's M evaluator.
+Real Power Query import, numeric precision and model/DAX regression remain a pilot
+gate; see `powerquery_integration.md`. No candidate is approved by passing tests.
+
+Run the full existing isolated runner on Windows, or with --isolate-gui and a
+display on Linux. Historical counts above describe earlier milestones, not the
+current suite. Current outcomes and exact commit checks are recorded on this PR.
+
+During this follow-up's local rerun, the legacy correction GUI case exited with a
+native segmentation fault even in its own process. The trace showed a Tk font
+finalizer on the pandas worker during automatic cyclic garbage collection. The
+app now owns cyclic collection on its main thread for its lifetime, restores the
+prior setting on close and joins the finished worker. The new regression checks
+that GC cannot run automatically on the worker and verifies main-thread collection.
+The failed run was retained; the post-fix full run is reported separately.
+
+Local post-fix evidence for this branch: **266 tests passed, 0 skipped**, using the
+isolated runner, plus the extended visible-window smoke through phase 19 (monthly
+configuration/discovery, three-type preview/process, review-packet export and
+untouched approved root). Wheel/sdist build and offline-config checks also passed.
+Windows/Linux hosted results are recorded on the PR for its exact head; do not
+infer Windows success from this Linux result.

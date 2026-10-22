@@ -81,3 +81,18 @@ are deferred. M0's approved-sample gate remains open.
 No GUI, production adapter, report publisher, live sign-in, SharePoint operation,
 packaged Windows executable or Power BI change is delivered. M0's verified-sample
 acceptance remains open until approved raw/expected pairs and baselines arrive.
+
+## Monthly departmental workflow follow-up
+
+- Desktop now recommends/defaults to standardized Power BI CSV candidates; legacy
+  mode and CLI/API defaults remain available for compatibility.
+- Configurable separate local roots, direct month/type discovery, missing-report
+  checklist and mixed-type real-engine preview/process are available.
+- Explicit complete-month review packets copy current verified candidates into new
+  immutable snapshots with counts/hashes/warnings. No approved output is written;
+  synchronization and production accuracy remain unverified.
+- Added an M folder-ingestion example/offline reference contract tests, employee
+  SOP, validation/finance gates, branch/PR roadmap and delegated Graph requirements.
+  M runtime evaluation, authenticated publication and live Microsoft remain deferred.
+- Original cleaning calculations, exclusions and production Power BI/SharePoint
+  are unchanged. The January repair-cost discrepancy remains a production blocker.

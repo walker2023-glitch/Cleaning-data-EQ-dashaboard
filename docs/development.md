@@ -1,9 +1,10 @@
 # Development (M2 offline desktop)
 
 Read `README.md` and `design.md` fully before changes. Use a feature branch and
-pull-request review. M1 is based on M0 commit `2889796`; PR #1 remains a separate
-draft and must not be merged automatically. The M1 PR targets the M0 branch so
-its review contains only M1 changes; retarget after M0 merges. M2 uses a separate
+pull-request review. M1 is based on M0 commit `2889796`; PR #1 is now merged.
+PRs #2–#7 remain open in a dependency chain; do not merge or retarget them
+automatically. See `roadmap.md` for the current branch/PR review. The M1 PR
+still targets the M0 branch pending maintainer review. M2 uses a separate
 `feature/m2-desktop-gui` branch based on M1 commit `0449dce`, and its PR targets
 `feature/m1-cleaning-engine`. Do not merge either parent PR automatically.
 
@@ -142,9 +143,9 @@ python -m uv run --frozen --extra desktop python -m equipment_data_manager.ui.ap
 ```
 
 Select a report and **Load synthetic sample**. CompuClean samples use September
-2026; TMA uses January 2026. Legacy candidate is still the default. Preview/process
-it first if you want a saved comparison. Then choose **Power BI CSV candidate** in
-Output format, reconfirm the month and preview/process. Format changes clear prior
+2026; TMA uses January 2026. Power BI CSV candidate is now the desktop default.
+Choose Legacy candidate explicitly if you want a saved comparison, then switch
+back to Power BI CSV candidate, reconfirm the month and preview/process. Format changes clear prior
 previews/correction confirmations. Both modes use the existing cleaners; each has
 an independent candidate history. The base output folder's powerbi_candidates
 subdirectory holds normalized revisions; no approved-current folder is created.
@@ -169,3 +170,46 @@ workflow independently in each mode. Production publication is blocked regardles
 of local correction acknowledgement. Never combine candidate versions directories
 in Power BI. See `powerbi_output_design.md` for schemas/folder design and
 `maintenance_classification_design.md` for the future, unimplemented classifier.
+
+## Monthly workflow branch in VS Code
+
+Close all app windows first, open the Git repository (not an extracted release),
+then run in PowerShell:
+
+```powershell
+git fetch origin
+git switch feature/monthly-department-workflow
+python -m uv sync --frozen --all-extras
+python -m uv run --frozen --all-extras python .github/run_tests.py
+Copy-Item workspace.example.toml workspace.local.toml
+python -m uv run --frozen --extra desktop python -m equipment_data_manager.ui.app
+```
+
+Edit workspace.local.toml privately. For Windows paths use forward slashes or TOML
+single-quoted literal strings; avoid unescaped backslashes in double quotes.
+Follow `monthly_workflow.md` to arrange raw/YYYY-MM/report_type, load the TOML,
+discover, preview/process and explicitly export a review packet. Existing single-file
+selection still works. No extra dependency or lockfile update is required.
+
+For invented inputs, the existing generator remains available:
+
+```powershell
+python -m uv run --frozen python tests/report_samples.py --output-dir data/monthly-samples
+```
+
+Copy the generated January repairs CSV into data/monthly-raw/2026-01/repairs, the
+January service CSV into service_orders and January XLSX into tma_work_orders.
+Create those directories with Explorer. Use the example configuration's paths
+(relative to the repo-root TOML), load it, and choose January 2026. Expected synthetic
+counts are 29 repairs, 29 services and 38 TMA rows. Repeating the run skips; changing
+a source for the same month requires correction review. Move one raw input to a
+nested history folder to test the missing checklist without deleting it. To test
+packet blocking for a new missing month, select February before processing its
+three candidates. An existing month can still export its previously selected
+current candidates; failed later processing does not erase them.
+
+`monthly.py` owns folder routing and immutable review packets. `DesktopWorkflow`
+groups mixed-type previews through existing per-type conflict checks; the engine
+and original cleaners are untouched. `powerquery_contract.py` supplies offline
+reference validation; the M example is in powerquery/. See the integration guide
+for the explicit candidate-only sandbox procedure and remaining real-M pilot gate.
