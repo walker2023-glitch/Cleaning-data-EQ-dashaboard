@@ -2,6 +2,8 @@
 
 import argparse
 from datetime import date
+import gc
+from time import monotonic
 from importlib.resources import files
 import os
 from pathlib import Path
@@ -14,7 +16,7 @@ import customtkinter as ctk
 
 from equipment_data_manager.processing.cleaners import validate_period
 from equipment_data_manager.processing.models import ProcessingError, ProcessingStatus, ReportType
-from equipment_data_manager.monthly import discover, export_review_packet, load_workspace
+from equipment_data_manager.monthly import Workspace, discover, export_review_packet, load_workspace
 from equipment_data_manager.ui.messages import diagnostic_lines, error_message, result_label, warning_message
 from equipment_data_manager.ui.worker import BackgroundWorker
 from equipment_data_manager.ui.workflow import DesktopWorkflow, SUPPORTED_REPORTS, selected_files
@@ -64,6 +66,12 @@ class EquipmentDataManager(ctk.CTk):
         self.minsize(1100, 800)
         self.configure(fg_color=BACKGROUND)
         self.workflow = workflow or DesktopWorkflow(output_root or default_output_root(), output_format="powerbi")
+        # CPython can run cyclic finalizers on whichever thread allocates.
+        # CTk font/widget finalizers call Tcl, so collect cycles only here on the
+        # GUI thread for this single-window app, including while pandas runs.
+        self._gc_was_enabled = gc.isenabled()
+        gc.disable()
+        self._last_gc = monotonic()
         self.worker = BackgroundWorker()
         self.workspace = None
         self.monthly_selection = None
@@ -151,7 +159,7 @@ class EquipmentDataManager(ctk.CTk):
         horizontal.grid(row=1, column=0, sticky="ew")
         self.table.configure(xscrollcommand=horizontal.set)
         self.table.bind("<<TreeviewSelect>>", self._show_detail)
-        self.detail = ctk.CTkTextbox(self.table_frame, height=150, fg_color="#F7F9FC", text_color=TEXT, wrap="word", font=(UI_FONT, 12))
+        self.detail = ctk.CTkTextbox(self.table_frame, height=80, fg_color="#F7F9FC", text_color=TEXT, wrap="word", font=(UI_FONT, 12))
         self.detail.grid(row=2, column=0, sticky="ew", padx=16, pady=(10, 8))
         self._detail_text("Select a row to see its counts, warnings and next steps. Your original files stay unchanged.")
         self.review_button = ctk.CTkButton(self.table_frame, text="Review correction...", command=self.review_correction, fg_color=TEAL, state="disabled")
@@ -224,10 +232,10 @@ class EquipmentDataManager(ctk.CTk):
         self.report_buttons = []
         for column, (kind, title) in enumerate(SUPPORTED_REPORTS.items()):
             card = ctk.CTkFrame(self.controls, fg_color="#EDF5F7", corner_radius=8)
-            card.grid(row=0, column=column, padx=(16 if column == 0 else 8, 8), pady=(16, 12), sticky="nsew")
+            card.grid(row=0, column=column, padx=(16 if column == 0 else 8, 8), pady=(10, 8), sticky="nsew")
             button = ctk.CTkRadioButton(card, text=title, variable=self.report, value=kind.value, fg_color=TEAL, text_color=NAVY, font=ctk.CTkFont(size=14, weight="bold"))
-            button.pack(anchor="w", padx=14, pady=(14, 6))
-            ctk.CTkLabel(card, text="TMA | XLSX candidate" if kind == ReportType.TMA_WORK_ORDERS else "CompuClean | Local CSV", text_color=MUTED, font=ctk.CTkFont(size=12)).pack(anchor="w", padx=14, pady=(0, 12))
+            button.pack(anchor="w", padx=14, pady=(10, 4))
+            ctk.CTkLabel(card, text="TMA | XLSX candidate" if kind == ReportType.TMA_WORK_ORDERS else "CompuClean | Local CSV", text_color=MUTED, font=ctk.CTkFont(size=12)).pack(anchor="w", padx=14, pady=(0, 8))
             self.report_buttons.append(button)
         row = ctk.CTkFrame(self.controls, fg_color="transparent")
         row.grid(row=1, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
@@ -263,20 +271,20 @@ class EquipmentDataManager(ctk.CTk):
         self.packet_button = ctk.CTkButton(buttons, text="Export review packet", command=self.export_packet,
             fg_color=NAVY, height=40, width=165)
         self.packet_button.pack(side="left")
-        monthly = ctk.CTkFrame(self.controls, fg_color="transparent")
-        monthly.grid(row=5, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 8))
-        self.workspace_button = ctk.CTkButton(monthly, text="Load folder configuration", command=self.choose_workspace, fg_color=NAVY)
-        self.workspace_button.pack(side="left")
-        self.scan_button = ctk.CTkButton(monthly, text="Discover month", command=self.scan_month, fg_color=TEAL)
+        monthly = row
+        self.workspace_button = ctk.CTkButton(monthly, text="Load folder configuration", command=self.choose_workspace, fg_color=NAVY, width=165)
+        self.workspace_button.pack(side="left", padx=(10, 0))
+        self.scan_button = ctk.CTkButton(monthly, text="Discover month", command=self.scan_month, fg_color=TEAL, width=125)
         self.scan_button.pack(side="left", padx=10)
         self.checklist = ctk.CTkLabel(self.controls, text="Monthly checklist: load a folder configuration to discover all three reports.",
             text_color=MUTED, wraplength=850, anchor="w", justify="left")
-        self.checklist.grid(row=6, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
+        self.checklist.grid(row=5, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 12))
 
     def _report_changed(self, *_):
         if self.monthly_selection is not None:
             self.sources = ()
         self.monthly_selection = None
+        self.checklist.configure(text="Individual report selection. Load a folder configuration and Discover month to check all report types.")
         self._selection_changed()
 
     def choose_workspace(self):
@@ -292,6 +300,7 @@ class EquipmentDataManager(ctk.CTk):
             self.workspace = workspace
             self.monthly_selection = None
             self.sources = ()
+            self.results = ()
             self.workflow = DesktopWorkflow(workspace.candidate_folder, output_format="powerbi")
             self.output_format.set("Power BI CSV candidate")
             self._selection_changed()
@@ -394,6 +403,12 @@ class EquipmentDataManager(ctk.CTk):
             return
         folder = filedialog.askdirectory(parent=self, title="Choose local candidate output folder")
         if folder:
+            if self.workspace is not None:
+                try:
+                    Workspace(self.workspace.raw_folder, Path(folder), self.workspace.approved_folder).validate()
+                except ProcessingError:
+                    self.status.set("Choose a candidate folder separate from the configured raw and approved folders.")
+                    return
             kind = "powerbi" if self.output_format.get() == "Power BI CSV candidate" else "legacy"
             self.workspace = None
             self.monthly_selection = None
@@ -467,7 +482,13 @@ class EquipmentDataManager(ctk.CTk):
         self.review_button.configure(state="disabled")
         self.stop_button.configure(state="normal" if busy else "disabled")
 
+    def _collect_gui_cycles(self):
+        if monotonic() - self._last_gc >= 1:
+            gc.collect()
+            self._last_gc = monotonic()
+
     def _poll(self):
+        self._collect_gui_cycles()
         try:
             while True:
                 event = self.worker.events.get_nowait()
@@ -698,11 +719,14 @@ class EquipmentDataManager(ctk.CTk):
             self._close()
 
     def _close(self):
-        self.worker.close()
+        self.worker.close(wait=True)
         if self.dialog and self.dialog.winfo_exists():
             self.dialog.destroy()
         self.after_cancel(self.poll_id)
         self.destroy()
+        gc.collect()
+        if self._gc_was_enabled:
+            gc.enable()
 
     def report_callback_exception(self, *_):
         self.previews = ()

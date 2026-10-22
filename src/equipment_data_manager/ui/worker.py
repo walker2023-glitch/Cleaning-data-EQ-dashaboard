@@ -49,6 +49,6 @@ class BackgroundWorker:
         """Stop between files; never interrupt an active M1 commit."""
         self.cancelled.set()
 
-    def close(self):
+    def close(self, *, wait=False):
         self.stop()
-        self.executor.shutdown(wait=False)
+        self.executor.shutdown(wait=wait)

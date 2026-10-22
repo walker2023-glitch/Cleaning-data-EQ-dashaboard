@@ -342,6 +342,8 @@ def test_powerbi_output_mode_uses_real_cleaner_and_separate_candidate_history(ap
 
 
 def test_application_defaults_to_recommended_powerbi_candidates(tmp_path):
+    import gc
+    was_enabled = gc.isenabled()
     window = EquipmentDataManager(tmp_path / 'outputs')
     try:
         window.update()
@@ -350,6 +352,7 @@ def test_application_defaults_to_recommended_powerbi_candidates(tmp_path):
         assert not window.workflow.output_root.exists()
     finally:
         window._close()
+    assert gc.isenabled() == was_enabled
 
 
 def test_monthly_discovery_preview_process_export_and_missing_feedback(app, tmp_path, monkeypatch):
@@ -402,3 +405,35 @@ def test_monthly_configuration_and_discovery_errors_are_actionable(app, tmp_path
     assert 'Invalid folder configuration' in app.status.get()
     assert 'SYNTHETIC_PRIVATE' not in app.status.get()
     assert app.workspace is None
+
+
+def test_configured_workspace_rejects_raw_or_approved_output_destinations(app, tmp_path, monkeypatch):
+    from equipment_data_manager.monthly import Workspace
+    workspace = Workspace(tmp_path / 'raw', tmp_path / 'candidates', tmp_path / 'approved')
+    app.workspace = workspace
+    previous = app.workflow
+    for folder in (workspace.raw_folder, workspace.approved_folder):
+        monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askdirectory', lambda **kwargs: str(folder))
+        app.folder_button.invoke()
+        assert app.workflow is previous and app.workspace is workspace
+        assert 'separate from the configured raw and approved' in app.status.get()
+    assert not workspace.approved_folder.exists()
+
+
+def test_cyclic_tk_finalizers_are_collected_on_gui_thread_during_work(app, monkeypatch):
+    import gc
+    from threading import get_ident
+    # The full-suite correction run exposed a real native crash when pandas
+    # allocation collected a Tk font on its worker. Keep GC ownership on the GUI.
+    main_thread = get_ident()
+    collected = []
+    real_collect = gc.collect
+    monkeypatch.setattr(gc, 'collect', lambda: (collected.append(get_ident()), real_collect())[1])
+    assert not gc.isenabled()
+    app._last_gc = 0
+    assert app.worker.start(lambda progress, stop: (get_ident(), gc.isenabled()))
+    event = app.worker.events.get(timeout=4)
+    assert event.kind == 'done' and event.payload[0] != main_thread and not event.payload[1]
+    app.worker.busy = False
+    app._collect_gui_cycles()
+    assert collected == [main_thread]
