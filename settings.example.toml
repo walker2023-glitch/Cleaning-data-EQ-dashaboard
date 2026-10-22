@@ -1,0 +1,12 @@
+version = 1
+
+[folders]
+raw_folder = ""
+candidate_folder = ""
+approved_folder = ""
+
+[preferences]
+guided = true
+detail = "detailed"
+output_format = "powerbi"
+candidate_local_confirmed = false

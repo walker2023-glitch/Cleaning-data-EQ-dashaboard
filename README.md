@@ -59,7 +59,8 @@ blocked by financial and trusted-output validation gates.
 
 ## Monthly departmental workflow
 
-Load `workspace.local.toml` using **Load folder configuration**, select a month,
+Configure folders with **Settings → Browse → Check Locations → Save Settings**.
+Choices restore automatically; employees need no TOML editor. Select a month,
 then **Discover month**, confirm, preview and process. The checklist identifies
 missing report types. **Export review packet** copies one current normalized
 candidate per type into a new immutable review folder, with hashes and warnings;
@@ -70,6 +71,15 @@ See the [monthly SOP](docs/monthly_workflow.md), [status and roadmap](docs/roadm
 [Power Query example and offline checks](docs/powerquery_integration.md), and
 [delegated Graph requirements](docs/sharepoint_integration_plan.md).
 Synchronization, business approval and production publication are not implemented.
+
+## Settings and Guided Mode
+
+First launch opens visual setup. Candidate history must stay on a trusted local
+disk; the approved folder remains reserved. Guided Mode defaults to Detailed, with
+hover/focus explanations, F1 Help and an offline employee guide. Preferences persist
+without changing cleaning logic. See [Settings](docs/settings_guide.md),
+[Guided Mode / help maintenance](docs/guided_mode.md) and
+[VS Code first-run testing](docs/development.md#settings-and-guided-mode-preview).
 
 ## Development
 

@@ -64,3 +64,24 @@ must decide the eventual merge/retarget order.
 
 See `monthly_workflow.md`, `validation_checklist.md`,
 `sharepoint_integration_plan.md` and `powerquery_integration.md` for concrete paths.
+
+## Settings and Guided Mode follow-up (2026-10-22)
+
+PR #8 remains open at 456440d; it is the parent of
+feature/settings-guided-mode. PR #1 alone is merged; PRs #2–#8 keep their existing
+dependency relationships. No automatic merges/retargets are performed.
+
+Implemented: visual first-run/settings form, Browse/recommended local candidate
+location, folder indicators/confirmed creation, strict private atomic preferences,
+restart restore/reset/legacy import/sanitized template, default Detailed Guided
+Mode, persisted Brief/Detailed choices, hover/focus/F1/disabled-control help,
+centralized dashboard-aware registry, bundled offline guide and adaptive short/
+scaled-display layout. All existing cleaning and monthly safeguards remain.
+
+Next: nontechnical employee pilot on a second managed Windows PC, keyboard/screen
+reader and 125/150/200% multi-monitor checks, IT confirmation of any custom local
+candidate directory and recovery/support policy. Candidate path checks cannot prove
+absence of every sync client. Business/finance/schema baselines, repair cost-field/
+hours/rate reconciliation, zero-activity policy and real Power Query/model validation
+remain open. Microsoft auth/Graph, approved publication and production Power BI
+still require separate authorization; this usability milestone does not grant it.

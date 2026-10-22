@@ -62,3 +62,14 @@ zero-activity completeness policy, actual M evaluation/model regression, approve
 publisher/audited business approvals, sync verification, IT/MSAL/Graph permissions,
 shared concurrency and managed-PC release. See `roadmap.md` for next gates. Existing
 cleaning calculations and production Power BI/SharePoint are unchanged.
+
+## Settings and Guided Mode follow-up
+
+Employees can now configure folders visually, save and restore private preferences,
+recover/reset safely, and use default Detailed or Brief offline hover/focus/F1 help.
+The centralized registry explains sources, current states, errors, corrections and
+financial/production limits. Advanced workspace TOML compatibility remains; normal
+use no longer requires editing it. Synthetic tests and executable smoke cover
+persistence, local folder safety, guidance and the unchanged monthly engine flow.
+Managed-PC accessibility/scaling, finance/baselines, synced-provider policy and all
+production/Graph gates remain open. See settings_guide.md and guided_mode.md.

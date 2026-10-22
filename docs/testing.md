@@ -165,3 +165,58 @@ configuration/discovery, three-type preview/process, review-packet export and
 untouched approved root). Wheel/sdist build and offline-config checks also passed.
 Windows/Linux hosted results are recorded on the PR for its exact head; do not
 infer Windows success from this Linux result.
+
+## Settings and Guided Mode regression scope
+
+New backend tests cover no-write first-run defaults, existing/missing/invalid/
+overlapping paths, access/probe/create failures, explicit creation policy,
+known-sync/UNC/non-fixed-drive rejection, required local confirmation, atomic
+replacement failure, strict/corrupt settings recovery, legacy relative-path import,
+reset data preservation and sanitized templates. The Windows drive rejection is
+also simulated portably without admin privileges. No test needs real sync/auth.
+
+Real-widget tests cover Browse/save/confirmed creation, settings and Brief/Guided
+preferences restored in another window, invalid/corrupt/unavailable configuration,
+reset confirmation, draft import, template sanitization, known sync rejection,
+failed saves retaining active workspace, original candidate byte equality with
+Guided Mode off, disabled hover/focus/F1, keyboard activation, bounded tooltip
+placement, missing/error context, and responsive slow folder checks. Registry tests
+check required source/business caveats, both detail levels, scaled-window sizing
+and exact bundled-guide freshness. Every previous test is retained.
+
+The first sizing implementation exposed a distinction between CTk window and
+widget scaling APIs. The edge-placement test caught it; the tooltip now uses the
+framework scaling tracker with a bounded styled Tk popup, not short-lived CTk
+windows with delayed titlebar callbacks. Tests were corrected through code changes,
+not omissions/retries. Fresh-process isolated test collection remains unchanged.
+
+Run the full existing isolated runner on Windows; add --isolate-gui with a display
+on Linux. The extended actual-window smoke through phase 24 covers visual save,
+Brief/Detailed/off settings, F1, bundled employee guide and persisted startup in a
+fresh **process** (source Python or the packaged exe). This avoids pretending that
+reusing Tk's global trackers is an operating-system app restart. Windows PR CI must
+build and run the actual executable before a review build is considered tested.
+Automated checks do not replace employee usability/accessibility/scaling or trusted
+financial/data validation. Hosted outcomes belong to their exact PR head.
+
+Local post-fix result: **321 passed, 0 skipped**, plus the phase-24 actual-window
+smoke and fresh-process settings restore. Hosted Windows/Linux tests and Windows
+executable build/smoke must be assessed separately on this PR's exact head.
+
+The initial Windows runs caught a second placement issue on their 768-pixel-high
+display: the source window's default position could put an anchor below the screen,
+so placing a tooltip above it was still too low. The app now positions its initial
+window within the primary display and clamps the popup independently of anchor
+position. An additional real-widget regression simulates an offscreen anchor;
+the original edge assertion is retained unchanged. Post-fix results supersede the
+initial Windows failures; no case is skipped or retried by the runner.
+
+Packaged Windows diagnostics subsequently showed that restored folders/page/help
+preferences were correct, but the restart smoke exited unsuccessfully after its
+check. CTk's Windows mainloop startup pumps events during titlebar initialization;
+a self-closing check could destroy the root during that startup pump. The restart
+harness now finishes initial mapping before attaching its close/check callback.
+A real-Tk regression simulates the Windows startup pump with an immediately ready
+check. Both restored-state and successful-exit assertions remain required; no
+failure is converted into success. Phase-only synthetic diagnostics are retained
+as a small CI artifact and check annotation for future packaged failures.
