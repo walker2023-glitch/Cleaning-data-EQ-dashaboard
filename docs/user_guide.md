@@ -104,9 +104,9 @@ not an approved maintenance classification. No classifier is implemented.
 
 ## Monthly folder checklist and review packets
 
-Ask the maintainer for an authorized local workspace TOML with separate raw,
-candidate and reserved approved folders. Click **Load folder configuration**, select
-the month, then **Discover month**. Read the missing-report checklist, confirm the
+Use **Settings** to select and save separate raw, local candidate and reserved
+approved folders. Valid choices restore automatically. Select the month, then
+**Discover month**. Read the missing-report checklist, confirm the
 month and preview all discovered files. Resolve errors and review corrections,
 then process and check every result. Click **Export review packet** only after the
 intended current candidates for all three types have been saved. It exports current
@@ -114,8 +114,49 @@ manifest selections, so a failed newer attempt does not replace the last success
 
 Each new packet contains three report folders and packet.json with hashes/counts/
 warnings. It is unapproved and does not belong in production Power BI. Exporting
-never writes the reserved approved folder. Files in nested history folders are
+never writes reports to the reserved approved folder. Files in nested history folders are
 not discovered. Synchronization is unverified: unreadable or cloud-only files need
 local availability checks through the approved sync client/IT procedure. Keep
 candidate history on a local disk, single operator. Full steps and recovery limits:
 [monthly workflow](monthly_workflow.md). Approval checks: [validation checklist](validation_checklist.md).
+
+## First launch: Settings
+
+Open **Settings** (shown automatically on a normal first launch). Use **Browse**
+for Raw Data, Candidate Output and the reserved Approved Output folders. For
+candidate storage you can choose **Use recommended local folder**. Keep candidate
+history on this computer outside OneDrive, SharePoint and network sync; confirm
+the local-storage checkbox. **Check Locations**, resolve the indicators, then
+**Save Settings**. Missing folders require a separate creation confirmation. The
+reserved approved folder may be created empty after confirmation; no report is
+published there. Settings and preferred output format restore automatically next
+launch. You do not need to edit TOML, run Python or open a terminal.
+
+Raw reports belong in year-month/report-type subfolders. After setup: choose the
+month, Discover Month, review missing reports, confirm, Preview Processing, resolve
+errors/corrections, Process Reports, review Results and Export Review Packet when
+eligible. Follow the separate departmental approval procedure. Saving folders does
+not move originals/history; use the former base candidate folder to reuse history.
+See the Settings guide supplied with the review build for detailed setup/recovery.
+
+## Guided Mode and keyboard help
+
+The left navigation has **Guided Mode** and **Brief / Detailed** (default Detailed).
+Hover or focus a control for help, including disabled buttons. Press **F1** to read
+its explanation in the Help page, or click **Explain this step**. The Help topic
+selector and **Employee guide** work offline even if automatic tips are off.
+Space/Enter activate supported focused buttons/options; disabled actions remain
+inactive. Esc dismisses a tip. Your help choices are remembered without changing
+cleaning results, dates, correction approvals or financial calculations.
+
+Errors need resolution before the affected operation can proceed. Warnings need
+review; repair source and calculated financial totals still require reconciliation.
+Neither a saved candidate nor a review packet is a production-approved release.
+Maintenance classification and direct Microsoft/SharePoint integration remain future
+work. Do not rename an unsupported TMA XLS file to CSV/XLSX to force processing.
+
+If saved folders become unavailable, Settings keeps the choices and shows what
+needs attention. **Reset to Defaults** asks first and only resets preferences;
+it never deletes reports/history. Advanced import accepts earlier workspace TOML
+as a draft; validate/reconfirm local storage and save. Export Sanitized Template
+omits real paths/credentials. No OneDrive synchronization is verified by this app.

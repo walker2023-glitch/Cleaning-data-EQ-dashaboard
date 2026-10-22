@@ -437,3 +437,279 @@ def test_cyclic_tk_finalizers_are_collected_on_gui_thread_during_work(app, monke
     app.worker.busy = False
     app._collect_gui_cycles()
     assert collected == [main_thread]
+
+
+def wait_settings(app):
+    pump(app,lambda:not app.settings_worker.busy and not app.pending_preferences)
+
+
+def fill_settings(app,tmp_path,monkeypatch,*,create=True):
+    from equipment_data_manager.settings import FOLDER_KEYS
+    chosen={key:tmp_path / key for key in FOLDER_KEYS}
+    for key,path in chosen.items():
+        if create:path.mkdir(exist_ok=True)
+        monkeypatch.setattr('equipment_data_manager.ui.preferences.filedialog.askdirectory',lambda **kwargs:str(path))
+        app.settings_page.browse_buttons[key].invoke()
+    app.settings_page.local_confirmed.set(True)
+    return chosen
+
+
+def test_settings_first_run_browse_confirm_creation_and_save(tmp_path,monkeypatch):
+    from equipment_data_manager.settings import SettingsStore
+    path=tmp_path / 'private/settings.toml'
+    window=EquipmentDataManager(tmp_path / 'default-candidates',settings_path=path)
+    try:
+        wait_settings(window)
+        assert window.page=='Settings' and 'Welcome' in window.settings_page.welcome.cget('text')
+        assert window.guided.get() and window.explanation_level.get()=='Detailed'
+        window.settings_page.recommended_button.invoke()
+        assert window.settings_page.path_vars['candidate_folder'].get()==str(window.initial_output_root)
+        assert not window.settings_page.local_confirmed.get()
+        choices=fill_settings(window,tmp_path,monkeypatch,create=False)
+        confirmations=[]
+        monkeypatch.setattr('equipment_data_manager.ui.preferences.messagebox.askyesno',lambda *args,**kwargs:confirmations.append(args) or True)
+        window.settings_page.save_button.invoke()
+        wait_settings(window)
+        assert len(confirmations)==1 and 'Create selected' in confirmations[0][0]
+        assert window.page=='Process Reports' and 'Settings saved' in window.status.get()
+        assert all(path.is_dir() for path in choices.values())
+        assert list(choices['approved_folder'].iterdir())==[]
+        saved=SettingsStore(path).load()
+        assert saved.folders['candidate_folder']==str(choices['candidate_folder'])
+        assert saved.preferences.candidate_local_confirmed
+    finally:
+        wait_settings(window);window._close()
+
+
+def test_settings_and_guided_preferences_restore_after_restart(tmp_path,monkeypatch):
+    path=tmp_path / 'private/settings.toml'
+    first=EquipmentDataManager(tmp_path / 'defaults',settings_path=path)
+    try:
+        wait_settings(first)
+        choices=fill_settings(first,tmp_path,monkeypatch)
+        first.settings_page.preferred_format.set('Legacy candidate')
+        first.settings_page.save_button.invoke();wait_settings(first)
+        first.guided_switch.toggle()
+        first.help_level.set('Brief');first.help_preferences_changed()
+        wait_settings(first)
+        assert not first.guided.get()
+    finally:
+        wait_settings(first);first._close()
+    second=EquipmentDataManager(tmp_path / 'defaults',settings_path=path)
+    try:
+        wait_settings(second)
+        assert second.page=='Process Reports'
+        assert not second.guided.get() and second.explanation_level.get()=='Brief'
+        assert second.workflow.output_format=='legacy'
+        assert second.workspace.raw_folder==choices['raw_folder']
+        assert second.settings_page.path_vars['approved_folder'].get()==str(choices['approved_folder'])
+    finally:
+        wait_settings(second);second._close()
+
+
+def test_declined_folder_creation_and_invalid_locations_do_not_save(app,tmp_path,monkeypatch):
+    choices=fill_settings(app,tmp_path,monkeypatch,create=False)
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.messagebox.askyesno',lambda *args,**kwargs:False)
+    app.settings_page.save_button.invoke();wait_settings(app)
+    assert not app.settings_store.path.exists()
+    assert all(not path.exists() for path in choices.values())
+    assert 'not created' in app.settings_page.message.cget('text')
+    app.settings_page.path_vars['approved_folder'].set(str(choices['raw_folder'] / 'nested'))
+    app.settings_page.save_button.invoke();wait_settings(app)
+    assert 'separate' in app.settings_page.indicators['raw_folder'].cget('text')
+    assert not app.settings_store.path.exists()
+
+
+def test_corrupted_configuration_recovery_keeps_original_until_explicit_save(tmp_path,monkeypatch):
+    path=tmp_path / 'settings.toml';path.write_text('INVALID SYNTHETIC CONFIG')
+    app=EquipmentDataManager(tmp_path / 'defaults',settings_path=path)
+    try:
+        wait_settings(app)
+        assert app.page=='Settings' and 'existing file was kept' in app.settings_page.message.cget('text')
+        assert path.read_text()=='INVALID SYNTHETIC CONFIG'
+        fill_settings(app,tmp_path,monkeypatch)
+        app.settings_page.save_button.invoke();wait_settings(app)
+        assert app.page=='Process Reports' and path.read_text().startswith('version = 1')
+    finally:
+        wait_settings(app);app._close()
+
+
+def test_saved_unavailable_folder_returns_to_setup_without_creating_it(tmp_path):
+    from equipment_data_manager.settings import Preferences, SettingsStore, UserSettings, FOLDER_KEYS
+    path=tmp_path / 'settings.toml'
+    settings=UserSettings({key:str(tmp_path / key) for key in FOLDER_KEYS},Preferences(candidate_local_confirmed=True))
+    SettingsStore(path).save(settings)
+    app=EquipmentDataManager(tmp_path / 'defaults',settings_path=path)
+    try:
+        wait_settings(app)
+        assert app.page=='Settings' and app.workspace is None
+        assert 'Check your saved' in app.settings_page.welcome.cget('text')
+        assert not any(Path(value).exists() for value in settings.folders.values())
+        assert 'No folder is created automatically' in app.settings_page.message.cget('text')
+    finally:
+        wait_settings(app);app._close()
+
+
+def test_reset_confirmation_preserves_reports_and_history(app,tmp_path,monkeypatch):
+    from equipment_data_manager.settings import UserSettings
+    choices=fill_settings(app,tmp_path,monkeypatch)
+    original=choices['raw_folder'] / 'original.csv';original.write_bytes(b'SYNTHETIC ORIGINAL')
+    history=choices['candidate_folder'] / 'history.txt';history.write_bytes(b'SYNTHETIC HISTORY')
+    app.settings_page.save_button.invoke();wait_settings(app)
+    before=app.settings_store.path.read_bytes()
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.messagebox.askyesno',lambda *args,**kwargs:False)
+    app.settings_page.reset_button.invoke()
+    assert app.settings_store.path.read_bytes()==before and app.workspace is not None
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.messagebox.askyesno',lambda *args,**kwargs:True)
+    app.settings_page.reset_button.invoke();wait_settings(app)
+    assert app.workspace is None and app.page=='Settings'
+    assert app.settings_store.load()==UserSettings()
+    assert original.read_bytes()==b'SYNTHETIC ORIGINAL' and history.read_bytes()==b'SYNTHETIC HISTORY'
+    assert app.guided.get() and app.explanation_level.get()=='Detailed'
+
+
+def test_advanced_import_is_draft_until_saved_and_template_omits_private_paths(app,tmp_path,monkeypatch):
+    path=tmp_path / 'legacy.toml'
+    path.write_text('raw_folder="raw"\ncandidate_folder="candidate"\napproved_folder="approved"')
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.filedialog.askopenfilename',lambda **kwargs:str(path))
+    app.settings_page.import_button.invoke();wait_settings(app)
+    assert app.workspace is None and app.page=='Settings'
+    assert app.settings_page.path_vars['raw_folder'].get()==str(tmp_path / 'raw')
+    assert not app.settings_page.local_confirmed.get() and 'draft' in app.settings_page.message.cget('text')
+    assert not app.settings_store.path.exists()
+    template=tmp_path / 'sanitized.toml'
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.filedialog.asksaveasfilename',lambda **kwargs:str(template))
+    app.settings_page.export_button.invoke();wait_settings(app)
+    assert str(tmp_path) not in template.read_text() and 'raw_folder = ""' in template.read_text()
+
+
+def test_known_sync_folder_cannot_be_saved_in_gui(app,tmp_path,monkeypatch):
+    choices=fill_settings(app,tmp_path,monkeypatch)
+    monkeypatch.setenv('OneDriveCommercial',str(choices['candidate_folder']))
+    app.settings_page.save_button.invoke();wait_settings(app)
+    assert not app.settings_store.path.exists() and app.workspace is None
+    assert 'OneDrive' in app.settings_page.indicators['candidate_folder'].cget('text')
+
+
+def test_folder_save_failure_preserves_previous_configuration_and_active_workspace(app,tmp_path,monkeypatch):
+    fill_settings(app,tmp_path,monkeypatch)
+    app.settings_page.save_button.invoke();wait_settings(app)
+    before=app.settings_store.path.read_bytes();workspace=app.workspace
+    def fail(*args):raise PermissionError('SYNTHETIC_PRIVATE_ERROR')
+    monkeypatch.setattr('equipment_data_manager.settings.os.replace',fail)
+    app.settings_page.save_button.invoke();wait_settings(app)
+    assert app.settings_store.path.read_bytes()==before and app.workspace is workspace
+    assert 'existing file was kept' in app.settings_page.message.cget('text')
+    assert 'SYNTHETIC_PRIVATE' not in app.settings_page.message.cget('text')
+
+
+def test_guided_mode_and_detail_changes_do_not_invalidate_preview_or_change_outputs(app):
+    prepare(app)
+    entries=app.previews
+    candidate=entries[0].result.cleaned.output_bytes
+    app.guided_switch.toggle()
+    app.help_level.set('Brief');app.help_preferences_changed();wait_settings(app)
+    assert app.previews is entries and app.can_process() and app.month_confirmed.get()
+    assert not app.guided.get()
+    app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.results[0].result.cleaned.output_bytes==candidate
+    assert app.settings_store.load().preferences.detail=='brief'
+    assert app.settings_store.load().preferences.guided is False
+
+
+def test_disabled_control_hover_focus_and_f1_help_work_without_changing_selection(app):
+    assert app.process_button.cget('state')=='disabled'
+    app.guidance.schedule(app.process_button,'process')
+    pump(app,lambda:app.guidance.popup is not None)
+    assert 'confirm' in app.guidance.text('process') or 'Preview' in app.guidance.text('process')
+    assert app.previews==() and not app.can_process()
+    app.guidance.hide()
+    app.process_button.focus_force();app.update()
+    assert app.guidance.key=='process'
+    app.event_generate('<F1>');app.update()
+    assert app.page=='Help' and 'Process Reports' in app.help_text.get('1.0','end')
+    assert 'confirm' in app.help_text.get('1.0','end')
+
+
+def test_guided_off_hides_automatic_tips_but_keeps_keyboard_and_topic_help(app):
+    app.guided_switch.toggle();wait_settings(app)
+    app.guidance.schedule(app.preview_button,'preview')
+    assert app.guidance.pending is None and app.guidance.popup is None
+    app.event_generate('<F1>');app.update()
+    assert app.page=='Help'
+    app.help_topic_picker.set('Legacy CSV');app.refresh_help()
+    assert 'introductory rows' in app.help_text.get('1.0','end')
+    app.show_employee_guide()
+    assert 'Equipment Data Manager' in app.help_text.get('1.0','end')
+
+
+def test_tooltip_brief_detailed_and_screen_edges(app):
+    app.explanation_level.set('Brief')
+    brief=app.guidance.text('preview')
+    app.explanation_level.set('Detailed')
+    detailed=app.guidance.text('preview')
+    assert len(detailed)>len(brief) and 'Files and information:' in detailed and 'Next:' in detailed
+    app.guidance.schedule(app.output_button,'output');app.guidance.show();app.update()
+    popup=app.guidance.popup
+    assert popup.winfo_rootx()>=0 and popup.winfo_rooty()>=0
+    assert popup.winfo_rootx()+popup.winfo_width()<=app.winfo_screenwidth()
+    assert popup.winfo_rooty()+popup.winfo_height()<=app.winfo_screenheight()
+
+
+def test_context_help_explains_missing_sources_and_current_failure(app,tmp_path):
+    from equipment_data_manager.monthly import MonthlySelection
+    app.monthly_selection=MonthlySelection('2026-01',(),())
+    app.workspace=__import__('equipment_data_manager.monthly',fromlist=['Workspace']).Workspace(tmp_path/'raw',tmp_path/'candidate',tmp_path/'approved')
+    context=app.guidance.text('discover')
+    assert 'CompuClean Repair Report' in context and 'Tim' in context and 'XLSX' in context
+    app.monthly_selection=None
+    source=tmp_path/'unsupported.xls';source.write_bytes(b'SYNTHETIC XLS')
+    app.report.set(ReportType.TMA_WORK_ORDERS.value)
+    app.set_files([str(source)]);app.month.set('January');app.year.set('2026');app.month_confirmed.set(True)
+    app.start_preview();pump(app,lambda:not app.worker.busy)
+    assert 'Legacy XLS' in app.guidance.text('status') and 'Do not rename' in app.guidance.text('status')
+
+
+def test_slow_settings_check_keeps_window_responsive(app,tmp_path,monkeypatch):
+    from equipment_data_manager.settings import validate_locations
+    fill_settings(app,tmp_path,monkeypatch)
+    entered,release=Event(),Event()
+    def slow(*args,**kwargs):
+        entered.set();assert release.wait(5)
+        return validate_locations(*args,**kwargs)
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.validate_locations',slow)
+    app.settings_page.check_button.invoke()
+    try:
+        assert entered.wait(2)
+        ticks=[];app.after(30,lambda:ticks.append(True))
+        pump(app,lambda:bool(ticks))
+        assert app.settings_worker.busy and app.settings_page.save_button.cget('state')=='disabled'
+        assert app.preview_button.cget('state')=='disabled'
+        app.guided_switch.toggle()  # Help is usable while a folder check is active.
+        assert not app.guided.get()
+    finally:
+        release.set()
+    wait_settings(app)
+    assert app.settings_store.load().preferences.guided is False
+
+
+def test_keyboard_activation_handles_help_toggle_and_respects_disabled_processing(app):
+    app.guided_switch.focus_force();app.update()
+    app.guided_switch.event_generate('<KeyPress-space>');app.update();wait_settings(app)
+    assert not app.guided.get()
+    app.process_button.focus_force();app.update()
+    app.process_button.event_generate('<KeyPress-space>');app.update()
+    assert not app.worker.busy and not app.workflow.output_root.joinpath('manifest.sqlite3').exists()
+
+
+def test_guided_toggle_does_not_replace_unreadable_configuration(tmp_path):
+    path=tmp_path / 'broken.toml';path.write_bytes(b'CORRUPT SYNTHETIC SETTINGS')
+    app=EquipmentDataManager(tmp_path / 'defaults',settings_path=path)
+    try:
+        wait_settings(app)
+        app.guided_switch.toggle();wait_settings(app)
+        assert not app.guided.get()
+        assert path.read_bytes()==b'CORRUPT SYNTHETIC SETTINGS'
+        assert 'this session' in app.settings_page.message.cget('text')
+    finally:
+        wait_settings(app);app._close()

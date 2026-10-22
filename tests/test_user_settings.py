@@ -162,3 +162,19 @@ def test_permission_failure_during_creation_is_safe(settings,monkeypatch):
     result=create_confirmed_folders(settings)
     assert not result.valid and 'could not be created' in result.messages['candidate_folder']
     assert not Path(settings.folders['approved_folder']).exists()
+
+
+def test_windows_nonfixed_drive_is_blocked_without_host_privileges(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    import equipment_data_manager.settings as module
+    monkeypatch.setattr(module,'sys',SimpleNamespace(platform='win32'))
+    monkeypatch.setattr(module,'known_sync_roots',lambda:[])
+    monkeypatch.setattr(module.ctypes,'windll',SimpleNamespace(kernel32=SimpleNamespace(GetDriveTypeW=lambda anchor:4)),raising=False)
+    assert 'fixed local disk' in candidate_location_error(tmp_path / 'candidate')
+
+
+def test_settings_file_cannot_target_a_csv_report(tmp_path):
+    source=tmp_path / 'raw.csv';source.write_bytes(b'SYNTHETIC ORIGINAL')
+    with pytest.raises(ProcessingError,match='settings_invalid'):
+        SettingsStore(source)
+    assert source.read_bytes()==b'SYNTHETIC ORIGINAL'
