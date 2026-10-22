@@ -210,3 +210,13 @@ window within the primary display and clamps the popup independently of anchor
 position. An additional real-widget regression simulates an offscreen anchor;
 the original edge assertion is retained unchanged. Post-fix results supersede the
 initial Windows failures; no case is skipped or retried by the runner.
+
+Packaged Windows diagnostics subsequently showed that restored folders/page/help
+preferences were correct, but the restart smoke exited unsuccessfully after its
+check. CTk's Windows mainloop startup pumps events during titlebar initialization;
+a self-closing check could destroy the root during that startup pump. The restart
+harness now finishes initial mapping before attaching its close/check callback.
+A real-Tk regression simulates the Windows startup pump with an immediately ready
+check. Both restored-state and successful-exit assertions remain required; no
+failure is converted into success. Phase-only synthetic diagnostics are retained
+as a small CI artifact and check annotation for future packaged failures.

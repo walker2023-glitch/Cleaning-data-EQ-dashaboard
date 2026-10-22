@@ -723,3 +723,29 @@ def test_tooltip_stays_visible_when_anchor_is_outside_screen(app,monkeypatch):
     popup=app.guidance.popup
     assert popup.winfo_rooty()>=0
     assert popup.winfo_rooty()+popup.winfo_height()<=app.winfo_screenheight()
+
+
+def test_restart_smoke_does_not_close_root_during_windows_startup_pump(tmp_path,monkeypatch):
+    """Reproduce CTk's Windows pre-mainloop update using the real Tk window."""
+    import customtkinter as ctk
+    from equipment_data_manager.settings import FOLDER_KEYS,Preferences,SettingsStore,UserSettings
+    from equipment_data_manager.ui.smoke import run_restore_smoke
+    choices={key:str(tmp_path/key) for key in FOLDER_KEYS}
+    for folder in choices.values():Path(folder).mkdir()
+    path=tmp_path/'settings.toml'
+    SettingsStore(path).save(UserSettings(choices,Preferences(False,'detailed','powerbi',True)))
+    real_after=EquipmentDataManager.after
+    real_mainloop=ctk.CTk.mainloop
+    def immediate_check(self,delay,func=None,*args):
+        return real_after(self,0 if getattr(func,'__name__','')=='check' else delay,func,*args)
+    def startup_pump(self,*args,**kwargs):
+        if not self._window_exists:
+            # CTk's Windows titlebar path pumps events before querying wm state.
+            self.tk.call('update')
+            self.tk.call('wm','state',self._w)
+        return real_mainloop(self,*args,**kwargs)
+    monkeypatch.setattr(EquipmentDataManager,'after',immediate_check)
+    monkeypatch.setattr(ctk.CTk,'mainloop',startup_pump)
+    assert run_restore_smoke(path,tmp_path)==0
+    import json
+    assert json.loads((tmp_path/'restore-smoke.json').read_text())['passed'] is True

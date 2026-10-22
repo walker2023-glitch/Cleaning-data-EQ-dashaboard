@@ -227,12 +227,14 @@ def run_smoke(directory: Path | None) -> int:
     import sys
     launch=[sys.executable] if getattr(sys,'frozen',False) else [sys.executable,'-m','equipment_data_manager.ui.app']
     try:
-        outcome={'passed':subprocess.run(launch+['--smoke-restore-settings',str(app.settings_store.path),'--smoke-dir',str(directory)],timeout=35).returncode==0}
+        child=subprocess.run(launch+['--smoke-restore-settings',str(app.settings_store.path),'--smoke-dir',str(directory)],timeout=35)
+        outcome={'passed':child.returncode==0,'exit_code':child.returncode}
     except (OSError,subprocess.TimeoutExpired):
-        outcome={'passed':False}
+        outcome={'passed':False,'exit_code':'launch_or_timeout'}
     if not outcome['passed']:
         report=json.loads((directory/'desktop-smoke.json').read_text(encoding='utf-8'))
         report['status']='failed'
+        report['restart_exit_code']=outcome.get('exit_code')
         (directory/'desktop-smoke.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
     return 0 if outcome['passed'] else 1
 
@@ -254,6 +256,10 @@ def run_restore_smoke(settings_path, report_directory=None):
                 guided=restored.guided.get(),detail=restored.explanation_level.get(),settings_busy=restored.settings_worker.busy)
             (Path(report_directory)/'restore-smoke.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         restored._close()
+    # CTk's Windows mainloop startup pumps events while setting the titlebar.
+    # Finish initial mapping before attaching a self-closing test callback, or
+    # that callback can destroy the root inside the titlebar initialization.
+    restored.update()
     restored.after(100,check)
     restored.mainloop()
     return 0 if outcome['passed'] else 1
