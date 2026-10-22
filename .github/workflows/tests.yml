@@ -43,7 +43,14 @@ jobs:
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw "Desktop smoke timed out" }
           if (-not (Test-Path "$checkDir/desktop-smoke.json")) { throw "Desktop smoke exited without a report; exit code $($process.ExitCode)" }
           $report = Get-Content "$checkDir/desktop-smoke.json" | ConvertFrom-Json
-          if ($process.ExitCode -ne 0) { throw "Desktop smoke failed: phase=$($report.phase), kind=$($report.failure_kind), exit=$($process.ExitCode)" }
+          if ($process.ExitCode -ne 0) {
+            Write-Output "::error title=Desktop smoke::phase=$($report.phase), kind=$($report.failure_kind), exit=$($process.ExitCode)"
+            if (Test-Path "$checkDir/restore-smoke.json") {
+              $restore = Get-Content "$checkDir/restore-smoke.json" | ConvertFrom-Json
+              Write-Output "::notice title=Restart smoke::page=$($restore.page), workspace=$($restore.workspace_configured), guided=$($restore.guided), detail=$($restore.detail), busy=$($restore.settings_busy)"
+            }
+            throw "Desktop smoke failed"
+          }
           if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
       - if: runner.os == 'Windows' && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
