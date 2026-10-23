@@ -220,3 +220,21 @@ A real-Tk regression simulates the Windows startup pump with an immediately read
 check. Both restored-state and successful-exit assertions remain required; no
 failure is converted into success. Phase-only synthetic diagnostics are retained
 as a small CI artifact and check annotation for future packaged failures.
+
+## Power BI pilot checks
+
+Run `uv run --frozen pytest tests/test_powerbi_pilot.py` for synthetic real-engine
+two-month selection, original/snapshot preservation, corrected-month review,
+duplicate/missing/unexpected months and types, hashes/paths/links, incompatible
+schemas, failed staging, null/partial sums, unknown/invalid/duplicate baselines,
+explicit comparability/tolerances, report isolation and M contract specifications.
+The existing full Windows/Linux runner is unchanged; wheel CI also generates and
+checks the pilot using the installed artifact. These do not execute Microsoft's
+mashup runtime, existing DAX or a PBIX. Follow powerbi_pilot.md for those manual gates.
+
+Pilot branch local evidence (Python 3.12.14, Linux real display): **357 tests
+passed, 0 failed/errors/skips**, including the 323 preserved tests and 34 pilot
+cases. All six .pq files passed Microsoft's powerquery-parser 4.0.0 syntax parser;
+this is not mashup evaluation. Wheel/sdist build and an isolated installed-wheel
+synthetic generation/snapshot check passed. Hosted Windows/Linux checks are
+recorded separately on the pull request; manual backup-PBIX checks remain pending.

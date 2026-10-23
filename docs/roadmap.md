@@ -85,3 +85,18 @@ absence of every sync client. Business/finance/schema baselines, repair cost-fie
 hours/rate reconciliation, zero-activity policy and real Power Query/model validation
 remain open. Microsoft auth/Graph, approved publication and production Power BI
 still require separate authorization; this usability milestone does not grant it.
+
+## Power BI pilot follow-up (2026-10-23)
+
+PR #9 (feature/settings-guided-mode, 25d7a28) remains open and is the base of
+feature/powerbi-integration-pilot. PR #1 alone is merged; #2–#9 remain in their
+existing dependency chain. No merges or retargets occur here.
+
+The next user-authorized priority is local model comparison before more interface
+work: assemble explicit monthly candidate selections, check complete schemas/months,
+import into a separate PBIX and record source/cleaned/existing-measure differences.
+Synthetic assembly and arithmetic checks are implemented; real M/DAX/visual checks
+and exact model contracts still require the model owner's evidence. Business/finance
+validation and an independently approved publisher remain production gates. This
+candidate-only pilot does not depend on implementing that publisher and does not
+authorize production ingestion, authentication or SharePoint access.

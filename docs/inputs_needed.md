@@ -141,3 +141,21 @@ identity/authentication is invented for the offline review design.
 - For connected work, provide IT's decisions in `sharepoint_integration_plan.md`
   plus separate authorization for registration/test-site auth and operations.
   Do not send secrets, tokens or production access to unblock a local prototype.
+
+## Power BI integration pilot inputs
+
+The runnable synthetic multi-month pilot is in powerbi_pilot.md. For actual model
+reconciliation, provide an authorized **non-secret column/type inventory** of
+Compuclean list, Service_Orders and the real TMA table, impacted DAX expressions,
+relationship/calendar/Building_Dim keys and filter directions, sort/RLS behavior,
+and private monthly measure exports with their exact filter/date scope. A production
+PBIX or credentials are not needed for repository work. Fill generated baseline
+observations locally; do not commit departmental totals or confidential metadata.
+
+Supply trusted raw/expected pairs, one-copy source summary totals, accepted/excluded
+counts, hours/financial baselines, and finance decisions in
+repair_cost_reconciliation.md. Confirm nullable-money precision/tolerances,
+service reporting-month versus calendar basis, corrected-month selection and
+zero-activity evidence. Blank observations remain unknown; invented synthetic
+baselines never stand in for the existing dashboard. Record actual Power BI Desktop
+version and M/relationship/DAX/visual outcomes in the backup-PBIX pilot checklist.
