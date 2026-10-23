@@ -9,6 +9,16 @@ identifiers, nullable prices, incompatible schemas, bad dates/numbers/status and
 nonrecursive history exclusion. They do **not** execute a Power BI mashup engine
 or establish Power BI refresh/financial accuracy. A real M/PBIX pilot is still a gate.
 
+## Multi-month pilot
+
+See [powerbi_pilot.md](powerbi_pilot.md) for a runnable two-month synthetic
+trial, explicit packet assembly/hash checks, complete-month M examples,
+reconciliation CSVs and exact backup-PBIX instructions. The optional fourth
+`ExpectedMonths` argument adds missing/unexpected-month detection; the prior
+three-argument API retains its behavior. Actual M/model execution is still pending.
+`fnMonthlyControlTotals.pq` and `PilotControlTotals.pq` expose comparison sums and
+missing counts without replacing existing DAX or cleaning calculations.
+
 ## Try only in a separate review model
 
 1. Process a synthetic month and **Export review packet** using the monthly guide.

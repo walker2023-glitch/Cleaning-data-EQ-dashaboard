@@ -81,6 +81,16 @@ without changing cleaning logic. See [Settings](docs/settings_guide.md),
 [Guided Mode / help maintenance](docs/guided_mode.md) and
 [VS Code first-run testing](docs/development.md#settings-and-guided-mode-preview).
 
+## Power BI integration pilot
+
+Use the [multi-month pilot instructions](docs/powerbi_pilot.md) to generate a
+January/February synthetic snapshot, import it into a separate PBIX and create a
+source/cleaned/dashboard reconciliation report. Exact schemas, expected months,
+hashes and duplicate checks keep historical revisions outside ingestion folders.
+See [model mappings](docs/powerbi_compatibility.md) and the
+[unresolved repair-cost decisions](docs/repair_cost_reconciliation.md). Candidates
+remain unverified; actual model/M execution and financial approval are still open.
+
 ## Development
 
 Use Python **3.12.14** and **uv 0.12.23**. pandas is the pinned engine dependency.

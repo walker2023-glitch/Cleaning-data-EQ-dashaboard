@@ -260,3 +260,14 @@ guide and starts a fresh executable process to verify persisted startup, in
 addition to the existing cleaning/monthly/correction/export checks. No real user
 profile config or departmental reports are used. Obtain the **new branch's** build
 artifact; switching Git branches does not update an earlier downloaded ZIP.
+
+## Power BI pilot development
+
+Branch: feature/powerbi-integration-pilot, based on feature/settings-guided-mode.
+See [pilot steps](powerbi_pilot.md) for VS Code commands and the distinction between
+a cloned project and an extracted executable ZIP. No GUI or cleaner changes are
+needed. The offline module `equipment_data_manager.powerbi_pilot` assembles explicit
+review packets, validates a pinned snapshot and creates reconciliation reports.
+`examples/create_powerbi_pilot.py` uses only invented CSV/XLSX inputs through the
+real engine. `examples/powerbi_pilot_reconciliation.csv` is its invented-baseline
+report, not a departmental comparison. Never commit private baseline CSVs.

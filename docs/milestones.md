@@ -73,3 +73,17 @@ use no longer requires editing it. Synthetic tests and executable smoke cover
 persistence, local folder safety, guidance and the unchanged monthly engine flow.
 Managed-PC accessibility/scaling, finance/baselines, synced-provider policy and all
 production/Graph gates remain open. See settings_guide.md and guided_mode.md.
+
+## Power BI integration pilot follow-up
+
+Implemented: explicit multi-month candidate packet selection into new local
+snapshots, manifest/hash/exact-file-set/schema/month checks, synthetic January and
+February real-engine trial, candidate-only M examples with required-month checks,
+monthly controls, private baseline template and source/cleaned/Power BI arithmetic
+reconciliation with null/comparability states. Added model compatibility proposals,
+repair financial decision log and exact offline/backup-PBIX steps.
+
+Still open: actual M/mashup and PBIX evaluation, actual column/DAX/relationship
+inventory and baseline exports, finance/field/date/null/precision decisions, trusted
+cleaned fixtures and production approval. No cleaning calculations, production
+model, SharePoint data or candidate approval states changed. See powerbi_pilot.md.

@@ -2,7 +2,7 @@
 // A direct, immutable snapshot/report folder, NEVER versions/ or all review_packets/.
 // ReviewCandidates defaults false. Current app outputs require explicit true in a
 // separate review model; this switch is not an approval or a publishing mechanism.
-(FolderPath as text, ReportKind as text, optional ReviewCandidates as nullable logical) as table =>
+(FolderPath as text, ReportKind as text, optional ReviewCandidates as nullable logical, optional ExpectedMonths as nullable list) as table =>
 let
     Specs = [
         repairs = {{"LegacyRowNumber", "integer"}, {"CompletedDate", "date"}, {"EquipmentName", "text"}, {"EquipmentId", "text"}, {"Location", "text"}, {"ServiceVendor", "text"}, {"RepairCount", "integer"}, {"RepairPersonHours", "decimal"}, {"PartsCost", "decimal"}, {"LaborCost", "decimal"}, {"EstimatedTotalCost", "decimal"}, {"LegacyPartsCost", "decimal"}, {"LegacyEstimatedTotalCost", "decimal"}, {"RawPartsCost", "text"}, {"RawTextbox16", "text"}, {"Description", "text"}, {"Details", "text"}, {"AccountName", "text"}, {"RawEquipmentId", "text"}, {"RecordId", "text"}, {"ReportMonth", "text"}, {"SourceSystem", "text"}, {"ReportType", "text"}, {"SourceFileName", "text"}, {"SourceFileSHA256", "text"}, {"SourceRecordNumber", "integer"}, {"CandidateRecordNumber", "integer"}, {"LegacyCandidateSHA256", "text"}, {"CleanerVersion", "text"}, {"ExportVersion", "text"}, {"SchemaVersion", "text"}, {"ValidationStatus", "text"}},
@@ -53,7 +53,16 @@ let
     Combined = if List.Count(Tables) = 0 then error "No monthly CSV files"
         else if List.Count(List.Distinct(Months)) <> List.Count(Months) then error "Duplicate reporting month"
         else Table.Combine(Tables),
-    CheckedRecords = if List.Count(List.Distinct(Combined[RecordId])) = Table.RowCount(Combined)
-        then Combined else error "Duplicate record identity"
+    Expected = if ExpectedMonths = null then null else
+        if List.Count(ExpectedMonths) = 0 or List.Count(List.Distinct(ExpectedMonths)) <> List.Count(ExpectedMonths)
+            or not List.AllTrue(List.Transform(ExpectedMonths, each
+                let D = try Date.FromText(_ & "-01", [Format="yyyy-MM-dd", Culture="en-US"])
+                in if D[HasError] then false else Date.ToText(D[Value], [Format="yyyy-MM", Culture="en-US"]) = _))
+        then error "Invalid expected month selection" else ExpectedMonths,
+    Complete = if Expected = null then Combined else
+        if List.Sort(Months) = List.Sort(Expected) then Combined
+        else error "Missing or unexpected reporting months; check selected snapshot and local file availability",
+    CheckedRecords = if List.Count(List.Distinct(Complete[RecordId])) = Table.RowCount(Complete)
+        then Complete else error "Duplicate record identity"
 in
     CheckedRecords

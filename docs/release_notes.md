@@ -111,3 +111,12 @@ displays use adaptive sizes/scrolling; a managed-PC accessibility pilot remains.
 Cleaning/calculations/exclusions/schemas, revision safeguards and packet contracts
 are unchanged. No Graph/auth, production publishing, Power BI or sync-completion
 claim is added. The repair-cost discrepancy remains unresolved.
+
+## Power BI integration pilot (candidate review only)
+
+Adds an explicit multi-month snapshot/reconciliation CLI and synthetic two-month
+trial, required-month Power Query examples and monthly controls, model mapping
+proposals and unresolved repair-cost decision checklist. Existing cleaners/financial
+calculations, GUI and legacy outputs remain unchanged. Real M/PBIX/model accuracy
+and business approval are pending. No production dashboard, SharePoint, authenticated
+approval or publisher is implemented.
