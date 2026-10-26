@@ -121,3 +121,12 @@ is never a completed packet. Snapshot rename is local only, not a cloud transact
 Backup/retention, Windows junction/ACL policy and a second-PC recovery drill still
 need departmental/IT validation. A trusted application-owned directory is required;
 these checks are not a sandbox against malicious concurrent filesystem changes.
+
+## Repair financial summaries
+
+New Power BI repair candidates include a separate one-row monthly financial summary
+in repair_financial_summary/ in each packet. It is hash-bound to the repair CSV;
+missing/changed summaries stop export. Keep it separate from repair transactions
+and never repeat monthly parts/labor amounts on every repair. Existing schema-v1
+Power Query examples reject the new repair schema; migrate only a review PBIX with
+repair_financial_v2.md. Original legacy outputs/history remain available.

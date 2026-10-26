@@ -271,3 +271,12 @@ review packets, validates a pinned snapshot and creates reconciliation reports.
 `examples/create_powerbi_pilot.py` uses only invented CSV/XLSX inputs through the
 real engine. `examples/powerbi_pilot_reconciliation.csv` is its invented-baseline
 report, not a departmental comparison. Never commit private baseline CSVs.
+
+## Repair financial schema v2
+
+Use feature/repair-financial-mapping from the Git project, not an executable ZIP.
+See repair_financial_v2.md for VS Code/private preview commands, separate summaries
+and backup-PBIX migration. LegacyCsvCleaner and PowerBiCleaner v1 remain unchanged;
+the v2 wrapper reuses their exact retained-record trace and calculated values.
+Desktop Power BI mode and CLI powerbi use v2 repairs; explicit CLI powerbi-v1 and
+the processing.powerbi factory preserve v1 compatibility. No dependency changes.

@@ -191,3 +191,14 @@ before local rename. It never writes approved outputs. Packets are monthly candi
 snapshots, not an approved-current pointer or a rolling multi-month publisher.
 Power Query must use an explicit snapshot/report folder, never revision discovery.
 See `monthly_workflow.md` and `powerquery_integration.md` for exact guarantees/limits.
+
+## Financial schema-v2 wrapper
+
+processing.repair_financial wraps the preserved v1 transform/trace. It copies original
+hours/estimated labor/legacy results, preserves raw money, and assigns reported costs
+only for the confirmed equal-cell summary layout. A separate monthly CSV uses each
+source summary once and exposes incomplete/difference states without allocation.
+FinancialOutputStore stages the companion before SQLite selection and verifies the
+main-hash-bound summary on current reads; failed stages leave the old selection.
+No SQLite schema migration, cleaner rule change or approved publisher is introduced.
+See repair_financial_v2.md for exact contracts and unresolved grouping evidence.

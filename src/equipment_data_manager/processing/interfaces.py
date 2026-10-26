@@ -40,6 +40,7 @@ class CleanResult:
     cleaner_version: str
     reconciliation_metrics: tuple[ReconciliationMetric, ...]
     diagnostics: CleaningDiagnostics | None = field(default=None, repr=False)
+    supplemental_outputs: tuple[tuple[str, bytes], ...] = field(default=(), repr=False)
 
 
 class Cleaner(Protocol):

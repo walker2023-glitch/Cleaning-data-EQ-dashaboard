@@ -102,7 +102,7 @@ def export_review_packet(workspace: Workspace, coordinator, period: str) -> Path
     if coordinator.store.root != expected_root:
         raise ProcessingError("review_packet_requires_powerbi_workspace")
     from equipment_data_manager.powerquery_contract import read_table
-    payloads, manifest = {}, []
+    payloads, manifest, summaries = {}, [], []
     with coordinator.store.read_transaction() as connection:
         for kind in ReportType:
             artifact, warnings = coordinator.store.current(connection, kind, period)
@@ -114,6 +114,11 @@ def export_review_packet(workspace: Workspace, coordinator, period: str) -> Path
             rows = read_table(raw, kind, allow_candidates=True)
             if len(rows) != artifact.output_rows or any(r["ReportMonth"] != period for r in rows):
                 raise ProcessingError("review_packet_contract_mismatch")
+            from equipment_data_manager.processing.repair_financial import verify_summary
+            summary_artifact = verify_summary(artifact)
+            if summary_artifact:
+                path, summary_bytes = summary_artifact
+                summaries.append((path.name, summary_bytes, artifact.revision_id))
             name = f"{OUTPUT_NAMES[kind]}_{period}.csv"
             payloads[kind] = (name, raw)
             manifest.append(dict(report_type=kind.value, period=period, file=f"{kind.value}/{name}",
@@ -132,8 +137,14 @@ def export_review_packet(workspace: Workspace, coordinator, period: str) -> Path
                 stream.write(raw)
                 stream.flush()
                 os.fsync(stream.fileno())
+        for name, raw, _ in summaries:
+            (staged / 'repair_financial_summary').mkdir(exist_ok=True)
+            (staged / 'repair_financial_summary' / name).write_bytes(raw)
         (staged / "packet.json").write_text(json.dumps(dict(status="CandidateUnverified", period=period,
-            production_ready=False, sync_verified=False, files=manifest), indent=2) + "\n", encoding="utf-8")
+            production_ready=False, sync_verified=False, files=manifest,
+            supplemental_files=[dict(file='repair_financial_summary/' + name, sha256=sha256(raw).hexdigest(),
+                rows=1, revision=revision, report_type='repair_financial_summary', period=period)
+                for name, raw, revision in summaries]), indent=2) + "\n", encoding="utf-8")
         staged.rename(final)
     except BaseException:
         shutil.rmtree(staged)

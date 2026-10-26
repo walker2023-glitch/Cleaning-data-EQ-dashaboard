@@ -16,10 +16,24 @@ from equipment_data_manager.processing.models import ProcessingError, ReportType
 from equipment_data_manager.processing.powerbi import EXPORT_VERSION, schema
 
 
-def read_table(raw: bytes, kind: ReportType, *, allow_candidates=False):
+def read_table(raw: bytes, kind: ReportType, *, allow_candidates=False, financial_summary=False):
     try:
         table = list(csv.reader(StringIO(raw.decode('utf-8-sig'), newline=''), strict=True))
         contract = schema(kind)
+        version, schema_version, report_name = EXPORT_VERSION, '1', kind.value
+        if financial_summary:
+            from equipment_data_manager.processing.repair_financial import SUMMARY_COLUMNS
+            from equipment_data_manager.processing.interfaces import ColumnSchema
+            integers = {'ReportedRepairCount', 'SourceRecordCount', 'RetainedRepairCount', 'UnavailableRepairCostCount'}
+            numbers = {'ReportedLaborCost', 'ReportedPartsCost', 'ReportedTotalCost', 'KnownRepairTotalCost',
+                       'RepairTotalDifference', 'SummaryComponentsDifference'}
+            contract = tuple(ColumnSchema(n, 'integer' if n in integers else 'decimal' if n in numbers else 'text')
+                             for n in SUMMARY_COLUMNS)
+            version, schema_version, report_name = 'powerbi-v2', '2', 'repair_financial_summary'
+        elif kind == ReportType.REPAIRS and table and 'FinancialSummarySHA256' in table[0]:
+            from equipment_data_manager.processing.repair_financial import schema as v2_schema
+            contract = v2_schema()
+            version, schema_version = 'powerbi-v2', '2'
         if not table or table[0] != [c.name for c in contract] or len(table) < 2:
             raise ValueError
         result = []
@@ -40,13 +54,13 @@ def read_table(raw: bytes, kind: ReportType, *, allow_candidates=False):
                 else:
                     parsed = value
                 values[column.name] = parsed
-            if (values['ReportType'] != kind.value or values['ExportVersion'] != EXPORT_VERSION
-                    or values['SchemaVersion'] != '1' or not re.fullmatch(r'\d{4}-(0[1-9]|1[0-2])', values['ReportMonth'])
+            if (values['ReportType'] != report_name or values['ExportVersion'] != version
+                    or values['SchemaVersion'] != schema_version or not re.fullmatch(r'\d{4}-(0[1-9]|1[0-2])', values['ReportMonth'])
                     or values['ValidationStatus'] not in (('CandidateUnverified',) if allow_candidates else ('Approved',))):
                 raise ValueError
             date.fromisoformat(values['ReportMonth'] + '-01')
             result.append(values)
-        if len({r['ReportMonth'] for r in result}) != 1 or len({r['RecordId'] for r in result}) != len(result):
+        if len({r['ReportMonth'] for r in result}) != 1 or (len(result) != 1 if financial_summary else len({r['RecordId'] for r in result}) != len(result)):
             raise ValueError
         return result
     except (ValueError, UnicodeError, csv.Error, InvalidOperation):
@@ -55,12 +69,15 @@ def read_table(raw: bytes, kind: ReportType, *, allow_candidates=False):
 
 def read_folder(folder: Path, kind: ReportType, *, allow_candidates=False):
     """Direct CSVs only; a superseded file with a second month key fails closed."""
-    result, months, identifiers = [], set(), set()
+    result, months, identifiers, versions = [], set(), set(), set()
     for path in sorted(folder.iterdir()):
         if path.is_file() and path.suffix.lower() == '.csv' and not path.name.startswith(('.', '~')):
             if path.is_symlink():
                 raise ProcessingError('folder_ingestion_link_rejected')
             rows = read_table(path.read_bytes(), kind, allow_candidates=allow_candidates)
+            versions.add(rows[0]['SchemaVersion'])
+            if len(versions) > 1:
+                raise ProcessingError('folder_ingestion_mixed_schema_versions')
             month = rows[0]['ReportMonth']
             if month in months or any(r['RecordId'] in identifiers for r in rows):
                 raise ProcessingError('folder_ingestion_duplicate_month_or_record')

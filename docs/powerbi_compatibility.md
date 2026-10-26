@@ -1,5 +1,12 @@
 # Existing model compatibility review
 
+> **Superseded for current repair finances:** recommended output now uses repair
+> schema v2. See [repair_financial_v2.md](repair_financial_v2.md) for confirmed
+> total-cost mapping, separate monthly summaries, evidence limits and migration.
+> Schema-v1 details below remain compatibility/history documentation; source-reported
+> totals must not be interpreted as parts or have estimated labor added to them.
+
+
 The actual PBIX, column inventory and DAX definitions are not present. The table
 concepts `Compuclean list` and `Service_Orders` come from design.md; the TMA table
 name is unknown. The following mappings target **known legacy cleaner columns**

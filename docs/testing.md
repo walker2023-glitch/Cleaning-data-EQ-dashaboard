@@ -238,3 +238,22 @@ cases. All six .pq files passed Microsoft's powerquery-parser 4.0.0 syntax parse
 this is not mashup evaluation. Wheel/sdist build and an isolated installed-wheel
 synthetic generation/snapshot check passed. Hosted Windows/Linux checks are
 recorded separately on the pull request; manual backup-PBIX checks remain pending.
+
+## Repair financial schema-v2 regression checks
+
+`uv run --frozen pytest tests/test_repair_financial.py` covers January-/February-shaped
+29/5-record datasets with invented financial amounts, equal/unequal grouped fields,
+zero/missing/malformed money, repeated summaries/transactions, excluded records,
+monthly discrepancies, exact legacy calculation retention, v1-to-v2 correction
+review, write-free preview, companion integrity/write failures, desktop/CLI routing,
+packet/snapshot propagation, mixed-version rejection and M schema/control contracts.
+The malformed-number ingestion test now mutates RepairPersonHours, a numeric field
+shared by both schema versions; no original test was removed. Actual January was
+reconciled locally read-only; no real raw report, identity or financial amount is
+committed. Real February and formatted repair/grouped-workbook validation are pending.
+
+Financial branch local results: **376 passed, 0 failures/errors/skips** on Linux
+with real desktop tests isolated per case (357 preserved tests + 19 new cases).
+All eleven M files passed Microsoft's powerquery-parser 4.0.0 syntax parser.
+Wheel/sdist build and installed-wheel v2 synthetic generation/snapshot checks passed.
+These are not actual Power BI M/DAX execution or production accuracy approval.

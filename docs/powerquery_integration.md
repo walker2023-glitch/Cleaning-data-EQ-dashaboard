@@ -1,5 +1,12 @@
 # Power Query folder ingestion — review example, production blocked
 
+> **Superseded for current repair finances:** recommended output now uses repair
+> schema v2. See [repair_financial_v2.md](repair_financial_v2.md) for confirmed
+> total-cost mapping, separate monthly summaries, evidence limits and migration.
+> Schema-v1 details below remain compatibility/history documentation; source-reported
+> totals must not be interpreted as parts or have estimated labor added to them.
+
+
 `powerquery/fnReadMonthlyFolder.pq` is a complete M function example for schema v1.
 `powerquery_contract.py` is an independently callable offline Python reference
 validator. Automated tests feed real-engine **synthetic** outputs into that
