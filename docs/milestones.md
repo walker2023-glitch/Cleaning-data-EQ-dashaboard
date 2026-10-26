@@ -87,3 +87,16 @@ Still open: actual M/mashup and PBIX evaluation, actual column/DAX/relationship
 inventory and baseline exports, finance/field/date/null/precision decisions, trusted
 cleaned fixtures and production approval. No cleaning calculations, production
 model, SharePoint data or candidate approval states changed. See powerbi_pilot.md.
+
+## Repair financial schema-v2 correction
+
+Implemented: separated source-reported repair totals, unchanged estimated labor,
+explicit legacy arithmetic/raw fields, versioned repair schema 2, one hashed monthly
+summary per revision, complete/incomplete/discrepant reconciliation, safe companion
+persistence/current-revision checks, review-packet/snapshot propagation and v2 M
+examples/migration instructions. Legacy, service and TMA behavior stays intact.
+
+Real January was checked read-only and reconciles. Synthetic January/February-shaped
+and grouped/zero/missing/malformed tests use invented financial amounts. Actual
+February and formatted repair XLSX are missing; nonzero unequal field/subtotal
+grain remains blocked. No production approval or per-repair parts/labor allocation.

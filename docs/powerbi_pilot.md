@@ -1,5 +1,12 @@
 # Power BI integration pilot — local candidates only
 
+> **Superseded for current repair finances:** recommended output now uses repair
+> schema v2. See [repair_financial_v2.md](repair_financial_v2.md) for confirmed
+> total-cost mapping, separate monthly summaries, evidence limits and migration.
+> Schema-v1 details below remain compatibility/history documentation; source-reported
+> totals must not be interpreted as parts or have estimated labor added to them.
+
+
 This pilot assembles an explicit multi-month selection from monthly review packets.
 It never selects files by recursively scanning candidate history, marks data
 approved, connects to Power BI, or changes cleaning calculations. Work on a trusted

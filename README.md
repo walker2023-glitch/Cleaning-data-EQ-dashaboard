@@ -81,6 +81,16 @@ without changing cleaning logic. See [Settings](docs/settings_guide.md),
 [Guided Mode / help maintenance](docs/guided_mode.md) and
 [VS Code first-run testing](docs/development.md#settings-and-guided-mode-preview).
 
+## Repair financial correction
+
+Recommended Power BI mode now uses repair schema v2: reported repair totals,
+estimated labor and original legacy arithmetic are separate, with a hashed monthly
+financial-summary CSV. Legacy/v1 compatibility remains. See the
+[financial contract, evidence limits and migration guide](docs/repair_financial_v2.md).
+January arithmetic reconciliation passed locally; formatted repair XLSX, actual
+February and nonzero equipment-subtotal semantics still need evidence. No approval
+or production change is implied.
+
 ## Power BI integration pilot
 
 Use the [multi-month pilot instructions](docs/powerbi_pilot.md) to generate a

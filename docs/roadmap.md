@@ -100,3 +100,16 @@ and exact model contracts still require the model owner's evidence. Business/fin
 validation and an independently approved publisher remain production gates. This
 candidate-only pilot does not depend on implementing that publisher and does not
 authorize production ingestion, authentication or SharePoint access.
+
+## Financial correction follow-up (2026-10-26)
+
+feature/repair-financial-mapping starts from PR #10's 6857953. Existing PRs remain
+open and unmerged. Repair v2 corrects source-total meaning without altering original
+calculations, adds monthly summary integrity/reconciliation and migration examples.
+The prior PR #10 Windows PR job lost hosted-runner communication; its same-head
+branch Windows/Linux checks passed. No speculative GUI/runner fix is included.
+
+Next evidence: formatted repair XLSX and nonzero grouped totals, actual February,
+trusted expected pairs and finance/model contracts. Continue local candidate review;
+reconcile source totals and separately review estimate assumptions before migration.
+No production dashboard, approved output, SharePoint or authentication changes.

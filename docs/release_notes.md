@@ -120,3 +120,13 @@ proposals and unresolved repair-cost decision checklist. Existing cleaners/finan
 calculations, GUI and legacy outputs remain unchanged. Real M/PBIX/model accuracy
 and business approval are pending. No production dashboard, SharePoint, authenticated
 approval or publisher is implemented.
+
+## Repair financial mapping — schema v2
+
+Recommended Power BI repair output now distinguishes reported total cost, estimated
+labor and explicit legacy arithmetic. Source raw values stay available; ambiguous
+unequal grouped fields stay unassigned. A separate monthly summary is hash-bound to
+each revision and included in packets/snapshots. v2 M examples and migration guidance
+preserve v1/legacy compatibility; service/TMA/calculations/exclusions are unchanged.
+Actual January arithmetic reconciles; February/formatted grouped evidence and full
+business/model approval remain pending. No candidate approval or production writes.

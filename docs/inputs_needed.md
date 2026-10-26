@@ -159,3 +159,14 @@ service reporting-month versus calendar basis, corrected-month selection and
 zero-activity evidence. Blank observations remain unknown; invented synthetic
 baselines never stand in for the existing dashboard. Record actual Power BI Desktop
 version and M/relationship/DAX/visual outcomes in the backup-PBIX pilot checklist.
+
+## Repair financial mapping follow-up
+
+The owner confirmed formatted individual costs mean Total Cost. The local January
+CSV's equal Textbox38/Textbox16 cells reconcile under v2. Still needed privately:
+formatted January repair XLSX, raw February repair CSV (and formatted version),
+nonzero multi-repair equipment examples identifying individual amount vs subtotal,
+trusted expected outputs and finance/model approval of the remaining hours/rate,
+null/precision and monthly-vs-equipment measure policies. Do not resend January raw
+CSV. Unequal financial cells remain unassigned; no subtotal mapping is guessed.
+See repair_financial_v2.md. Do not commit actual financial amounts or raw reports.

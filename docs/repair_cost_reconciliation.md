@@ -1,5 +1,12 @@
 # Repair-cost reconciliation — unresolved business gate
 
+> **Superseded for current repair finances:** recommended output now uses repair
+> schema v2. See [repair_financial_v2.md](repair_financial_v2.md) for confirmed
+> total-cost mapping, separate monthly summaries, evidence limits and migration.
+> Schema-v1 details below remain compatibility/history documentation; source-reported
+> totals must not be interpreted as parts or have estimated labor added to them.
+
+
 ## Evidence and current behavior
 
 Previously inspected January input has 29 retained repair records. Source summary

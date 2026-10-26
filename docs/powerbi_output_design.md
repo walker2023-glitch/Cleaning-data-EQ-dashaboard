@@ -1,5 +1,12 @@
 # Power BI candidate export design — schema v1
 
+> **Superseded for current repair finances:** recommended output now uses repair
+> schema v2. See [repair_financial_v2.md](repair_financial_v2.md) for confirmed
+> total-cost mapping, separate monthly summaries, evidence limits and migration.
+> Schema-v1 details below remain compatibility/history documentation; source-reported
+> totals must not be interpreted as parts or have estimated labor added to them.
+
+
 The desktop now recommends/defaults to **Power BI CSV candidate** after the existing
 cleaner validates a supported input. Legacy mode stays available and keeps its
 original bytes, writers, manifest and revisions. The new layer does not authorize
