@@ -122,6 +122,8 @@ def test_unverified_flat_layout_preserves_legacy_but_does_not_assert_source_cost
     result = clean(raw,9)
     assert {r['ReportedTotalCostStatus'] for r in records(result)} == {'layout_unverified'}
     assert read_summary(result.supplemental_outputs[0][1])['ReconciliationStatus'] == 'source_summary_unavailable'
+    assert read_summary(result.supplemental_outputs[0][1])['KnownRepairTotalCost'] is None
+    assert 'Known reported repair total' not in {m.name for m in result.reconciliation_metrics}
 
 
 def test_legacy_output_unchanged_and_v1_upgrade_requires_review(tmp_path):

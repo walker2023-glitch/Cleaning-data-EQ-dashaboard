@@ -117,7 +117,8 @@ class RepairFinancialCleaner:
         notes += ('repair_financial_schema_v2', f'repair_reported_cost_reconciliation:{state}')
         if unavailable:
             notes += (f'repair_reported_cost_unavailable:{unavailable}',)
-        extra = (ReconciliationMetric('Known reported repair total', known, 'source_dollars'),)
+        extra = ((ReconciliationMetric('Known reported repair total', known, 'source_dollars'),)
+                 if unavailable < len(rows) else ())
         return replace(original, output_bytes=encode(rows, BUSINESS + COMMON), schema=schema(),
             cleaner_version=self.version, warnings=notes, reconciliation_metrics=original.reconciliation_metrics + extra,
             supplemental_outputs=((summary_name(period), summary_bytes),))
