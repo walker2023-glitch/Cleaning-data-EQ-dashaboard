@@ -220,7 +220,7 @@ def test_ingestion_rejects_incompatible_contracts(workspace, mutation):
     records = list(csv.reader(StringIO(path.read_text())))
     if mutation == 'schema': records[0][0] = 'Unexpected'
     elif mutation == 'date': records[1][records[0].index('CompletedDate')] = '1/1/2026'
-    elif mutation == 'number': records[1][records[0].index('PartsCost')] = 'NaN'
+    elif mutation == 'number': records[1][records[0].index('RepairPersonHours')] = 'NaN'
     elif mutation == 'status': records[1][records[0].index('ValidationStatus')] = 'Approved'
     elif mutation == 'period': records[1][records[0].index('ReportMonth')] = '2026-99'
     elif mutation == 'width': records[1].append('extra')

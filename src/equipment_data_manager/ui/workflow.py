@@ -79,7 +79,7 @@ class DesktopWorkflow:
         self.base_output_root = Path(output_root).resolve()
         self.output_format = output_format
         if coordinator is None and output_format == "powerbi":
-            from equipment_data_manager.processing.powerbi import powerbi_coordinator
+            from equipment_data_manager.processing.repair_financial import powerbi_coordinator
             coordinator = powerbi_coordinator(output_root)
         self.coordinator = coordinator or ProcessingCoordinator(output_root)
         self.output_root = self.coordinator.store.root

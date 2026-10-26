@@ -26,6 +26,16 @@ METRICS = {
     ReportType.SERVICE_ORDERS: {'rows': None, 'service_price': 'EstimatedPrice'},
     ReportType.TMA_WORK_ORDERS: {'rows': None},
 }
+REPAIR_V2_METRICS = {'rows': None, 'repair_count': 'RepairCount', 'hours': 'RepairPersonHours',
+    'reported_total_cost': 'ReportedTotalCost', 'estimated_labor_cost': 'EstimatedLaborCost',
+    'legacy_parts_cost': 'LegacyPartsCost', 'legacy_labor_cost': 'LegacyLaborCost',
+    'legacy_estimated_total': 'LegacyEstimatedTotalCost'}
+
+
+def _metrics(kind, records):
+    return REPAIR_V2_METRICS if kind == ReportType.REPAIRS and 'ReportedTotalCost' in records[0] else METRICS[kind]
+
+
 BASELINE_COLUMNS = ['report_type', 'period', 'metric', 'source_total', 'powerbi_total',
                     'powerbi_measure', 'tolerance', 'comparable', 'evidence']
 
@@ -50,7 +60,7 @@ def assemble(packet_paths: list[Path], periods: list[str], destination: Path) ->
     never reused or overwritten. Source bytes and all historical revisions stay put.
     """
     periods = _periods(periods)
-    payloads, selected, seen = [], [], set()
+    payloads, selected, summaries, seen = [], [], [], set()
     for packet in packet_paths:
         _unlinked(packet.absolute())
         data = json.loads((packet / 'packet.json').read_text(encoding='utf-8'))
@@ -77,6 +87,10 @@ def assemble(packet_paths: list[Path], periods: list[str], destination: Path) ->
                 raise ProcessingError('pilot_packet_count_or_period_mismatch')
             payloads.append((relative, raw))
             selected.append(dict(entry))
+        extra = data.get('supplemental_files', [])
+        repair_raw = next(raw for name, raw in payloads if name == f'repairs/{OUTPUT_NAMES[ReportType.REPAIRS]}_{period}.csv')
+        repair_rows = read_table(repair_raw, ReportType.REPAIRS, allow_candidates=True)
+        _summary_payload(packet, repair_rows, extra, payloads, summaries)
         seen.add(period)
     if seen != set(periods):
         raise ProcessingError('pilot_missing_month')
@@ -97,7 +111,7 @@ def assemble(packet_paths: list[Path], periods: list[str], destination: Path) ->
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(raw)
         (stage / 'snapshot.json').write_text(json.dumps(dict(
-            status='CandidateUnverified', production_ready=False, periods=periods, files=selected),
+            status='CandidateUnverified', production_ready=False, periods=periods, files=selected, financial_summaries=summaries),
             indent=2) + '\n', encoding='utf-8')
         validate_snapshot(stage)
         stage.rename(destination / 'snapshot')
@@ -122,7 +136,9 @@ def validate_snapshot(root: Path):
         raise ProcessingError('pilot_incomplete_manifest')
     all_rows = {}
     tables = root / 'tables'
-    if {p.name for p in tables.iterdir()} != {k.value for k in ReportType}:
+    summaries = manifest.get('financial_summaries', [])
+    expected_folders = {k.value for k in ReportType} | ({'repair_financial_summary'} if summaries else set())
+    if {p.name for p in tables.iterdir()} != expected_folders:
         raise ProcessingError('pilot_unexpected_table_folder')
     for kind in ReportType:
         chosen = [e for e in entries if e['report_type'] == kind.value]
@@ -147,7 +163,42 @@ def validate_snapshot(root: Path):
         if {r['ReportMonth'] for r in rows} != set(periods):
             raise ProcessingError('pilot_missing_month')
         all_rows[kind] = rows
+    repairs = all_rows[ReportType.REPAIRS]
+    for period in periods:
+        monthly = [r for r in repairs if r['ReportMonth'] == period]
+        extra = [e for e in summaries if e['period'] == period]
+        _summary_payload(tables, monthly, extra, [], [])
+    if summaries:
+        folder = tables / 'repair_financial_summary'
+        _unlinked(folder.absolute())
+        if len(summaries) != len(periods) or {p.name for p in folder.iterdir()} != {Path(e['file']).name for e in summaries}:
+            raise ProcessingError('pilot_missing_or_extra_financial_summaries')
     return all_rows
+
+
+def _summary_payload(parent, repair_rows, entries, payloads, manifests):
+    from equipment_data_manager.processing.repair_financial import read_summary, summary_name
+    v2 = repair_rows[0]['SchemaVersion'] == '2'
+    if not v2:
+        if entries:
+            raise ProcessingError('pilot_unexpected_financial_summary')
+        return
+    period = repair_rows[0]['ReportMonth']
+    relative = 'repair_financial_summary/' + summary_name(period)
+    if (len(entries) != 1 or entries[0]['file'] != relative or entries[0]['period'] != period
+            or entries[0].get('report_type') != 'repair_financial_summary' or entries[0].get('rows') != 1):
+        raise ProcessingError('pilot_missing_or_extra_financial_summaries')
+    path = parent / relative
+    _unlinked(path.absolute())
+    raw = path.read_bytes()
+    digest = sha256(raw).hexdigest()
+    if entries[0]['sha256'] != digest or any(r['FinancialSummarySHA256'] != digest for r in repair_rows):
+        raise ProcessingError('pilot_financial_summary_hash_mismatch')
+    summary = read_summary(raw)
+    if summary['ReportMonth'] != period or summary['SourceFileSHA256'] != repair_rows[0]['SourceFileSHA256']:
+        raise ProcessingError('pilot_financial_summary_provenance_mismatch')
+    payloads.append((relative, raw))
+    manifests.extend(entries)
 
 
 def baseline_template(root: Path, target: Path):
@@ -160,7 +211,7 @@ def baseline_template(root: Path, target: Path):
         writer.writeheader()
         for kind, records in rows.items():
             for period in sorted({r['ReportMonth'] for r in records}):
-                for metric in METRICS[kind]:
+                for metric in _metrics(kind, records):
                     writer.writerow(dict(report_type=kind.value, period=period, metric=metric,
                                          tolerance='0', comparable='false'))
 
@@ -190,7 +241,7 @@ def reconcile(root: Path, baseline: Path):
                 kind = ReportType(row['report_type'])
                 key = (kind, row['period'], row['metric'])
                 if (None in row or any(v is None for v in row.values()) or key in observations
-                        or row['metric'] not in METRICS[kind]
+                        or row['metric'] not in _metrics(kind, tables[kind])
                         or row['period'] not in {r['ReportMonth'] for r in tables[kind]}
                         or row['comparable'] not in ('true', 'false')):
                     raise ValueError
@@ -208,7 +259,7 @@ def reconcile(root: Path, baseline: Path):
     for kind, rows in tables.items():
         for period in sorted({r['ReportMonth'] for r in rows}):
             monthly = [r for r in rows if r['ReportMonth'] == period]
-            for metric, column in METRICS[kind].items():
+            for metric, column in _metrics(kind, rows).items():
                 observed, source, pbi, tolerance = observations.get((kind, period, metric), ({}, None, None, Decimal(0)))
                 values = [r[column] for r in monthly] if column else [Decimal(1) for _ in monthly]
                 nonnull = [v for v in values if v is not None]

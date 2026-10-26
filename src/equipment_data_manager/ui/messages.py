@@ -3,6 +3,8 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    "financial_summary_hash_mismatch": "The saved monthly financial summary changed. Processing stopped to protect its revision; keep the store intact.",
+    "financial_summary_missing_or_unreadable": "The monthly financial summary is missing or unavailable. Keep the candidate store intact and contact your maintainer.",
     "review_packet_missing_reports": "A complete review packet requires all three current Power BI candidates for this month. Process the missing reports first.",
     "review_packet_requires_powerbi_workspace": "Load the matching folder configuration and use Power BI CSV candidate mode before exporting.",
     "review_packet_contract_mismatch": "A selected candidate failed the packet schema/count/month checks. Keep the store intact and contact your maintainer.",
@@ -68,7 +70,15 @@ def error_message(code: str):
 
 def warning_message(code: str):
     key, _, count = code.partition(":")
+    if key == 'repair_reported_cost_reconciliation':
+        states = {'arithmetic_match': 'Reported monthly total matches retained repair totals. This is arithmetic reconciliation, not production approval.',
+            'difference': 'Reported financial totals disagree. Review the monthly financial summary; no values were adjusted.',
+            'incomplete_repair_costs_or_excluded_records': 'Monthly repair-cost comparison is incomplete: review missing, malformed or unequal source fields and excluded records.',
+            'source_summary_unavailable': 'This layout has no verified monthly financial summary; reported repair costs remain unassigned.'}
+        return states.get(count, 'Repair financial reconciliation needs review.')
     messages = {
+        "repair_financial_schema_v2": "Financial schema v2 keeps reported totals separate from estimated labor and legacy arithmetic. A monthly financial summary is saved beside the repair CSV.",
+        "repair_reported_cost_unavailable": "Reported repair costs left blank because source fields are missing, malformed, unequal or outside the confirmed layout",
         "production_publication_blocked": "Power BI CSV candidate only. Production publication is blocked until financial reconciliation and trusted-output approval.",
         "normalized_financial_values_unavailable": "Rows with unavailable source parts/total values left blank; original calculated values remain in the Legacy columns",
         "source_record_numbers_unavailable": "TMA exclusions prevent a verified source-record mapping. SourceRecordNumber is blank; candidate ordinals remain available.",

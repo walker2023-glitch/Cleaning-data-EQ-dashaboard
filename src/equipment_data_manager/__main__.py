@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     process.add_argument("--period", required=True, help="Operator-confirmed YYYY-MM")
     process.add_argument("--output-dir", required=True, type=Path)
     process.add_argument("--replacement-token", help="Token from the reviewed corrected-file result (single file only)")
-    process.add_argument("--output-format", choices=["legacy", "powerbi"], default="legacy", help="Candidate CSV format; Power BI mode does not publish")
+    process.add_argument("--output-format", choices=["legacy", "powerbi", "powerbi-v1"], default="legacy", help="Candidate CSV format; Power BI mode does not publish")
     process.add_argument("--preview", action="store_true", help="Validate without writing candidate files or history")
     process.add_argument("--include-date-values", action="store_true", help="Include private source date cells/record numbers in local diagnostics; do not publish this output")
     args = parser.parse_args(argv)
@@ -32,8 +32,11 @@ def main(argv: list[str] | None = None) -> int:
         from equipment_data_manager.processing.coordinator import ProcessingCoordinator
         from equipment_data_manager.processing.models import ProcessingRequest, ProcessingStatus
 
-        if args.output_format == "powerbi":
-            from equipment_data_manager.processing.powerbi import powerbi_coordinator
+        if args.output_format in ("powerbi", "powerbi-v1"):
+            if args.output_format == "powerbi":
+                from equipment_data_manager.processing.repair_financial import powerbi_coordinator
+            else:
+                from equipment_data_manager.processing.powerbi import powerbi_coordinator
             coordinator = powerbi_coordinator(args.output_dir)
         else:
             coordinator = ProcessingCoordinator(args.output_dir)
@@ -47,6 +50,8 @@ def main(argv: list[str] | None = None) -> int:
                 "status": result.status.value, "code": result.code,
                 "input_rows": result.input_rows, "output_rows": result.output_rows,
                 "output_location": str(result.output_location) if result.output_location else None,
+                "supplemental_output_locations": [str(result.output_location.parent / ("CompuClean_RepairFinancialSummary_" + args.period + ".csv"))]
+                    if result.artifact and result.artifact.cleaner_version.startswith('powerbi-v2:') else [],
                 "revision_id": result.artifact.revision_id if result.artifact else None,
                 "previous_revision": result.previous.revision_id if result.previous else None,
                 "previous_output_location": str(result.previous.output_path) if result.previous else None,

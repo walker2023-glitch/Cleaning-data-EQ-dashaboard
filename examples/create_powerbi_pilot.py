@@ -24,10 +24,14 @@ def csv_bytes(headers, rows):
     return stream.getvalue().encode('utf-8-sig')
 
 
-def create_demo(root: Path):
+def create_demo(root: Path, *, financial_v2=False):
     root.mkdir(parents=True, exist_ok=False)
     workspace = Workspace(root / 'raw', root / 'candidates', root / 'reserved-approved')
-    engine = powerbi_coordinator(workspace.candidate_folder)
+    if financial_v2:
+        from equipment_data_manager.processing.repair_financial import powerbi_coordinator as financial_coordinator
+        engine = financial_coordinator(workspace.candidate_folder)
+    else:
+        engine = powerbi_coordinator(workspace.candidate_folder)
     packets = []
     for month in (1, 2):
         period = f'2026-{month:02d}'
@@ -38,8 +42,11 @@ def create_demo(root: Path):
             'Textbox10', 'Textbox11', 'Textbox12', 'Textbox13'], [
             ['Synthetic Account', 'Equip. Name: Synthetic Machine', f'Equipment Id: 00043{i}',
              'Service Vendor: Synthetic Vendor', 'Location: Synthetic Room', f'{month}/15/2026',
-             '' if month == 2 and i == 9 else '$10.00', 'Synthetic repair', '2 hours', '$35.00',
-             'Total Labor: $40.00', 'Total Parts: $30.00', 'Total Cost: $70.00', '# of Repairs: 2']
+             '' if month == 2 and i == 9 else '$10.00', 'Synthetic repair', '2 hours',
+             ('' if month == 2 and i == 9 else '$10.00') if financial_v2 else '$35.00',
+             'Total Labor: $15.00' if financial_v2 else 'Total Labor: $40.00',
+             'Total Parts: $5.00' if financial_v2 else 'Total Parts: $30.00',
+             'Total Cost: $20.00' if financial_v2 else 'Total Cost: $70.00', '# of Repairs: 2']
             for i in (8, 9)])
         services = csv_bytes(['AccountName2', 'EquipmentId1', 'EquipmentName1', 'VendorName', 'ScheduledDate',
             'CompletedDate', 'Name', 'Description', 'Textbox21', 'Textbox56'], [
@@ -75,6 +82,8 @@ def create_demo(root: Path):
         metric = row['metric']
         if metric in ('rows', 'repair_count'):
             row.update(source_total='2', powerbi_total='2', comparable='true')
+        elif metric == 'reported_total_cost':
+            row.update(source_total='20', powerbi_total='20', comparable='true')
         elif metric == 'hours':
             row['powerbi_total'] = '4'
             row['comparable'] = 'true'
@@ -94,7 +103,8 @@ def create_demo(root: Path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--repair-financial-v2', action='store_true', help='Separate reported repair totals from estimates/legacy; include monthly financial summaries')
     args = parser.parse_args()
-    snapshot = create_demo(args.output)
+    snapshot = create_demo(args.output, financial_v2=args.repair_financial_v2)
     print(f'SYNTHETIC candidate snapshot: {snapshot}')
     print('Comparison report uses INVENTED baselines, not existing dashboard measures. No approval or publication.')
