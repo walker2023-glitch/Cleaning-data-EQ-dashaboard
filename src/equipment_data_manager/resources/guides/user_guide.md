@@ -96,11 +96,20 @@ Both modes retain the original cleaning/exclusion rules and process only local
 supported reports. Power BI candidates have their own history under the base
 folder's powerbi_candidates directory.
 
-These exports are **unapproved candidates**. The financial discrepancy and trusted
-cleaned-output comparisons are unresolved, so the application does not publish
+These exports are **unapproved candidates**. Financial field ambiguities, estimate
+policies and trusted cleaned-output comparisons remain unresolved, so the application does not publish
 approved monthly exports. Do not point a production Power BI query at either
 candidate/history directory. SourceMaintenanceTag is a preserved description tag,
 not an approved maintenance classification. No classifier is implemented.
+
+Repair Power BI output now separates **ReportedTotalCost** from **EstimatedLaborCost**.
+Never add estimated labor to the reported total. Original calculations remain in
+Legacy columns for comparison. A separate monthly financial-summary CSV is saved
+beside the repair CSV and included in review packets. Review its reconciliation
+status and missing-cost count. Unequal or unconfirmed source fields stay blank;
+a matching monthly total is not production approval. Previously processed months
+need the normal correction review to select the new format. See
+[the financial guide](repair_financial_v2.md) before changing a review Power BI query.
 
 ## Monthly folder checklist and review packets
 

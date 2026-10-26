@@ -44,12 +44,12 @@ and [milestone status](docs/milestones.md).
 
 See the [format compatibility matrix](docs/format_compatibility.md) and
 [edge-case evidence](docs/edge_case_validation.md) for supported layouts, monthly
-count tests and the unresolved January repair financial discrepancy.
+count tests and remaining repair financial semantics and estimate-policy gates.
 
 See [January rejection diagnostics](docs/january_rejection_investigation.md) for
 Windows runtime checks, per-record date/exclusion traces and explicit TMA filters.
 
-The recommended/default desktop **Power BI CSV candidate** output format adds schema-v1 header-first
+The recommended/default desktop **Power BI CSV candidate** output format adds versioned header-first
 exports with ISO dates, text IDs, ReportMonth and provenance. Legacy mode remains
 available for compatibility. See [output contracts/publication design](docs/powerbi_output_design.md),
 [future maintenance classification design](docs/maintenance_classification_design.md)
