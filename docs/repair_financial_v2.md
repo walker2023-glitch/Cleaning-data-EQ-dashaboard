@@ -1,5 +1,13 @@
 # Repair financial schema v2 and migration
 
+> **Current evidence (2026-10-27):** the owner reports January and February v2
+> arithmetic reconciliation. The earlier schema's synthetic Desktop pilot succeeded;
+> the v2 real-data Desktop/model trial is still pending. Follow
+> [Milestone A](powerbi_real_data_readiness.md) for current shared-period queries and
+> local assembly/assessment commands. Earlier file-availability notes below describe
+> the development environment at implementation, not a claim that the owner has not tested February.
+
+
 ## Evidence, implemented mapping and unresolved grouping
 
 The owner has confirmed that the formatted report labels individual repair amounts
@@ -148,11 +156,14 @@ snapshots/packets/versions remain outside the selected ingestion folder.
 Follow powerbi_pilot.md's blank/backup PBIX safety steps. Existing schema-v1 queries
 intentionally reject v2 repairs. In a separate review PBIX:
 
-1. Load fnReadMonthlyFolderV2.pq as fnReadMonthlyFolderV2; keep v1 functions/queries
+1. Create PilotMonths from powerquery/PilotMonths.pq. Load fnReadMonthlyFolderV2.pq
+   as fnReadMonthlyFolderV2; keep v1 functions/queries
    only for explicit comparison. Set PilotSnapshot to the exact new snapshot folder.
 2. Load PilotRepairsV2.pq as PilotRepairsV2, and PilotRepairFinancialSummary.pq as
-   PilotRepairFinancialSummary. Use the existing service/TMA pilot queries (their
-   schemas are unchanged). Set expected-month lists consistently to the snapshot.
+   PilotRepairFinancialSummary. For a new v2 trial use PilotServiceOrdersV2.pq and
+   PilotTmaWorkOrdersV2.pq as PilotServiceOrders and PilotTmaWorkOrders (their schemas
+   are unchanged). Set PilotMonths once to match the snapshot. Old v1 entry files
+   remain available for compatibility and use their original helper.
 3. Load fnMonthlyControlTotalsV2.pq as fnMonthlyControlTotalsV2 and
    PilotControlTotalsV2.pq as PilotControlTotalsV2. Review null coverage and statuses
    alongside every sum. Do not merge monthly totals into repair records or sum both

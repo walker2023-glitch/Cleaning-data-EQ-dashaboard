@@ -130,3 +130,13 @@ each revision and included in packets/snapshots. v2 M examples and migration gui
 preserve v1/legacy compatibility; service/TMA/calculations/exclusions are unchanged.
 Actual January arithmetic reconciles; February/formatted grouped evidence and full
 business/model approval remain pending. No candidate approval or production writes.
+
+## Milestone A — schema-v2 Power BI real-data readiness
+
+Adds v2-only packet selection, one-read snapshot verification, recomputed four-table
+readiness/independent expectations/original-source audit reports, a complete fictional
+walkthrough, shared v2 month queries and monthly reconciliation query. Documents
+backup-model preservation, management decisions and B/C/D dependencies. Original
+cleaners, financial schema/estimates and desktop behavior are unchanged. Owner-reported
+January/February source reconciliation does not approve production or establish real
+v2 M/DAX execution; that trial remains manual. No inventory or live Graph added.

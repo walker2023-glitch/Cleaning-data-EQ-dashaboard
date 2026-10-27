@@ -1,5 +1,29 @@
 # Departmental workflow roadmap and project review
 
+## Current checkpoint — 2026-10-27
+
+Reviewed local/remote branches, all PR states, documentation, cleaners/export schemas,
+monthly packets/snapshots, M queries, storage boundaries and tests. Only #1 is merged;
+#2–#11 remain open in the existing dependency chain. PR #11 at bffd53f is the base
+of feature/powerbi-real-data-readiness. Its Windows/Linux checks passed. No automatic
+merge/retarget is performed. Prior dated reviews below remain historical records.
+
+| Milestone | Current work / completion boundary | Next gate |
+|---|---|---|
+| A — Real-data Power BI readiness | Explicit v2-only packet selection, four-table snapshots, hash/provenance checks, recomputed financial controls, private monthly/combined expectations and raw-file verification, shared-period M comparison and migration instructions | Owner runs real v2 Desktop/model trial and records page/DAX/relationship/ID/null/hour/capacity results |
+| B — Inventory foundation | Design and original-module dependency review only; inventory not in monthly completeness | Actual sanitized inventory/raw-expected snapshots, status/grain/duplicate policy and Building_Dim/location map |
+| C — SharePoint foundation | Existing disabled Graph boundary and delegated/local/synced/approval/IT design only | Separate auth/test-resource authorization, IT registration/scopes/cache/device policy, offline mocks then approved test site |
+| D — Production readiness | Checklist/design only; no approval/publisher/deployment | Data/finance/model/IT sign-off, authenticated approvals, recovery/rollback/shared locking, employee training and managed-PC handoff |
+
+Owner-reported evidence now includes January/February v2 arithmetic reconciliation
+and a successful synthetic **previous repair schema** Desktop pilot. Do not relabel
+that pilot as v2 or production-approved. Real v2 Desktop testing remains manual.
+No exact existing model/DAX inventory or actual inventory export is supplied here.
+All new repository fixtures/dollar values are invented; private expectations remain local.
+See powerbi_real_data_readiness.md, powerbi_backup_migration.md,
+inventory_foundation_design.md, management_decisions.md and sharepoint_integration_plan.md.
+
+
 Review date: 2026-10-22. Remote branch heads, all seven existing PRs, current tests,
 architecture and documentation were inspected. This branch starts from PR #7's
 74cb7d3. Prior docs referring to PR #1 as an unmerged draft were historical and

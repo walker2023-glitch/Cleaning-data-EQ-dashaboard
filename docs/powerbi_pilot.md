@@ -16,6 +16,13 @@ local-folder checks; those checks cannot prove absence of every sync client. Obt
 IT confirmation for custom locations. The Python checks are offline reference checks; actual M execution, DAX and visuals
 must be evaluated in Power BI Desktop by the model owner.
 
+## Current v2 real-data procedure
+
+Follow [powerbi_real_data_readiness.md](powerbi_real_data_readiness.md) for current
+January/February assembly, independent expectations, original-file checks, all four
+tables and backup-PBIX acceptance. The complete-example flag generates a successful
+fictional v2 assessment; the older examples below retain comparison/missing-data behavior.
+
 ## 1. Generate a reproducible synthetic trial
 
 Close the desktop before updating dependencies. In VS Code open the **cloned Git

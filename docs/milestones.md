@@ -100,3 +100,17 @@ Real January was checked read-only and reconciles. Synthetic January/February-sh
 and grouped/zero/missing/malformed tests use invented financial amounts. Actual
 February and formatted repair XLSX are missing; nonzero unequal field/subtotal
 grain remains blocked. No production approval or per-repair parts/labor allocation.
+
+## Milestone A — real-data Power BI readiness (2026-10-27)
+
+Implements v2-only assembly guard, one-read/hash-checked snapshot data, recomputed
+four-table financial/count/null/identifier/provenance controls, private monthly and
+combined expectations plus explicit original-byte checks and report, shared M month
+configuration and a monthly comparison query. Existing legacy/v1 functionality,
+repair v2 schema, cleaners/estimates/GUI/settings/correction rules remain unchanged.
+Synthetic complete/incomplete/malformed/corrected/history cases are tested.
+
+Owner reports real January/February v2 arithmetic matches and a successful previous
+schema Desktop pilot. Real v2 Power BI Desktop/model evaluation is still manual;
+no production approval, PBIX change, inventory adapter or Graph operation is claimed.
+B/C/D remain design/dependency work; see the current roadmap and real-data SOP.

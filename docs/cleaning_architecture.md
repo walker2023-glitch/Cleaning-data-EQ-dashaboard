@@ -202,3 +202,14 @@ FinancialOutputStore stages the companion before SQLite selection and verifies t
 main-hash-bound summary on current reads; failed stages leave the old selection.
 No SQLite schema migration, cleaner rule change or approved publisher is introduced.
 See repair_financial_v2.md for exact contracts and unresolved grouping evidence.
+
+## Milestone A assessment boundary
+
+powerbi_pilot.read_snapshot returns tables/summaries parsed once from the bytes
+whose hashes passed verification; validate_snapshot retains its existing table API.
+The optional assembly guard requires repair v2 without breaking v1 compatibility.
+powerbi_readiness assesses this captured view, verifies provenance/summary-revision
+binding and recomputes financial controls, compares independently supplied expectations
+and optionally hashes explicit original local files. It writes a new private report
+outside the snapshot; no cleaner/store/manifest/GUI or approval mutation is involved.
+No authenticated approval or production writer exists. See the real-data SOP.

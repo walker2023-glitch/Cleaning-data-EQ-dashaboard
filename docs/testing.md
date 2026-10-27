@@ -257,3 +257,28 @@ with real desktop tests isolated per case (357 preserved tests + 19 new cases).
 All eleven M files passed Microsoft's powerquery-parser 4.0.0 syntax parser.
 Wheel/sdist build and installed-wheel v2 synthetic generation/snapshot checks passed.
 These are not actual Power BI M/DAX execution or production accuracy approval.
+
+## Milestone A assessment checks
+
+Run `uv run --frozen pytest tests/test_powerbi_readiness.py` for independent synthetic
+monthly/combined expectations, six original-file hash checks, unknown observations,
+source/revision provenance, recomputed financial controls despite self-consistent
+edited hashes, source-cost/date contracts and retained service OR-period behavior,
+missing/duplicate/invalid periods, v1 rejection without losing compatibility,
+null/partial totals, safe output aliases/overwrite/write failure, single-read
+hash/data binding, CLI exit semantics and shared M month/aggregate-before-join rules.
+The 29/5-record case uses invented financial amounts. No real report is a test fixture.
+
+Local full-suite result: **419 passed, 0 failures/errors/skips** (376 preserved +
+43 new), Python 3.12.14/Linux with all real desktop tests isolated per case. All
+15 M files passed Microsoft's powerquery-parser 4.0.0 syntax parser. Wheel/sdist
+build and installed-wheel complete walkthrough plus readiness CLI passed. Hosted
+Windows/Linux and packaged smoke results are recorded on the PR separately.
+These checks do not execute a Power BI Desktop mashup engine, existing DAX or Graph.
+
+Real-data manual acceptance belongs in the private record described in
+powerbi_real_data_readiness.md. Record Desktop version/build/snapshot hashes,
+monthly/combined expected controls, null/leading-zero IDs, all query errors,
+relationships, financial measures and unchanged hour/capacity visuals. The owner's
+previous-schema Desktop success is not proof of v2 success. SharePoint live tests,
+auth/cache/permissions/sync and approval/publication are outside this milestone.

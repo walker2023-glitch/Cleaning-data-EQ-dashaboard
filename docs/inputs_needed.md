@@ -170,3 +170,20 @@ trusted expected outputs and finance/model approval of the remaining hours/rate,
 null/precision and monthly-vs-equipment measure policies. Do not resend January raw
 CSV. Unequal financial cells remain unassigned; no subtotal mapping is guessed.
 See repair_financial_v2.md. Do not commit actual financial amounts or raw reports.
+
+## Milestone A update — owner evidence on 2026-10-27
+
+Owner reports January/February v2 reconciliation and successful synthetic Desktop
+import with the previous repair schema. Do not request those already-tested inputs
+again merely to run the local readiness SOP. All six real sources/packets are not
+present here: use explicit local packets, private expected metrics and original-file
+index as instructed in powerbi_real_data_readiness.md. Service/TMA accepted counts,
+exact DAX/relationship inventory and the real v2 Desktop regression record still
+need to be supplied/recorded privately; do not invent them from synthetic fixtures.
+
+Next milestone B needs an authorized sanitized Equipment List by Location raw/expected
+pair, two dated snapshots, online/offline and duplicate semantics, unresolved location
+examples and actual Building_Dim key/map contract. Its original helper/Type.csv are
+missing; code aliases are not verification of the source layout. Inventory remains
+outside three-report monthly completeness. Nonzero unequal repair subtotal meanings,
+hours/rate/cross-month service policies and authenticated approval remain open.
