@@ -37,6 +37,8 @@ jobs:
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_pilot check data/ci-wheel-pilot/pilot/snapshot
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_powerbi_pilot.py --repair-financial-v2 --output data/ci-wheel-financial-v2
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_pilot check data/ci-wheel-financial-v2/pilot/snapshot
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_powerbi_pilot.py --repair-financial-v2 --complete-financial-example --output data/ci-wheel-readiness
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_readiness assess data/ci-wheel-readiness/pilot/snapshot --month 2026-01 --month 2026-02 --expectations data/ci-wheel-readiness/readiness-expectations.csv --sources data/ci-wheel-readiness/source-index.csv --output data/ci-wheel-readiness/second-assessment
       - if: runner.os == 'Windows' && github.event_name == 'pull_request'
         run: ./packaging/build.ps1
       - if: runner.os == 'Windows' && github.event_name == 'pull_request'

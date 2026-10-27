@@ -1,5 +1,5 @@
 // Schema-v2 financial pilot; v1 repairs deliberately rejected.
-// Example only. Load as fnReadMonthlyFolder in a COPY of the PBIX.
+// Example only. Load as fnReadMonthlyFolderV2 in a COPY of the PBIX.
 // A direct, immutable snapshot/report folder, NEVER versions/ or all review_packets/.
 // ReviewCandidates defaults false. Current app outputs require explicit true in a
 // separate review model; this switch is not an approval or a publishing mechanism.
