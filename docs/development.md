@@ -290,3 +290,13 @@ hash-checked snapshot data; it never cleans, changes statuses, authenticates or
 publishes. Private expected/source-index CSVs and assessment folders belong under
 ignored data/ or another approved local private directory. Exit 2 means report
 saved with review questions, not approval. Real M execution/model tests are manual.
+
+## Milestone C offline foundation
+
+Branch feature/sharepoint-connectivity-foundation starts from Milestone A/PR #12
+at 454c7a0; no earlier PR is merged. Run the synthetic demo and new provider/Graph/
+MSAL tests in sharepoint_foundation.md from the source clone. No MSAL package, HTTP
+transport, browser or actual account is needed. The example/transport is explicitly
+in-memory. The existing engine consumes the same bytes/SourceFile API and writes
+only local immutable candidates; the Graph adapter cannot publish outputs.
+See the module/status map and future live-pilot checklist before wiring any SDK.

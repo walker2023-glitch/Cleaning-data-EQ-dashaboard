@@ -749,3 +749,15 @@ def test_restart_smoke_does_not_close_root_during_windows_startup_pump(tmp_path,
     assert run_restore_smoke(path,tmp_path)==0
     import json
     assert json.loads((tmp_path/'restore-smoke.json').read_text())['passed'] is True
+
+
+def test_storage_connection_status_is_honest_and_graph_never_activates(app):
+    from equipment_data_manager.ui.help_content import HELP
+    app.show_page('Settings');app.update()
+    page=app.settings_page
+    assert 'unverified' in page.connection_status.cget('text')
+    assert page.graph_button.cget('state')=='disabled'
+    page.busy(True);page.busy(False)
+    assert page.graph_button.cget('state')=='disabled'
+    text=HELP['storage_connection'].text()
+    assert 'offline-tested foundation only' in text and 'No candidate is uploaded' in text

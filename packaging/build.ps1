@@ -9,7 +9,7 @@ try {
     uv run --frozen --all-extras pyinstaller --noconfirm packaging/EquipmentDataManager.spec
     if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
     Copy-Item docs/user_guide.md dist/EquipmentDataManager/START_HERE.md
-    Copy-Item docs/settings_guide.md,docs/monthly_workflow.md,docs/guided_mode.md,docs/validation_checklist.md,docs/repair_financial_v2.md,docs/powerbi_real_data_readiness.md,docs/powerbi_backup_migration.md,docs/management_decisions.md dist/EquipmentDataManager/
+    Copy-Item docs/settings_guide.md,docs/monthly_workflow.md,docs/guided_mode.md,docs/validation_checklist.md,docs/repair_financial_v2.md,docs/powerbi_real_data_readiness.md,docs/powerbi_backup_migration.md,docs/management_decisions.md,docs/sharepoint_foundation.md,docs/sharepoint_live_pilot.md dist/EquipmentDataManager/
     Copy-Item powerquery dist/EquipmentDataManager/powerquery -Recurse -Force
     Copy-Item docs/images dist/EquipmentDataManager/images -Recurse -Force
     Compress-Archive -Path dist/EquipmentDataManager -DestinationPath dist/EquipmentDataManager_v0.2.0_win64.zip -Force

@@ -1,12 +1,15 @@
-# Delegated Microsoft Graph integration requirements — design only
+# Delegated Microsoft Graph integration requirements and foundation status
 
-No live authentication, HTTP client, token cache or Graph operation is implemented.
+Current Milestone C adds read-provider abstractions, an injected offline Graph
+adapter, an MSAL-compatible session facade and a Windows DPAPI protected-cache
+component. See sharepoint_foundation.md for exact implementation/test boundaries.
+No live authentication/HTTP bootstrap or business publication is enabled.
 `storage/interface.py` defines list/download/create-only output contracts;
 `GraphSharePointRepository` still rejects every operation before network access.
 `FileSource.read(SourceFile)` supplies bytes to the GUI workflow, and the cleaning
 coordinator remains independent of storage and Microsoft. Do not turn the disabled
 stub into a connector by populating configuration. Separate user approval and IT
-approval/test registration are required before implementation or live access.
+approval/test registration are required before live SDK/transport wiring or access.
 
 ## IT decisions and configuration
 

@@ -114,3 +114,20 @@ Owner reports real January/February v2 arithmetic matches and a successful previ
 schema Desktop pilot. Real v2 Power BI Desktop/model evaluation is still manual;
 no production approval, PBIX change, inventory adapter or Graph operation is claimed.
 B/C/D remain design/dependency work; see the current roadmap and real-data SOP.
+
+## Milestone C — connectivity foundation (2026-10-28)
+
+Implemented/testable offline: common read storage contracts, local/synced availability
+and stable-byte reads, source-to-engine bridge and explicit nonrecursive discovery;
+scoped injected Graph metadata/pagination/download/ETag/hash/error/retry logic;
+MSAL-compatible injected session and Windows DPAPI encrypted-cache component; fixed
+synthetic probe create-only/read-back/recovery behavior. Settings/Guided Mode show
+local/sync limits and keep Graph unavailable. The old default Graph stub still fails
+closed. Existing cleaners, financial v2/four datasets, settings schema, SQLite,
+corrections/revisions and monthly completeness stay unchanged.
+
+Mock-only: Graph/SDK responses; no HTTP transport or real MSAL bootstrap is shipped.
+Native DPAPI Windows tests do not establish departmental cache/ACL/device approval.
+Live sign-in/selection, approved publication and production use remain gated; see
+sharepoint_foundation.md and sharepoint_live_pilot.md. The owner reports successful
+Power BI imports/visual tests and a separate inventory matrix, not production approval.

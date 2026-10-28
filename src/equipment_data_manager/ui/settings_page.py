@@ -6,7 +6,7 @@ from equipment_data_manager.settings import FOLDER_KEYS, Preferences, UserSettin
 LABELS = {'raw_folder': 'Raw Data Folder', 'candidate_folder': 'Candidate Output Folder',
           'approved_folder': 'Approved Output Folder (reserved)'}
 DESCRIPTIONS = {
-    'raw_folder': 'Original reports, arranged by year-month and report type. Originals are never overwritten.',
+    'raw_folder': 'Original local or downloaded SharePoint-synced reports, arranged by year-month and report type. Preview checks local readability; cloud sync is unverified.',
     'candidate_folder': 'Cleaned candidates, history and review packets. Choose a trusted local disk outside sync services.',
     'approved_folder': 'Future approved exports only. Saving this setting does not publish or approve reports.'}
 
@@ -60,6 +60,18 @@ class SettingsPage(ctk.CTkFrame):
         self.format_picker.pack(side='left')
         ctk.CTkLabel(self.content,text='Guided Mode & Help: use the switch and Brief / Detailed choice in the left navigation. F1 opens help for a control.',
             anchor='w',justify='left',wraplength=820,text_color='#52647A').grid(row=7,column=0,sticky='ew',padx=22,pady=8)
+        self.connection_card=ctk.CTkFrame(self.content,fg_color='#F3F6FA')
+        self.connection_card.grid(row=8,column=0,sticky='ew',padx=22,pady=8)
+        self.connection_card.grid_columnconfigure(0,weight=1)
+        ctk.CTkLabel(self.connection_card,text='Storage connection',anchor='w',font=ctk.CTkFont(size=15,weight='bold'),text_color='#172B4D').grid(row=0,column=0,sticky='ew',padx=12,pady=(8,3))
+        self.connection_status=ctk.CTkLabel(self.connection_card,
+            text='Local reads enabled. Downloaded SharePoint-synced raw folders supported. Cloud synchronization unverified.',
+            anchor='w',justify='left',wraplength=760,text_color='#52647A')
+        self.connection_status.grid(row=1,column=0,sticky='ew',padx=12,pady=4)
+        self.graph_button=ctk.CTkButton(self.connection_card,text='Microsoft Graph — unavailable (offline foundation)',state='disabled',width=390)
+        self.graph_button.grid(row=2,column=0,sticky='w',padx=12,pady=6)
+        ctk.CTkLabel(self.connection_card,text='Candidate history and SQLite stay local. Approval and publication remain unavailable.',
+            anchor='w',justify='left',wraplength=760,text_color='#52647A').grid(row=3,column=0,sticky='ew',padx=12,pady=(0,8))
         actions=ctk.CTkFrame(self.footer,fg_color='transparent');actions.grid(row=0,column=0,sticky='ew',padx=22,pady=10)
         self.check_button=ctk.CTkButton(actions,text='Check Locations',command=app.check_settings,fg_color='#172B4D')
         self.check_button.pack(side='left')

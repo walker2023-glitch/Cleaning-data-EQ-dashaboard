@@ -282,3 +282,29 @@ monthly/combined expected controls, null/leading-zero IDs, all query errors,
 relationships, financial measures and unchanged hour/capacity visuals. The owner's
 previous-schema Desktop success is not proof of v2 success. SharePoint live tests,
 auth/cache/permissions/sync and approval/publication are outside this milestone.
+
+## Milestone C connectivity foundation
+
+Run `uv run --frozen pytest tests/test_storage_providers.py tests/test_graph_adapter.py tests/test_msal_foundation.py`
+for synthetic local/synced availability, missing/partial/changed reads, identities,
+nonrecursive discovery, real-engine provider bridges, fake MSAL account/tenant/
+expiry/permission behavior, protected-cache atomicity/dirty-state/lock recovery,
+Graph pagination/redirect/token protection, permissions/folder errors, bounded
+Retry-After behavior (including HTTP header casing), source/transfer integrity,
+upload conflicts and unknown-outcome probe recovery. No arbitrary candidate upload
+or approved state exists. Existing default-disabled Graph smoke tests remain.
+The added real-window case checks honest Settings status and permanently disabled
+Graph controls; all prior GUI/settings/cleaning/financial/history tests remain.
+
+Local Linux result: **473 passed, 0 failures/errors/skips** (419 prior + 54 new),
+with real desktop cases isolated per process. Wheel/sdist build and the installed-wheel
+in-memory Graph-to-real-engine preview passed. No Microsoft credentials or live
+SDK/HTTP operation was used. Windows DPAPI roundtrip coverage is in the platform
+branch of the tests; Linux verifies fail-closed unsupported protection and injected
+test-protector behavior, not Windows DPAPI itself. Windows/Linux CI and packaged
+smoke need their actual hosted results; GitHub API access is currently proxy-blocked.
+
+Actual OneDrive hydration/sync/device behavior, MSAL construction/interactive sign-in,
+claims/redirect/cache ACL policy, Graph server conflict enforcement and publication
+are not proven by mocks. Follow sharepoint_live_pilot.md only after the separate
+IT/user authorization. Do not label a synthetic probe or reconciliation as approval.

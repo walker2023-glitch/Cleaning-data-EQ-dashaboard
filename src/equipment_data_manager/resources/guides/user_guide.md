@@ -169,3 +169,18 @@ needs attention. **Reset to Defaults** asks first and only resets preferences;
 it never deletes reports/history. Advanced import accepts earlier workspace TOML
 as a draft; validate/reconfirm local storage and save. Export Sanitized Template
 omits real paths/credentials. No OneDrive synchronization is verified by this app.
+
+## Local and SharePoint-synced raw folders
+
+Raw Data Browse can select local folders or reports already downloaded through the
+organization's OneDrive sync client. Preview stops known offline/recall placeholders,
+missing files and files that change or read only partly. Make required files available
+on this device, wait for export/download completion, then preview again. Existence,
+a green folder indicator or a successful local read does not verify cloud sync.
+
+Candidate history, review packets, SQLite and authentication caches must remain on
+trusted local disk outside sync services. The Settings storage card keeps Microsoft
+Graph unavailable: organizational sign-in and site/library selection are not enabled
+in this prototype. No candidate is uploaded or published. Finance reconciliation is
+not business approval. See sharepoint_foundation.md for developer tests and the
+separate IT-authorized live-pilot requirements.

@@ -116,3 +116,17 @@ is retained in Advanced Settings and still checks candidate storage policy.
 Settings persistence is a separate versioned file, not an engine manifest migration.
 No cleaning adapter/calculation/schema, SQLite revision/correction logic or monthly
 packet content contract is changed. No Microsoft or production publisher is added.
+
+## Storage connectivity foundation
+
+LocalFileSource now delegates to the read-only stable local reader, including known
+Windows cloud-placeholder detection and before/after length/identity verification.
+ProviderFileSource adapts captured local/Graph identities to the existing byte-source
+boundary; no cleaning logic or Microsoft calls enter event handlers. Provider discovery
+uses explicit current-month folder mappings and never recurses into history.
+
+The Settings storage card identifies locally available/synced raw support, unverified
+cloud sync and local candidate/SQLite storage. Graph stays disabled after busy/save/
+reset; Guided Mode explains why. Settings schema/persistence is unchanged. The injected
+Graph/MSAL/cache components are developer foundation only; real transport/auth bootstrap
+and connected account/site/library UI are not supplied. No candidate publishing exists.

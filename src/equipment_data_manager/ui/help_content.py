@@ -137,6 +137,14 @@ entry('warnings', 'Warnings and Financial Review', 'Warnings identify informatio
     'Existing calculations are preserved. Production publication remains blocked.')
 
 
+entry('storage_connection', 'Storage connection',
+    'Choose local or downloaded SharePoint-synced raw folders with Browse. Microsoft Graph is unavailable in this prototype.',
+    'Preview checks that local bytes are available, stable and unchanged before processing. Windows offline/recall placeholders need to finish downloading in OneDrive first. An existing file or successful read does not verify cloud synchronization. Direct organizational sign-in and Graph operations have an offline-tested foundation only; no live connection is enabled.',
+    'Raw files are read only. Candidate revisions, review packets and SQLite history stay on a trusted local disk outside sync folders.',
+    'Check the Raw Data folder and local download availability, then preview again. IT registration and a separately authorized test-site pilot are needed before Graph can be enabled.',
+    'Financial reconciliation is not business approval. No candidate is uploaded or published.')
+
+
 def missing_help(kinds):
     notes = []
     if 'repairs' in kinds:
