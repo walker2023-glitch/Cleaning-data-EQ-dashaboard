@@ -48,3 +48,9 @@ workspace.local.toml
 app-settings.toml
 settings.local.toml
 .settings-*.tmp
+
+# Private organizational connection configuration / protected cache artifacts
+graph.local.toml
+msal-cache.bin
+msal-cache.bin.lock
+.protected-cache-*.tmp

@@ -1,0 +1,19 @@
+# DESIGN/IT TEMPLATE ONLY. Not loaded by desktop startup; does not enable Graph.
+# Copy privately to graph.local.toml. Never add tokens or a client secret.
+[connection]
+mode = "disabled"
+tenant_id = ""
+client_id = ""
+scopes = []
+
+[test_resources]
+site_id = ""
+drive_id = ""
+raw_folder_ids = []
+probe_folder_id = ""
+download_hosts = []
+
+[cache]
+# Future bootstrap uses a protected per-user LOCAL disk cache, not a synced folder.
+# Default recommendation: LOCALAPPDATA/EquipmentDataManager/msal-cache.bin
+path = ""
