@@ -33,10 +33,8 @@ class FileSource(Protocol):
 
 class LocalFileSource:
     def read(self, source: SourceFile) -> bytes:
-        path = Path(source.reference)
-        if not path.is_file():
-            raise ProcessingError("input_not_a_file")
-        return path.read_bytes()
+        from equipment_data_manager.storage.local import read_local_file
+        return read_local_file(Path(source.reference)).content
 
 
 def selected_files(paths: Sequence[str]) -> tuple[SourceFile, ...]:
