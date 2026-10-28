@@ -56,6 +56,13 @@ class GraphScope:
             raise StorageError('graph_scope_invalid')
 
 
+def _header(response, name):
+    values=[value for key,value in response.headers.items() if key.casefold()==name.casefold()]
+    if len(values)>1 and any(value!=values[0] for value in values):
+        raise StorageError('graph_response_invalid')
+    return values[0] if values else None
+
+
 class OfflineGraphAdapter:
     """Read selected raw folders; only fixed synthetic .txt probes can be uploaded."""
     def __init__(self, scope, session, transport, *, attempts=3, max_bytes=64*1024*1024,
@@ -67,7 +74,7 @@ class OfflineGraphAdapter:
         self.max_retry_delay,self.sleeper,self.clock = max_retry_delay,sleeper,clock
 
     def _delay(self, response, attempt):
-        value = response.headers.get('Retry-After') if response is not None else None
+        value = _header(response,'Retry-After') if response is not None else None
         if value is None:delay = 0.25 * 2**attempt
         else:
             try:delay = float(value)
@@ -99,7 +106,7 @@ class OfflineGraphAdapter:
             except Exception:
                 raise StorageError('storage_transport_failed') from None
             if (not isinstance(response,GraphResponse) or type(response.status) is not int
-                    or not isinstance(response.headers,dict)):
+                    or not isinstance(response.headers,dict) or any(not isinstance(k,str) for k in response.headers)):
                 raise StorageError('graph_response_invalid')
             status = response.status
             if status==401:
@@ -196,7 +203,7 @@ class OfflineGraphAdapter:
         path=self._metadata(source)
         response=self._request('GET',path+'/content')
         if response.status in (302,307):
-            location=response.headers.get('Location','')
+            location=_header(response,'Location') or ''
             try:
                 link=urlsplit(location)
                 if (link.scheme!='https' or link.netloc not in self.scope.download_hosts

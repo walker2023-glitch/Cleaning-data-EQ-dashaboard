@@ -229,3 +229,14 @@ def test_offline_demo_requires_no_sdk_credentials_or_network_and_writes_no_outpu
     result=module.preview(tmp_path/'no-output')
     assert result['mode']=='mock_graph' and result['preview_status']=='success'
     assert result['live_authentication'] is result['publication_enabled'] is result['outputs_written'] is False
+
+
+def test_http_header_casing_does_not_cause_early_retry_or_break_safe_redirects():
+    api,transport,_,delays=adapter([R(429,headers={'retry-after':'60'})])
+    with pytest.raises(StorageError,match='storage_retry_later'):api.list_files('raw-repairs')
+    assert not delays and len(transport.calls)==1
+    metadata=item()
+    api,transport,_,_=adapter([R(200,{'value':[metadata]}),R(200,metadata),
+        R(302,headers={'location':'https://download.example.test/content'}),R(200,body=DATA),R(200,metadata)])
+    source,=api.list_files('raw-repairs')
+    assert api.read(source).content==DATA and transport.calls[3]['headers']=={}
