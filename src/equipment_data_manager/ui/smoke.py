@@ -1,5 +1,6 @@
 """Automated, visible-window smoke check using only bundled synthetic samples."""
 
+import csv
 import json
 from pathlib import Path
 from time import monotonic
@@ -46,6 +47,8 @@ def run_smoke(directory: Path | None) -> int:
                 return
             phase = state["phase"]
             if phase == 0:
+                assert app.settings_page.graph_button.cget('state') == 'disabled'
+                assert 'synchronization unverified' in app.settings_page.connection_status.cget('text')
                 app.preview_button.invoke()
             elif phase == 1:
                 assert app.previews[0].result.status == Status.SUCCESS
@@ -118,6 +121,12 @@ def run_smoke(directory: Path | None) -> int:
             elif phase == 13:
                 assert app.results[0].result.status == Status.SUCCESS
                 assert app.results[0].result.output_location.read_text(encoding="utf-8").startswith("LegacyRowNumber,")
+                with app.results[0].result.output_location.open(encoding='utf-8', newline='') as stream:
+                    repairs = list(csv.DictReader(stream))
+                assert repairs and all(row['SchemaVersion'] == '2' for row in repairs)
+                assert {'ReportedTotalCost', 'EstimatedLaborCost', 'LegacyPartsCost'} <= repairs[0].keys()
+                from equipment_data_manager.processing.repair_financial import verify_summary
+                assert verify_summary(app.results[0].result.artifact) is not None
                 app.report_buttons[1].invoke()
                 app.sample_button.invoke()
                 app.month_confirmed.set(True)
@@ -169,6 +178,9 @@ def run_smoke(directory: Path | None) -> int:
                 packet = json.loads((packets[0] / "packet.json").read_text(encoding="utf-8"))
                 assert packet["status"] == "CandidateUnverified" and packet["production_ready"] is False
                 assert packet["sync_verified"] is False and len(packet["files"]) == 3
+                assert len(packet['supplemental_files']) == 1
+                assert packet['supplemental_files'][0]['report_type'] == 'repair_financial_summary'
+                assert (packets[0] / packet['supplemental_files'][0]['file']).is_file()
                 assert not app.workspace.approved_folder.exists()
                 assert "Candidate review packet saved" in app.status.get()
                 # Persist the already existing workspace through the actual form.
@@ -207,6 +219,7 @@ def run_smoke(directory: Path | None) -> int:
                 assert app.settings_store.load().preferences.detail == 'detailed'
                 app.load_startup_settings()
             elif phase == 24:
+                assert app.settings_page.graph_button.cget('state') == 'disabled'
                 assert app.page == 'Process Reports' and app.workspace is not None
                 assert not app.guided.get() and app.explanation_level.get() == 'Detailed'
                 assert list((workspace / 'reserved-approved').iterdir()) == []

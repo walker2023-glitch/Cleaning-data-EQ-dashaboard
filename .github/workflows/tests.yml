@@ -2,6 +2,7 @@ name: Offline engine tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -40,9 +41,10 @@ jobs:
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_powerbi_pilot.py --repair-financial-v2 --complete-financial-example --output data/ci-wheel-readiness
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_readiness assess data/ci-wheel-readiness/pilot/snapshot --month 2026-01 --month 2026-02 --expectations data/ci-wheel-readiness/readiness-expectations.csv --sources data/ci-wheel-readiness/source-index.csv --output data/ci-wheel-readiness/second-assessment
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/sharepoint_foundation_demo.py --preview-root data/ci-wheel-offline-graph-preview
-      - if: runner.os == 'Windows' && github.event_name == 'pull_request'
+      # Integration pushes must build even when API access prevents PR creation.
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
         run: ./packaging/build.ps1
-      - if: runner.os == 'Windows' && github.event_name == 'pull_request'
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
         shell: pwsh
         run: |
           $checkDir = Join-Path $PWD "data/packaged-smoke"
@@ -59,7 +61,7 @@ jobs:
             throw "Desktop smoke failed"
           }
           if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
-      - if: runner.os == 'Windows' && github.event_name == 'pull_request'
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
         uses: actions/upload-artifact@v4
         with:
           name: EquipmentDataManager-v0.2.0-Windows-prototype
@@ -68,7 +70,7 @@ jobs:
             dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
             data/packaged-smoke/desktop-smoke.json
 
-      - if: always() && runner.os == 'Windows' && github.event_name == 'pull_request'
+      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
         uses: actions/upload-artifact@v4
         with:
           name: desktop-smoke-diagnostics
