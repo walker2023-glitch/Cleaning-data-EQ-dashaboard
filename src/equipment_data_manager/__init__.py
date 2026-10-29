@@ -1,3 +1,3 @@
-"""Equipment Data Manager: M0 offline foundations."""
+"""Equipment Data Manager: offline cleaning foundation."""
 
-__version__ = "0.0.1"
+__version__ = "0.2.0"

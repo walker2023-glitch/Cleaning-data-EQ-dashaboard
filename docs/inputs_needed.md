@@ -1,4 +1,43 @@
-# Inputs needed to finish discovery
+# Inputs needed for verified cleaning and desktop pilot (M0–M2)
+
+## What is needed after the desktop prototype
+
+January raw repair/service CSVs and TMA XLSX are now inspected, together with the
+prior February service sample. They are inputs only: no trusted cleaned output
+was supplied. See `format_compatibility.md` and `edge_case_validation.md` for the
+observed layouts, source-count checks and synthetic monthly cases.
+
+Still needed: the remaining February–June raw exports, actual legacy XLS exports
+(and their expected counts), and approved cleaned examples/baselines. Do not resend
+the already supplied January files or February service sample. TMA XLSX can now
+produce provisional candidates using the original requests writer; alternate
+layouts/XLS remain blocked. Confirm the candidate title/five-column CSV against
+the trusted downstream loader before departmental use.
+
+**Repair blocker:** January reported financial totals differ from the unchanged
+cleaner's totals. Explain Textbox38 versus Textbox16 and the intended parts/labor
+semantics, duration defaults and rate. Supply a trusted cleaned repair output and
+approved labor/parts/cost totals before any mapping/calculation change.
+
+For a desktop pilot, identify an authorized reviewer and IT-managed Windows 10/11
+PC without Python. Confirm allowed executable/signing policy, an approved local
+candidate folder, retention/support ownership, display scaling/accessibility needs,
+and whether the preview/correction warnings are understandable to Facilities staff.
+No Microsoft registration or production folder access is needed to try bundled
+synthetic samples. Microsoft/Graph work still needs separate approval.
+
+## What M1 now makes available
+
+An offline coordinator and CLI wrap the supplied repair and flat-service CSV
+transforms without changing their calculations/exclusions. Synthetic tests cover
+the API, duplicates, corrected months, failed processing and preserved originals.
+Production accuracy remains unverified. The observed TMA title/header/footer XLSX
+now uses the requests cleaner as a provisional candidate contract. Legacy XLS,
+service context layouts and other encodings are not enabled.
+
+The highest-priority next inputs are one approved raw/expected pair for repairs,
+one for flat service orders, and a trusted cleaned TMA example to compare with the existing requests cleaner. Include the counts/totals and policies described below.
+No need to resend the six existing uploads.
 
 ## Source scripts
 
@@ -12,9 +51,9 @@ Still needed:
 - If inventory becomes in scope: original `dashboard/taxonomy.py` and any local
   dependencies it imports, plus a sanitized equipment `Type.csv` lookup and
   equipment sample. Inventory is optional and does not block the three-report M0.
-- Confirm whether the uploaded requests cleaner is used for TMA Work Orders.
-  If not, supply the actual TMA cleaner and its helper modules/dependency versions;
-  if no cleaner exists, say so and supply the schema before implementation.
+- Confirm that the supplied requests cleaner is the currently approved TMA cleaner.
+  The January input matches it structurally; trusted output approval is still open.
+  If a different production cleaner exists, supply its helpers/dependency versions.
 - Any existing approved output loader/schema definitions needed to interpret the
   legacy preambles (the repair source references `load_repairs`), plus prior
   dependency pins if available. Do not send dashboard credentials or private PBIX.
@@ -67,3 +106,96 @@ settings in ignored configuration or approved environment settings:
 
 Actual tokens, passwords, client secrets, private exports, and personal data must
 never be supplied through chat or committed as fixtures/configuration.
+
+## Before normalized exports or classification can be published
+
+Review the proposed schema-v1 contracts in `powerbi_output_design.md`, especially
+null financial presentation versus explicit Legacy calculated fields, text IDs,
+raw descriptions/status/tags and source-bound row IDs. Supply trusted cleaned
+comparisons and approve Power Query types/decimal precision only after resolving
+the repair money-field/rate/default-hours questions. No current-approved publisher
+or ingestion-folder migration is enabled by producing these candidates.
+
+For the separate classifier milestone, supply authorized manually labeled match
+and class examples (including unmatched/conflicting/cross-month/PM-with-TMA cases),
+confirm whether PM/Repair suffixes actually occur and their reliability, define
+other-maintenance taxonomy and review ownership, and approve date windows and
+false-match/review-workload thresholds. TMA currently lacks structured shared
+equipment/location/event keys; identify any additional supported fields before
+proposing exact joins. See `maintenance_classification_design.md`. No employee
+identity/authentication is invented for the offline review design.
+
+## Monthly departmental workflow decisions
+
+- Confirm whether all three reports are required every month and how a genuine
+  zero-activity month is evidenced; current packet export requires all three
+  nonempty supported candidates. Do not supply fabricated blank reports.
+- Choose private local raw/candidate roots and a reserved approved destination,
+  local/synced availability policy, single operator, backup/retention/support owner.
+  Keep SQLite local; no OneDrive synchronization verification is implemented.
+- Name business/finance/model reviewers for `validation_checklist.md`; supply
+  trusted cleaned pairs and comparable counts/hours/parts/labor/estimated totals.
+  Resolve repair Textbox38/Textbox16/default/rate semantics before production use.
+- Approve a separate Power Query review PBIX pilot and precision/null policy;
+  the M example/offline contract tests do not authorize production migration.
+- For connected work, provide IT's decisions in `sharepoint_integration_plan.md`
+  plus separate authorization for registration/test-site auth and operations.
+  Do not send secrets, tokens or production access to unblock a local prototype.
+
+## Power BI integration pilot inputs
+
+The runnable synthetic multi-month pilot is in powerbi_pilot.md. For actual model
+reconciliation, provide an authorized **non-secret column/type inventory** of
+Compuclean list, Service_Orders and the real TMA table, impacted DAX expressions,
+relationship/calendar/Building_Dim keys and filter directions, sort/RLS behavior,
+and private monthly measure exports with their exact filter/date scope. A production
+PBIX or credentials are not needed for repository work. Fill generated baseline
+observations locally; do not commit departmental totals or confidential metadata.
+
+Supply trusted raw/expected pairs, one-copy source summary totals, accepted/excluded
+counts, hours/financial baselines, and finance decisions in
+repair_cost_reconciliation.md. Confirm nullable-money precision/tolerances,
+service reporting-month versus calendar basis, corrected-month selection and
+zero-activity evidence. Blank observations remain unknown; invented synthetic
+baselines never stand in for the existing dashboard. Record actual Power BI Desktop
+version and M/relationship/DAX/visual outcomes in the backup-PBIX pilot checklist.
+
+## Repair financial mapping follow-up
+
+The owner confirmed formatted individual costs mean Total Cost. The local January
+CSV's equal Textbox38/Textbox16 cells reconcile under v2. Still needed privately:
+formatted January repair XLSX, raw February repair CSV (and formatted version),
+nonzero multi-repair equipment examples identifying individual amount vs subtotal,
+trusted expected outputs and finance/model approval of the remaining hours/rate,
+null/precision and monthly-vs-equipment measure policies. Do not resend January raw
+CSV. Unequal financial cells remain unassigned; no subtotal mapping is guessed.
+See repair_financial_v2.md. Do not commit actual financial amounts or raw reports.
+
+## Milestone A update — owner evidence on 2026-10-27
+
+Owner reports January/February v2 reconciliation and successful synthetic Desktop
+import with the previous repair schema. Do not request those already-tested inputs
+again merely to run the local readiness SOP. All six real sources/packets are not
+present here: use explicit local packets, private expected metrics and original-file
+index as instructed in powerbi_real_data_readiness.md. Service/TMA accepted counts,
+exact DAX/relationship inventory and the real v2 Desktop regression record still
+need to be supplied/recorded privately; do not invent them from synthetic fixtures.
+
+Next milestone B needs an authorized sanitized Equipment List by Location raw/expected
+pair, two dated snapshots, online/offline and duplicate semantics, unresolved location
+examples and actual Building_Dim key/map contract. Its original helper/Type.csv are
+missing; code aliases are not verification of the source layout. Inventory remains
+outside three-report monthly completeness. Nonzero unequal repair subtotal meanings,
+hours/rate/cross-month service policies and authenticated approval remain open.
+
+## Milestone C inputs and limits
+
+No credentials/live access are needed for the foundation or offline demo. Owner reports
+successful real-data Power BI checks/imports/visuals and a separate inventory matrix;
+do not request previously tested reports again merely to exercise storage mocks.
+Before a connected read-only test PR, IT must supply/approve the public-client Entra
+registration, delegated scope/resource-grant combination, exact nonproduction site/
+library/raw/probe IDs, permitted download hosts, protected-cache/ACL/retention/sign-out
+policy, device/proxy/executable restrictions and authorized test users. Keep actual
+configuration local; never send secrets/tokens in chat/GitHub. See the live-pilot
+checklist. Real HTTP/SDK wiring and authenticated approval/publication remain absent.

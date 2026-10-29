@@ -1,7 +1,8 @@
-name: M0 offline tests
+name: Offline engine tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,10 +17,64 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12.14'
+          # Bootstrap uv using the available hosted Python release. uv provides
+          # the exact project runtime even when setup-python lacks Windows builds.
+          python-version: '3.12'
       - run: python -m pip install uv==0.12.23
+      - run: uv python install 3.12.14
       - run: uv sync --frozen --all-extras
-      - run: uv run --frozen --all-extras pytest
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a uv run --frozen --all-extras python .github/run_tests.py --isolate-gui
+      - if: runner.os == 'Windows'
+        run: uv run --frozen --all-extras python .github/run_tests.py
       - run: uv run --frozen --all-extras equipment-data-manager --check-config config.example.toml
       - run: uv build
-      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.0.1-py3-none-any.whl python -I -m equipment_data_manager
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/ci-wheel-smoke
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/tma_title_header_footer.xlsx --report-type tma_work_orders --period 2026-01 --output-dir data/ci-wheel-smoke
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/repairs_input.csv --report-type repairs --period 2026-09 --output-dir data/ci-wheel-smoke --output-format powerbi
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/tma_title_header_footer.xlsx --report-type tma_work_orders --period 2026-01 --output-dir data/ci-wheel-smoke --output-format powerbi
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_powerbi_pilot.py --output data/ci-wheel-pilot
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_pilot check data/ci-wheel-pilot/pilot/snapshot
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_powerbi_pilot.py --repair-financial-v2 --output data/ci-wheel-financial-v2
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_pilot check data/ci-wheel-financial-v2/pilot/snapshot
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_powerbi_pilot.py --repair-financial-v2 --complete-financial-example --output data/ci-wheel-readiness
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_readiness assess data/ci-wheel-readiness/pilot/snapshot --month 2026-01 --month 2026-02 --expectations data/ci-wheel-readiness/readiness-expectations.csv --sources data/ci-wheel-readiness/source-index.csv --output data/ci-wheel-readiness/second-assessment
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/sharepoint_foundation_demo.py --preview-root data/ci-wheel-offline-graph-preview
+      # Integration pushes must build even when API access prevents PR creation.
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
+        run: ./packaging/build.ps1
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
+        shell: pwsh
+        run: |
+          $checkDir = Join-Path $PWD "data/packaged-smoke"
+          $process = Start-Process -FilePath "dist/EquipmentDataManager/EquipmentDataManager.exe" -ArgumentList @("--smoke-test", "--smoke-dir", $checkDir) -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw "Desktop smoke timed out" }
+          if (-not (Test-Path "$checkDir/desktop-smoke.json")) { throw "Desktop smoke exited without a report; exit code $($process.ExitCode)" }
+          $report = Get-Content "$checkDir/desktop-smoke.json" | ConvertFrom-Json
+          if ($process.ExitCode -ne 0) {
+            Write-Output "::error title=Desktop smoke::phase=$($report.phase), kind=$($report.failure_kind), exit=$($process.ExitCode)"
+            if (Test-Path "$checkDir/restore-smoke.json") {
+              $restore = Get-Content "$checkDir/restore-smoke.json" | ConvertFrom-Json
+              Write-Output "::notice title=Restart smoke::page=$($restore.page), workspace=$($restore.workspace_configured), guided=$($restore.guided), detail=$($restore.detail), busy=$($restore.settings_busy)"
+            }
+            throw "Desktop smoke failed"
+          }
+          if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
+        uses: actions/upload-artifact@v4
+        with:
+          name: EquipmentDataManager-v0.2.0-Windows-prototype
+          path: |
+            dist/EquipmentDataManager_v0.2.0_win64.zip
+            dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
+            data/packaged-smoke/desktop-smoke.json
+
+      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline')
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke-diagnostics
+          if-no-files-found: ignore
+          path: |
+            data/packaged-smoke/desktop-smoke.json
+            data/packaged-smoke/restore-smoke.json
