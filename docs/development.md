@@ -1,5 +1,27 @@
 # Development (M2 offline desktop)
 
+## Approval foundation development
+
+Start from the owner's merged main 36f8f20, then use
+**feature/approval-publishing-foundation**. This supersedes the pending integration
+checkout/gate description below; prior CI evidence remains historical. Close the
+app and run from the actual Git clone:
+
+```powershell
+git fetch origin
+git switch feature/approval-publishing-foundation
+python -m uv sync --frozen --all-extras
+python -m uv run --frozen --all-extras python .github/run_tests.py
+```
+
+See approval_publishing_foundation.md for the synthetic two-month GUI walkthrough
+and installed-wheel request demonstration. New modules: review.py (read-only
+candidate evidence and local unsent request ledger), ui/review_page.py (background
+review view) and publication_model.py (in-memory protocol model only). No auth
+SDK/dependency, cleaner/schema/settings/processing-manifest migration or approved
+publisher is added. Request records stay private with local candidates; do not
+commit departmental reports, evidence notes or reviewer/tenant configuration.
+
 ## Current integration review workflow
 
 Use **integration/stable-baseline** for new baseline review; older milestone commands

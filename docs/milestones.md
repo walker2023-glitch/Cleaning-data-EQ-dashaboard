@@ -1,5 +1,14 @@
 # Milestone status
 
+## Approval / publishing foundation
+
+Owner merged integration PR #14 into main 36f8f20. The new branch implements
+local-only review requests and evidence with stale protection. Identity-authorized
+final approval and actual publication are unavailable. Desktop controls/Guided Mode
+explain these limits; in-memory publication protocol tests do not establish live
+SharePoint behavior. See approval_publishing_foundation.md for the state model,
+private audit boundary and remaining IT/business gates. Historical rows follow.
+
 ## Integration baseline — 2026-10-29
 
 All audited feature branches are included on integration/stable-baseline; main is

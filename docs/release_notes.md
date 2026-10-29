@@ -1,5 +1,18 @@
 # Power BI CSV candidate exports — schema v1
 
+## Approval / publishing foundation (review prototype)
+
+Adds monthly review evidence and exact revision/hash binding, local unsent request
+history with stale detection, and Review & Approval Guided Mode. Final approval
+and Publish stay disabled without authoritative reviewer verification. A separate
+in-memory specification model exercises future staging/integrity/concurrency/recovery/
+rollback with synthetic grants only. No cleaning/schema/processing-store changes
+or production writes. Local full suite: 507 passed; source/installed-wheel phase-26
+smoke and restart passed. Hosted Windows/Linux and Windows executable status remains
+unverified due API access; require exact-commit checks before employee distribution.
+See approval_publishing_foundation.md. Version remains 0.2.0 prototype; identify
+review builds by branch/commit and ZIP checksum, not the reused artifact name.
+
 Adds an opt-in GUI/CLI export layer after the existing cleaners: header-first
 Repair History/Service Orders/TMA tables, ISO dates, numeric contracts, text IDs,
 ReportMonth, provenance and raw description/status/tag fields. It creates separate

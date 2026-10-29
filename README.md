@@ -1,10 +1,22 @@
 # Equipment Data Manager
 
-## Integration review baseline — 2026-10-29
+## Approval and publishing foundation
 
-Use **integration/stable-baseline** for the consolidated review build, targeting
-main. It contains every audited feature head through the owner merge of PR #13.
-No merge into main has occurred. [Integration status, dependency graph, test evidence,
+The **feature/approval-publishing-foundation** branch adds **Review & Approval**:
+monthly counts, financial summaries, missing values, warnings, exact candidate
+revisions/hashes and durable **local, unsent review requests**. Changed originals
+or corrected candidates invalidate earlier request evidence. Final approval and
+Publish remain disabled because authoritative reviewer verification is unavailable.
+Upload/recovery/concurrency/rollback tests use an in-memory specification model,
+never a real publisher. See [architecture and employee preview](docs/approval_publishing_foundation.md).
+Owner-tested OneDrive raw reads do not prove automated cloud synchronization.
+
+## Integration baseline — merged by owner, 2026-10-29
+
+The owner merged integration PR #14 into **main** at 36f8f20.
+It contains every audited feature head through the owner merge of PR #13.
+The integration documents retain their historical test/CI evidence; this merge
+does not retroactively prove previously inaccessible checks. [Integration status, dependency graph, test evidence,
 Windows/CI blockers and rollback](docs/integration_baseline.md) supersede older
 branch-specific launch instructions below. Live Graph and publication remain disabled.
 
