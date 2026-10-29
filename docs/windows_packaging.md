@@ -1,5 +1,23 @@
 # Windows prototype packaging and distribution
 
+## Integration build gate
+
+Build the **integration/stable-baseline** commit and record its full SHA; an older
+v0.2.0 ZIP does not update when Git branches change. Windows build and executable
+smoke are not yet independently verified for this integration. Linux source smoke
+is not Windows packaging evidence. CI now schedules the existing Windows build and
+actual executable smoke on integration pushes as well as PRs/manual dispatch.
+Hosted results must be inspected; API access is currently proxy-blocked.
+
+Run the isolated full suite with
+`uv run --frozen --all-extras python .github/run_tests.py`, then build and run the
+packaged check below. Require schema-v2 fields and companion summary, intact legacy
+history/corrections, monthly packet, Settings/restart, Guided Help, displayed sync
+caveat and disabled Graph. The smoke asserts these structural checks; manually test
+ordinary employee interaction/scaling on a second managed PC without Python/Git/
+VS Code. Use only synthetic or approved private local inputs. Do not distribute a
+failed/unverified build or bypass endpoint policy. See integration_baseline.md.
+
 Build **on Windows** using the pinned Python 3.12.14 and uv 0.12.23. PyInstaller
 does not cross-compile a Windows executable from Linux. The build is an unsigned
 review prototype until Windows checks and the managed-PC pilot have completed.

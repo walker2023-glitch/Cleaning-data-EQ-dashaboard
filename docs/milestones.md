@@ -1,5 +1,15 @@
 # Milestone status
 
+## Integration baseline — 2026-10-29
+
+All audited feature branches are included on integration/stable-baseline; main is
+unchanged pending explicit final approval. Local 473-test regression, source smoke,
+installed-wheel synthetic pilot and M syntax checks passed. Hosted CI/Windows
+packaging remain unverified and block recommending final merge. No live Graph,
+publication or approval is enabled. See integration_baseline.md for included heads,
+owner evidence, unresolved business/IT gates and the next focused milestone.
+Dated milestone entries below retain historical evidence.
+
 The current user-directed **M2 is the local desktop prototype**, ahead of Microsoft
 integration. The original design's M2 identity/Graph work remains deferred and
 requires separate approval; it is not implied by the milestone name below.

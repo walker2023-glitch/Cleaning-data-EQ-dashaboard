@@ -1,5 +1,17 @@
 # Test instructions and evidence limits
 
+## Integration baseline verification — 2026-10-29
+
+The full consolidated suite independently reproduced **473 passed, zero failures,
+errors or skips** using the isolated runner. All existing cases remain. Source GUI
+smoke/restart, wheel/sdist, installed-wheel two-month v2 assessment and offline Graph
+preview passed; all 15 M files passed powerquery-parser 4.0.0 syntax parsing.
+No real PBIX/mashup engine was executed. Windows build/native DPAPI/hosted CI remain
+unverified. See integration_baseline.md for evidence locations and merge blockers.
+The smoke now additionally asserts repair v2 schema and hash-verified companion,
+packet financial summary, sync warning and disabled Graph at startup/end.
+Older counts and pending statuses below are historical milestone evidence.
+
 M2 adds workflow/background-worker and real CustomTkinter widget tests. The local
 multi-month full run passed **185 tests**, including every prior M0/M1 test. Widget tests need
 a real/virtual display and do not silently skip when a display is missing.

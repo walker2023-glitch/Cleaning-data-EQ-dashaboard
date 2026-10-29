@@ -1,5 +1,13 @@
 # Equipment Data Manager
 
+## Integration review baseline — 2026-10-29
+
+Use **integration/stable-baseline** for the consolidated review build, targeting
+main. It contains every audited feature head through the owner merge of PR #13.
+No merge into main has occurred. [Integration status, dependency graph, test evidence,
+Windows/CI blockers and rollback](docs/integration_baseline.md) supersede older
+branch-specific launch instructions below. Live Graph and publication remain disabled.
+
 A Windows desktop application for cleaning and validating
 CompuClean and TMA reports stored in SharePoint.
 

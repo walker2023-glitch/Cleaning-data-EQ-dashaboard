@@ -1,5 +1,42 @@
 # Development (M2 offline desktop)
 
+## Current integration review workflow
+
+Use **integration/stable-baseline** for new baseline review; older milestone commands
+below are historical. Do not start a new feature from a stale stacked branch.
+Once this integration is explicitly approved and merged, start future branches from
+updated main. See [the audit and merge gate](integration_baseline.md).
+Close running app processes, open the actual Git clone in VS Code (an extracted
+prototype ZIP has neither .git nor pyproject.toml), and use PowerShell:
+
+```powershell
+cd C:\path\to\Cleaning-data-EQ-dashaboard
+git fetch origin
+git switch integration/stable-baseline
+git pull --ff-only
+python -m uv sync --frozen --all-extras
+python -m uv run --frozen --all-extras python .github/run_tests.py
+python -m uv run --frozen --extra desktop python -m equipment_data_manager.ui.app --settings-file data/integration-preview/settings.toml
+```
+
+If no local branch exists, `git switch --track origin/integration/stable-baseline`
+creates it. Do not run Git/project commands in the Downloads release folder.
+On headless Linux, use a display and add --isolate-gui to the test runner. Frozen
+Python dependencies, cleaners, schemas, settings and SQLite formats are unchanged.
+Integration adds Windows build/smoke on its branch pushes and additional smoke
+assertions for v2 summaries and disabled Graph; it does not add a product feature.
+
+For the full offline walkthrough and packaging commands see testing.md and
+windows_packaging.md. Current 473-test local evidence is separate from unavailable
+hosted Windows/Linux evidence. Graph/cache foundation is implemented with injected
+clients; the real SDK/HTTP bootstrap and publication are absent.
+
+## Historical milestone development notes
+
+The following sections record how earlier branches were developed. Their branch
+names, test counts and deferred-feature descriptions apply to their dated milestone,
+not the integration status above.
+
 Read `README.md` and `design.md` fully before changes. Use a feature branch and
 pull-request review. M1 is based on M0 commit `2889796`; PR #1 is now merged.
 PRs #2–#7 remain open in a dependency chain; do not merge or retarget them

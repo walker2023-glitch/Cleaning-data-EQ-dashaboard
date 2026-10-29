@@ -1,5 +1,21 @@
 # Equipment Data Manager: local prototype
 
+## Consolidated prototype review
+
+Obtain the build for **integration/stable-baseline** from a successful exact-commit
+Windows check; older Downloads ZIPs do not update with source code. This integration
+build still requires Windows/managed-PC acceptance. Extract the complete application
+folder and double-click EquipmentDataManager.exe; employees do not need Python,
+Git or VS Code. Developers use the Git clone instructions in development.md.
+
+Use Settings for downloaded local/synced raw folders and trusted local candidate
+history, then choose month → Discover → confirm month → Preview → Process → review
+results → Export review packet. Corrected months require explicit review. Keep
+historical revisions outside Power BI snapshots; never treat an arithmetic match
+as business approval. Cloud synchronization is unverified and Graph is unavailable.
+For January/February reconciliation use the private real-data SOP with a separate
+PBIX; do not publish or refresh production. See integration_baseline.md.
+
 This prototype processes supported local CompuClean CSVs and TMA XLSX candidates. It does not connect to Microsoft
 or SharePoint. Cleaning accuracy against departmental data is **unverified**;
 outputs are candidates for review, not production-validated reports.

@@ -1,27 +1,31 @@
-# Recommended next development prompt
+# Next development checkpoint
 
-First run the real schema-v2 Power BI Desktop acceptance in
-powerbi_real_data_readiness.md. Keep actual reports/amounts/model details private;
-share a sanitized acceptance summary and authorized inventory examples as needed.
-Then use this prompt for a focused Milestone B:
+First finish integration/stable-baseline review: inspect exact-head hosted
+Windows/Linux checks, build and run the packaged Windows smoke, complete a second
+managed-PC employee/recovery trial, then obtain explicit owner approval before
+merging into main. The current Linux-only evidence does not close that gate.
+See integration_baseline.md for dependencies, blockers, final merge commands and
+rollback. Do not merge/retarget the historical PR stack automatically.
 
-> Continue Milestone B — Equipment Inventory Foundation from the reviewed
-> Milestone A branch. Read the roadmap, inventory_foundation_design.md, current
-> contracts and my schema-v2 Power BI acceptance results first; inspect open PRs
-> without merging. Inspect the authorized inventory raw/expected fixtures and two
-> dated snapshots I supply. Implement only verified inventory layouts, literal text
-> IDs, explicit current snapshot selection with immutable history, duplicate-ID
-> review, online/offline preservation, reviewed location mappings and visible
-> unresolved locations. Prepare the Building → Room → Equipment Name → Equipment ID
-> matrix and a validated one-to-many repair/service relationship proposal; do not
-> assume TMA work-order IDs are equipment IDs. Do not add inventory to the existing
-> monthly three-report completeness rule. If source layout, status or Building_Dim
-> keys are missing, document that dependency instead of inventing it. Preserve all
-> existing cleaners, financial v2, GUI/settings/history/correction behavior and tests.
-> Use synthetic fixtures in GitHub, a new feature branch and PR. No live Microsoft
-> authentication, SharePoint access, production PBIX changes, invented approvals
-> or automatic merges.
+After the integration is approved and merged, create future feature branches from
+updated main. The recommended next implementation is a narrowly scoped **read-only
+SharePoint test-site pilot**, only with explicit test authorization and the completed
+sharepoint_live_pilot.md IT checklist:
 
-Milestone C auth/storage mocks should follow separately after inventory evidence
-and the documented IT approvals. Milestone D handles approved publication,
-deployment, recovery, employee training and successor-maintainer handoff.
+> Preserve the stable baseline's cleaners, financial v2, Power BI four datasets,
+> local candidates/history, Settings and Guided Mode. Wire real MSAL public-client
+> authentication, the protected cache lifecycle and a constrained HTTP transport
+> against approved nonproduction resources only. Validate tenant/account/site/library
+> selection, least-privilege grants, cache ACL/sign-out/claims handling, safe downloads,
+> transfer identity and permission failures. Keep publication and production refresh
+> disabled. Use synthetic fixtures, offline mocks and authorized live test evidence
+> separately. No real secrets/reports in Git, broadened permissions, production
+> fallback, candidate approval or automatic merge. Use a small feature branch and PR.
+
+Until IT/test authorization arrives, continue local managed-PC usability/recovery
+acceptance. Inventory work is an alternative only after verified raw/expected
+snapshots, status/grain/duplicate policies and Building_Dim keys are supplied; the
+owner's separate Power BI matrix is not an application adapter contract. Do not
+add inventory to existing monthly completeness or invent equipment keys for TMA.
+Authenticated approval, shared concurrency, publication and production deployment
+remain separately reviewed later milestones.

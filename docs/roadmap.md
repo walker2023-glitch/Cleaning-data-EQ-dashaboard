@@ -1,5 +1,24 @@
 # Departmental workflow roadmap and project review
 
+## Integration checkpoint — 2026-10-29
+
+All remote feature tips are now included in **integration/stable-baseline** via a
+single non-fast-forward merge from current main. The owner already merged #13 into
+#12's branch at ae9a865; no independent feature branch was omitted or cherry-picked.
+See [exact branch/PR evidence](integration_branch_audit.md) and
+[baseline/rollback/validation gates](integration_baseline.md).
+
+473 local tests pass; source GUI/restart, installed-wheel synthetic four-table
+readiness, mock Graph and all 15 M syntax checks pass. Windows executable and hosted
+CI are unverified because API requests remain proxy-blocked. Do not merge until
+those checks, managed-PC acceptance and explicit owner review are complete.
+
+After approval, use main as the single starting baseline. Next: authorized read-only
+MSAL/Graph test-site pilot after IT decisions, or local employee/recovery testing
+while access is pending. Inventory still requires verified fixtures/keys.
+Candidate publication, business approvals and production refresh remain separate.
+Older checkpoints below are historical, not current PR/feature status.
+
 ## Current checkpoint — 2026-10-28, Milestone C foundation
 
 This branch builds on the locally reviewed Milestone A head 454c7a0. Git remote

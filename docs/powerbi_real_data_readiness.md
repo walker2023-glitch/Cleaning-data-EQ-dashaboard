@@ -1,5 +1,18 @@
 # Milestone A — schema-v2 real-data Power BI review
 
+## Integration update — 2026-10-29
+
+The owner now reports successful real January/February **schema-v2** reconciliation,
+Desktop imports and monthly visuals. That supersedes the older pending/previous-
+schema descriptions below, but does not establish production approval or independent
+agent-run Desktop testing. Repeat acceptance privately at the integration commit
+using **integration/stable-baseline** in section 1. Preserve the supplied monthly
+and combined targets in your local expectations grid, not in repository fixtures.
+The four datasets, v2 contract, legacy compatibility and calculation rules are
+unchanged. See integration_baseline.md for current branch and remaining checks.
+Below is the original Milestone A procedure/evidence record; its older PR-state
+and pending-test statements are historical.
+
 The application can assemble explicit monthly packets into a separate, candidate-only
 snapshot with four report folders. This milestone adds an assessment of monthly and
 combined controls, independent private expectations, optional original-file hash

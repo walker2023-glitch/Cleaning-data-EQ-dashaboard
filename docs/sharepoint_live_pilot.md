@@ -1,5 +1,14 @@
 # Future authorized SharePoint pilot and approval boundary
 
+## Integration status — 2026-10-29
+
+The foundation is preserved in integration/stable-baseline. All mock/storage/session
+regressions passed in the 473-test Linux suite. Hosted native Windows DPAPI and
+packaged results remain unverified; no live tenant, sync, SDK or server write
+behavior is established. The integration task grants no live SharePoint approval.
+The IT checklist below still gates a separately authorized read-only pilot.
+See integration_baseline.md for the current consolidation evidence.
+
 This is a checklist, **not authorization to connect now**. Default Graph sign-in/
 transport and all business publication remain disabled. The current milestone uses
 mocks/synthetic data only. Complete these gates in a later focused PR and approved
