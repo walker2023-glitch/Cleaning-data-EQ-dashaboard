@@ -155,11 +155,22 @@ def test_failed_request_write_retains_selected_candidates_and_old_audit(reviewin
     old=service.request('2026-01',captured['fingerprint'],'Original synthetic evidence')
     before=engine.store.history()
     real_connect=sqlite3.connect
-    def denied(*args,**kwargs):
-        raise sqlite3.OperationalError('simulated local lock or write failure')
+    def denied(database,*args,**kwargs):
+        if str(database)==str(service.root/'requests.sqlite3'):
+            raise sqlite3.OperationalError('simulated local lock or write failure')
+        return real_connect(database,*args,**kwargs)
     with monkeypatch.context() as patch:
         patch.setattr(sqlite3,'connect',denied)
         with pytest.raises(sqlite3.OperationalError):
             service.request('2026-01',captured['fingerprint'],'New synthetic note')
     assert service.history()==[old] and engine.store.history()==before
     assert not workspace.approved_folder.exists()
+
+
+def test_previous_powerbi_repair_schema_gets_explicit_review_upgrade_message(tmp_path):
+    workspace, _, _, _, _=build(tmp_path,v1=True)
+    from equipment_data_manager.processing.repair_financial import powerbi_coordinator
+    service=ReviewService(powerbi_coordinator(workspace.candidate_folder),raw_folder=workspace.raw_folder)
+    with pytest.raises(ProcessingError,match='review_requires_repair_v2'):
+        service.capture('2026-01')
+    assert not service.root.exists()

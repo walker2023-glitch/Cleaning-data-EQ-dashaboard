@@ -240,7 +240,7 @@ those identity, publication or production permissions.
 
 ### Observed local validation
 
-507 tests passed with zero failures/errors/skips on Linux, including all 473 baseline
+508 tests passed with zero failures/errors/skips on Linux, including all 473 baseline
 cases. Real source and isolated installed-wheel window checks passed through phase
 26, including monthly evidence/local request and separate-process Settings restore.
 Wheel/sdist builds and the installed-wheel synthetic two-month readiness/request

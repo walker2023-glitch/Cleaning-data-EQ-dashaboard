@@ -56,6 +56,8 @@ class ReviewService:
                 if not rows or len(rows) != artifact.output_rows or any(r['ReportMonth'] != period for r in rows):
                     raise ProcessingError('review_candidate_contract_rejected')
                 _same_provenance(rows, kind)
+                if kind == ReportType.REPAIRS and any(r['SchemaVersion'] != '2' for r in rows):
+                    raise ProcessingError('review_requires_repair_v2')
                 _record_contract(rows, kind)
                 first = rows[0]
                 if first['SourceFileSHA256'] != artifact.source_hash or f"{first['ExportVersion']}:{first['CleanerVersion']}" != artifact.cleaner_version:
@@ -84,8 +86,6 @@ class ReviewService:
                     warnings=list(warnings), missing_values={key: sum(r[key] is None or r[key] == '' for r in rows)
                         for key in rows[0] if any(r[key] is None or r[key] == '' for r in rows)})
                 if kind == ReportType.REPAIRS:
-                    if first['SchemaVersion'] != '2':
-                        raise ProcessingError('review_requires_repair_v2')
                     expected = {r['FinancialSummarySHA256'] for r in rows}
                     if len(expected) != 1:
                         raise ProcessingError('review_summary_reference_rejected')

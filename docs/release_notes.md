@@ -7,7 +7,7 @@ history with stale detection, and Review & Approval Guided Mode. Final approval
 and Publish stay disabled without authoritative reviewer verification. A separate
 in-memory specification model exercises future staging/integrity/concurrency/recovery/
 rollback with synthetic grants only. No cleaning/schema/processing-store changes
-or production writes. Local full suite: 507 passed; source/installed-wheel phase-26
+or production writes. Local full suite: 508 passed; source/installed-wheel phase-26
 smoke and restart passed. Hosted Windows/Linux and Windows executable status remains
 unverified due API access; require exact-commit checks before employee distribution.
 See approval_publishing_foundation.md. Version remains 0.2.0 prototype; identify
