@@ -1,5 +1,32 @@
 # Test instructions and evidence limits
 
+## Approval / publishing foundation results
+
+Local Python 3.12.14/Linux isolated full suite: **508 passed, 0 failures/errors/skips**
+(473 preserved cases + 17 review-request cases + 14 in-memory publication cases +
+4 real-widget cases). No existing test was removed or its expected value weakened. A compatibility
+regression ensures older repair-v1 candidates get a clear v2 upgrade message
+before v2-only review checks; legacy processing remains available.
+Source and isolated installed-wheel desktop smoke passed through phase 26 plus
+fresh-process Settings restore. Wheel/sdist build, installed-wheel synthetic v2
+pilot/readiness generation and local review request demonstration passed. Workflow
+YAML parses and retains both OS jobs; no Power Query/schema changes were made.
+
+Coverage includes monthly evidence/nulls/hashes/provenance, missing originals/report
+sets, corrected or changed source bytes, unauthorized approval claims, local request
+deduplication/concurrency, append-only/integrity and failed writes, GUI responsiveness
+and error recovery, disabled approval/Publish, and model-only partial transfer,
+resume/integrity, duplicate/concurrent selection, changed selection and rollback.
+Mock authority/model results are not real reviewer authorization or SharePoint tests.
+
+Ignored evidence: data/approval-verified-tests.log, data/ci-test-results.xml,
+data/approval-desktop-smoke/, data/approval-wheel-desktop-smoke/,
+data/approval-build.log and data/approval-wheel-request.log. Hosted Windows/Linux
+CI, native DPAPI and Windows executable results remain **unverified** while GitHub
+API requests return proxy HTTP 403. This feature branch schedules both OS suites
+and Windows packaging/smoke on push; inspect actual results before release/review
+approval. See approval_publishing_foundation.md for limits and manual preview.
+
 ## Integration baseline verification — 2026-10-29
 
 The full consolidated suite independently reproduced **473 passed, zero failures,

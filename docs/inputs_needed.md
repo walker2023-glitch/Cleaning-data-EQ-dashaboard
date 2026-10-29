@@ -1,5 +1,19 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## Approval milestone decisions
+
+Do not resend already-tested January/February reports merely for this foundation.
+Owner reports successful Windows OneDrive raw reads and real v2 Desktop imports.
+Next inputs are decisions: designated reviewers and independently verifiable
+identity/role authority; revocation/expiry and separation-of-duties policy;
+required independent evidence, accepted financial/null/completeness exceptions,
+local-request retention/support owner, and final approved-artifact/status contract.
+IT must authorize test resources, delegated scopes/resource grants, protected cache
+and executable policies before live connectivity. Neither a typed name nor a local
+checkbox may establish approval. Keep actual departmental configuration, audit
+notes, expectations, source indexes and identity evidence private. See
+approval_publishing_foundation.md and sharepoint_live_pilot.md.
+
 ## What is needed after the desktop prototype
 
 January raw repair/service CSVs and TMA XLSX are now inspected, together with the

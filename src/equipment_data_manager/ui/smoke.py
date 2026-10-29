@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -223,6 +223,22 @@ def run_smoke(directory: Path | None) -> int:
                 assert app.page == 'Process Reports' and app.workspace is not None
                 assert not app.guided.get() and app.explanation_level.get() == 'Detailed'
                 assert list((workspace / 'reserved-approved').iterdir()) == []
+                app.show_page('Review & Approval')
+                app.business_review_page.load_button.invoke()
+            elif phase == 25:
+                page = app.business_review_page
+                assert page.captured is not None and not page.captured['evidence']['missing_reports']
+                assert page.approve_button.cget('state') == page.publish_button.cget('state') == 'disabled'
+                page.note.insert(0, 'Synthetic packaged-smoke evidence only')
+                page.request_button.invoke()
+            elif phase == 26:
+                page = app.business_review_page
+                records = page.service().history()
+                assert len(records) == 1 and records[0]['approval'] is None
+                assert page.service().status(records[0]) == 'ReviewRequestedLocallyNotSent'
+                assert page.approve_button.cget('state') == page.publish_button.cget('state') == 'disabled'
+                assert list((workspace / 'reserved-approved').iterdir()) == []
+                app.show_page('Process Reports')
                 finish(True)
                 return
             state["phase"] += 1

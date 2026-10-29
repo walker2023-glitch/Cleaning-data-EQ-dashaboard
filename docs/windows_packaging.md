@@ -1,5 +1,16 @@
 # Windows prototype packaging and distribution
 
+## Approval foundation build
+
+Build feature/approval-publishing-foundation at its exact reviewed commit. The new
+review module/page is imported through the desktop and the offline employee guide
+remains bundled. approval_publishing_foundation.md is copied into the review ZIP.
+No local request database, candidate data, tenant settings or identity evidence is
+bundled. Windows/Linux CI includes the offline installed-wheel request demonstration;
+this branch's pushes also schedule Windows executable build/smoke. Inspect actual
+hosted results before claiming success. A managed-PC reviewer-role/signing pilot
+remains required; final approval/Publish remain disabled in every build.
+
 ## Integration build gate
 
 Build the **integration/stable-baseline** commit and record its full SHA; an older

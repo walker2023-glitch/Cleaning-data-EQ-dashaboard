@@ -1,5 +1,15 @@
 # Future authorized SharePoint pilot and approval boundary
 
+## Approval foundation update
+
+Local review requests/evidence are now implemented; authoritative final approval,
+direct MSAL/Graph bootstrap and production publication remain disabled. Upload,
+concurrent selection and rollback are exercised only by an in-memory specification
+model with mock grants. No mock grant can approve a desktop request. Before a
+publisher is implemented, agree the final approved-byte representation, reviewer
+identity/role/revocation authority and shared lease/CAS/recovery design in
+approval_publishing_foundation.md. Existing IT/live-pilot gates below still apply.
+
 ## Integration status — 2026-10-29
 
 The foundation is preserved in integration/stable-baseline. All mock/storage/session

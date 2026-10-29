@@ -1,5 +1,24 @@
 # Departmental workflow roadmap and project review
 
+## Approval / publishing foundation — 2026-10-29
+
+Owner merged PR #14 into main at 36f8f20. New work starts from main on
+feature/approval-publishing-foundation. Owner now reports successful local Windows
+raw reads from a OneDrive-synchronized SharePoint folder; this is not direct Graph
+connectivity, a synchronization guarantee or approval to publish.
+
+Implemented: monthly evidence view, exact selections/source/output/summary hashes,
+counts/nulls/warnings/financial summaries, durable local unsent requests, stale
+selection/source detection, disabled final approval/Publish and new Guided Mode.
+Model-only: mock-authorized in-memory staging, read-back equality, immutable sets,
+conditional selection, duplicate/concurrent/interrupted recovery and rollback.
+
+Next: authoritative reviewer role/identity/evidence/retention policy, final approved
+artifact contract, then independently reviewed durable coordination and authorized
+nonproduction Graph pilot. Publishing/production refresh remains disabled. See
+approval_publishing_foundation.md. Older pending integration/feature statuses below
+are dated records, not current branch state or proof of hosted CI outcomes.
+
 ## Integration checkpoint — 2026-10-29
 
 All remote feature tips are now included in **integration/stable-baseline** via a

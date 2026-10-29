@@ -761,3 +761,83 @@ def test_storage_connection_status_is_honest_and_graph_never_activates(app):
     assert page.graph_button.cget('state')=='disabled'
     text=HELP['storage_connection'].text()
     assert 'offline-tested foundation only' in text and 'No candidate is uploaded' in text
+
+
+def prepare_business_review(app, tmp_path):
+    from test_powerbi_readiness import build
+    workspace, _, _, _, _ = build(tmp_path/'synthetic-review')
+    app.workspace = workspace
+    app.workflow = DesktopWorkflow(workspace.candidate_folder, output_format='powerbi')
+    app.month.set('January'); app.year.set('2026')
+    app.navigation['Review & Approval'].invoke()
+    app.business_review_page.load_button.invoke()
+    pump(app, lambda:not app.worker.busy)
+    return workspace, app.business_review_page
+
+
+def test_business_review_real_engine_evidence_and_local_request_stay_unapproved(app, tmp_path):
+    workspace, page = prepare_business_review(app,tmp_path)
+    assert app.page == 'Review & Approval'
+    text = page.evidence.get('1.0','end')
+    assert '3 retained / 3 source rows' in text and 'ReportedTotalCost' in text
+    assert 'source_sha256' in text and 'summary_sha256' in text and 'Missing values' in text
+    assert page.request_button.cget('state') == 'normal'
+    page.note.insert(0,'Synthetic independent count checks')
+    page.request_button.invoke()
+    pump(app,lambda:not app.worker.busy)
+    assert 'ReviewRequestedLocallyNotSent' in page.evidence.get('1.0','end')
+    assert page.approve_button.cget('state') == page.publish_button.cget('state') == 'disabled'
+    assert page.service().history()[0]['approval'] is None
+    assert not workspace.approved_folder.exists()
+    page.history_button.invoke()
+    assert 'unavailable' in page.evidence.get('1.0','end')
+    assert 'does not assert' in page.evidence.get('1.0','end')
+
+
+def test_business_review_handles_missing_month_workspace_and_stale_source(app,tmp_path):
+    page=app.business_review_page
+    app.show_page('Review & Approval'); page.load_button.invoke()
+    assert 'Save folder settings' in page.evidence.get('1.0','end')
+    workspace,page=prepare_business_review(app,tmp_path)
+    app.month.set('March'); page.load_button.invoke(); pump(app,lambda:not app.worker.busy)
+    assert 'repairs, service_orders, tma_work_orders' in page.evidence.get('1.0','end')
+    assert page.request_button.cget('state')=='disabled'
+    app.month.set('January'); page.load_button.invoke(); pump(app,lambda:not app.worker.busy)
+    source=workspace.raw_folder/'2026-01/repairs/raw.csv'
+    source.write_bytes(source.read_bytes().replace(b'$10.00',b'$11.00'))
+    page.note.insert(0,'Synthetic evidence')
+    page.request_button.invoke(); pump(app,lambda:not app.worker.busy)
+    assert 'original raw file changed' in app.status.get()
+    assert page.request_button.cget('state')=='disabled'
+    assert page.publish_button.cget('state')=='disabled' and page.service().history()==[]
+
+
+def test_business_review_background_operation_remains_responsive_and_fails_safely(app,tmp_path,monkeypatch):
+    _,page=prepare_business_review(app,tmp_path)
+    from equipment_data_manager.review import ReviewService
+    from equipment_data_manager.processing.models import ProcessingError
+    entered,release=Event(),Event()
+    def blocked(self,period):
+        entered.set()
+        assert release.wait(5)
+        raise ProcessingError('review_candidate_contract_rejected')
+    monkeypatch.setattr(ReviewService,'capture',blocked)
+    page.load_button.invoke()
+    pump(app,entered.is_set)
+    ticks=[];app.after(0,lambda:ticks.append(True));app.update()
+    assert ticks and app.worker.busy
+    assert page.request_button.cget('state')==page.publish_button.cget('state')=='disabled'
+    release.set();pump(app,lambda:not app.worker.busy)
+    assert 'failed monthly review checks' in page.evidence.get('1.0','end')
+    assert page.captured is None and page.load_button.cget('state')=='normal'
+
+
+def test_business_review_guidance_explains_disabled_approval_and_publication(app):
+    from equipment_data_manager.ui.help_content import HELP
+    for key in ('business_review','validation_evidence','request_approval','approval_status','publication_readiness','publication_history'):
+        assert HELP[key].text('brief') and HELP[key].text('detailed')
+    page=app.business_review_page
+    app._busy_controls(True);app._busy_controls(False)
+    assert page.approve_button.cget('state')==page.publish_button.cget('state')=='disabled'
+    assert 'not sent' in HELP['request_approval'].text('brief')
+    assert 'Mock approvals' in HELP['publication_readiness'].text()
