@@ -134,24 +134,24 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         if not self.compact_layout:
             rail.grid_propagate(False)
         rail.grid_columnconfigure(0, weight=1)
-        rail.grid_rowconfigure(7, weight=1)
+        rail.grid_rowconfigure(8, weight=1)
         ctk.CTkLabel(rail, text="EDM", text_color="white", font=ctk.CTkFont(size=30, weight="bold")).grid(row=0, column=0, padx=24, pady=(32, 4), sticky="w")
         ctk.CTkLabel(rail, text="Equipment\nData Manager", justify="left", text_color="white", font=ctk.CTkFont(size=18, weight="bold")).grid(row=1, column=0, padx=24, pady=(0, 32), sticky="w")
         self.navigation = {}
-        for row, name in enumerate(("Process Reports", "Results", "History", "Settings", "Help"), 2):
+        for row, name in enumerate(("Process Reports", "Results", "History", "Review & Approval", "Settings", "Help"), 2):
             button = ctk.CTkButton(rail, text=name, anchor="w", height=44, fg_color="transparent", hover_color="#294160", command=lambda value=name: self.show_page(value))
             button.grid(row=row, column=0, padx=14, pady=4, sticky="ew")
             self.navigation[name] = button
         self.guided_switch = ctk.CTkSwitch(rail, text='Guided Mode', variable=self.guided,
             command=self.help_preferences_changed, text_color='white', progress_color=TEAL)
-        self.guided_switch.grid(row=8,column=0,sticky='w',padx=20,pady=(8,6))
+        self.guided_switch.grid(row=9,column=0,sticky='w',padx=20,pady=(8,6))
         self.help_level = ctk.CTkComboBox(rail, variable=self.explanation_level, values=['Brief','Detailed'],
             state='readonly',width=175,command=self.help_preferences_changed)
-        self.help_level.grid(row=9,column=0,padx=20,pady=6)
+        self.help_level.grid(row=10,column=0,padx=20,pady=6)
         self.context_help_button=ctk.CTkButton(rail,text='Explain this step · F1',command=self.open_context_help,fg_color='#294160',width=175)
-        self.context_help_button.grid(row=10,column=0,padx=20,pady=6)
-        ctk.CTkLabel(rail, text="LOCAL / OFFLINE", text_color="#BDE5E8", font=ctk.CTkFont(size=12, weight="bold")).grid(row=11, column=0, padx=24, pady=(12, 4), sticky="w")
-        ctk.CTkLabel(rail, text="Desktop prototype\nMicrosoft connection is not enabled", justify="left", wraplength=175, text_color="#D3DFEF", font=ctk.CTkFont(size=11)).grid(row=12, column=0, padx=24, pady=(0, 24), sticky="w")
+        self.context_help_button.grid(row=11,column=0,padx=20,pady=6)
+        ctk.CTkLabel(rail, text="LOCAL / OFFLINE", text_color="#BDE5E8", font=ctk.CTkFont(size=12, weight="bold")).grid(row=12, column=0, padx=24, pady=(12, 4), sticky="w")
+        ctk.CTkLabel(rail, text="Desktop prototype\nMicrosoft connection is not enabled", justify="left", wraplength=175, text_color="#D3DFEF", font=ctk.CTkFont(size=11)).grid(row=13, column=0, padx=24, pady=(0, 24), sticky="w")
 
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.grid(row=0, column=1, sticky="nsew", padx=28, pady=24)
@@ -166,6 +166,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.body.grid_columnconfigure(0, weight=1)
         self.body.grid_rowconfigure(0, weight=1)
         self.settings_page = SettingsPage(self.body, self)
+        from equipment_data_manager.ui.review_page import ReviewPage
+        self.business_review_page = ReviewPage(self.body, self)
         page_class=ctk.CTkScrollableFrame if self.compact_layout else ctk.CTkFrame
         self.processing_page = page_class(self.body, fg_color="transparent")
         self.processing_page.grid(row=0, column=0, sticky="nsew")
@@ -514,7 +516,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         if self.settings_blocking():
             self.status.set('Finish checking or saving settings before processing reports.')
             return
-        if kind in ('preview','process','packet','history'):
+        if kind in ('preview','process','packet','history','business_review'):
             problem=candidate_location_error(self.workflow.base_output_root)
             if problem:
                 self.status.set(problem)
@@ -528,6 +530,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
     def _busy_controls(self, busy):
         busy = busy or self.settings_blocking()
         self.settings_page.busy(busy)
+        self.business_review_page.busy(busy)
         state = "disabled" if busy else "normal"
         for widget in (self.select_button, self.sample_button, self.folder_button, self.preview_button,
                        self.workspace_button, self.scan_button, self.packet_button, self.settings_shortcut,
@@ -562,6 +565,10 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                         self.previews = ()
                         self.process_button.configure(state="disabled")
                         self.status.set(event.payload + (" Check local folder availability; synchronization is unverified." if self.job in ("discover", "packet") else ""))
+                        if self.job == "business_review":
+                            self.business_review_page.failed()
+                    elif self.job == "business_review":
+                        self.business_review_page.completed(event.payload)
                     elif self.job == "discover":
                         self.monthly_selection = event.payload
                         self.sources = tuple(source for _, source in self.monthly_selection.files)
@@ -612,7 +619,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         for label, button in self.navigation.items():
             button.configure(fg_color=TEAL if label == name else "transparent")
         self.heading.configure(text="Processing results" if name == "Results" else name)
-        for frame in (self.processing_page, self.history_page, self.help_page, self.settings_page):
+        for frame in (self.processing_page, self.history_page, self.help_page, self.settings_page, self.business_review_page):
             frame.grid_remove()
         if name in ("Process Reports", "Results"):
             self.processing_page.grid(row=0, column=0, sticky="nsew")
@@ -625,6 +632,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         elif name == "History":
             self.history_page.grid(row=0, column=0, sticky="nsew")
             self.load_history()
+        elif name == "Review & Approval":
+            self.business_review_page.grid(row=0,column=0,sticky="nsew")
         elif name == "Settings":
             self.settings_page.grid(row=0,column=0,sticky="nsew")
         else:
@@ -814,6 +823,10 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.settings_page.reset_button:'reset',self.settings_page.import_button:'import_settings',
             self.settings_page.export_button:'export_settings',self.settings_page.local_check:'candidate_folder',
             self.settings_page.recommended_button:'candidate_folder',
+            self.business_review_page.load_button:'business_review',self.business_review_page.evidence:'validation_evidence',
+            self.business_review_page.request_button:'request_approval',self.business_review_page.note:'validation_evidence',
+            self.business_review_page.approve_button:'approval_status',self.business_review_page.publish_button:'publication_readiness',
+            self.business_review_page.history_button:'publication_history',
             self.settings_page.graph_button:'storage_connection',self.settings_page.connection_status:'storage_connection'}
         for widget,key in controls.items():
             self.guidance.register(widget,key)
@@ -823,7 +836,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             for widget in (self.settings_page.entries[key],self.settings_page.browse_buttons[key],self.settings_page.indicators[key]):
                 self.guidance.register(widget,key)
         for name,widget in self.navigation.items():
-            self.guidance.register(widget, 'history' if name=='History' else 'save_settings' if name=='Settings' else 'status')
+            self.guidance.register(widget, 'business_review' if name=='Review & Approval' else 'history' if name=='History' else 'save_settings' if name=='Settings' else 'status')
         self.guidance.register(self.format_selector,'powerbi')
         self.guidance.register(self.settings_page.format_picker,'powerbi')
 

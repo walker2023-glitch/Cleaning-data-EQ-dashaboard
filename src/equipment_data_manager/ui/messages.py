@@ -137,3 +137,19 @@ def diagnostic_lines(diagnostics):
                            for date in row.dates)
         lines.append(f"Record {row.record}: {REASONS.get(row.reason, 'Unclassified reason')} | {values}")
     return lines
+
+ERRORS.update({
+    'review_workspace_required': 'Save folder settings and choose Power BI CSV candidate mode before monthly review.',
+    'review_requires_repair_v2': 'Reprocess repairs in the current Power BI schema-v2 mode before monthly review.',
+    'review_evidence_required': 'Enter an evidence note or private reference of 1–4000 characters. This is not approval.',
+    'review_missing_reports': 'Some monthly reports are missing. Process all three supported reports before requesting review.',
+    'review_selection_changed': 'The selected evidence changed. Review the current revisions again before requesting approval.',
+    'review_source_changed': 'An original raw file changed since processing. Preview and review its correction before requesting approval.',
+    'review_source_unsafe': 'The original file location is outside the configured raw folder. Check folder settings.',
+    'review_audit_integrity_failed': 'The local request record failed its integrity check. Keep the store intact and contact your maintainer.',
+    'review_store_unsafe': 'Review requests must remain in the trusted local candidate folder.',
+    'review_approval_unavailable': 'Final approval is unavailable because reviewer authority is not configured.',
+    'review_publication_disabled': 'Publishing is disabled. No approved output or production folder was changed.',
+    'review_candidate_provenance_rejected': 'Candidate provenance does not match the selected revision. Stop and ask your maintainer.',
+    'review_candidate_contract_rejected': 'The selected candidate failed monthly review checks. Do not edit its files.',
+})

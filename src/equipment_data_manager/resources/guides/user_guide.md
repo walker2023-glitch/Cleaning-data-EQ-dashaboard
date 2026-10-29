@@ -1,5 +1,24 @@
 # Equipment Data Manager: local prototype
 
+## Review & Approval — local foundation
+
+After processing the month in Power BI CSV candidate mode, open **Review & Approval**
+and select **Review candidate**. Inspect report counts, monthly reported costs,
+missing values, warnings and exact revisions/hashes. Add a concise evidence note
+or private reference, then choose **Request approval (local)**. The request is
+recorded on this computer only: **it is not sent and is not business approval**.
+All three current reports and repair schema v2 are required. Corrections or changed
+original files require fresh review; refresh the view to see stale requests.
+
+**Approve** and **Publish** stay disabled until independent reviewer authority and
+a separately authorized publishing service exist. Publication history is unavailable;
+use History for local candidate revisions. Guided Mode/F1 explains the controls.
+Do not put credentials or unnecessary personal information in notes. Keep local
+requests/history outside OneDrive/shared folders. Reading downloaded synced raw
+files does not verify synchronization. See approval_publishing_foundation.md for
+synthetic preview instructions; existing Power BI files and production folders are
+unchanged.
+
 ## Consolidated prototype review
 
 Obtain the build for **integration/stable-baseline** from a successful exact-commit

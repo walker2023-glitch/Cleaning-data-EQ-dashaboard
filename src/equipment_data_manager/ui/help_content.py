@@ -154,3 +154,30 @@ def missing_help(kinds):
     if 'tma_work_orders' in kinds:
         notes.append('Missing TMA Work Orders: request the supported XLSX report currently supplied by Tim.')
     return '\n'.join(notes)
+
+entry('business_review', 'Review candidate', 'Shows the selected month’s current candidate counts, costs, warnings and exact revisions.',
+    'Reads selected normalized candidates and the financial summary without changing processing history. Refresh evidence before requesting review; missing reports block the request.',
+    'Local candidate revisions, source/output/summary hashes and available original bytes.',
+    'Inspect missing values and warnings, then record a local review request.',
+    'A successful reconciliation and a readable OneDrive folder do not establish approval or verified cloud sync.')
+entry('validation_evidence', 'Validation evidence', 'Shows the evidence bound to this request; a note is an unverified statement.',
+    'Counts, nullable financial summaries, exclusions/warnings and exact hashes identify what was reviewed. Add a concise private reference to independent checks; do not enter credentials or unnecessary personal information.',
+    'Local evidence and request note, stored privately on this computer.', 'Resolve evidence gaps and refresh after corrections.',
+    'The app does not validate a note’s truth, contact a reviewer or authenticate its author.')
+entry('request_approval', 'Request approval locally', 'Records a local review request. It is not sent or approved.',
+    'Binds the selected revisions, source/output/summary hashes, warnings, missing values, note and UTC local-clock timestamp in a local append-only request ledger. Repeated identical requests reuse their record.',
+    'Local review-request database; original reports and candidate selections are unchanged.',
+    'Arrange authorized independent review through your department’s approved process.',
+    'No authoritative reviewer identity service is configured. A checkbox, typed name or correction token cannot grant business approval.')
+entry('approval_status', 'Approval status', 'Final approval is unavailable until reviewer authority can be independently verified.',
+    'Requests remain unapproved. Corrections and changed source hashes make earlier requests stale. Local audit integrity is not an authenticated enterprise approval record.',
+    'Exact revisions and local review-request status.', 'Ask the designated owner and IT to define reviewer roles, evidence policy and verification service.',
+    'Approve stays disabled. CandidateUnverified status is never changed by this milestone.')
+entry('publication_readiness', 'Publication readiness', 'Publish is disabled. No production files will be copied.',
+    'Future publication needs independently verified approval for exact bytes, immutable complete staging, read-back hashes, shared concurrency control and conditional snapshot selection. The current model tests these ideas only in memory.',
+    'No SharePoint or Power BI ingestion folder is written.', 'Complete authority, business and IT gates before any separately authorized live pilot.',
+    'Mock approvals and in-memory recovery tests cannot authorize a real publication.')
+entry('publication_history', 'Publication history', 'Published revision history is unavailable without a publishing service.',
+    'The application cannot query previous published SharePoint snapshots. This does not mean none exist. Local candidate history remains available separately.',
+    'No remote files are accessed.', 'Use the existing History view for local candidates.',
+    'Rollback is a future authorized pointer change, never deletion or overwrite of history.')
