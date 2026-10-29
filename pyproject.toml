@@ -4,21 +4,26 @@ build-backend = "hatchling.build"
 
 [project]
 name = "equipment-data-manager"
-version = "0.0.1"
-description = "Offline discovery scaffold for a Windows equipment report manager"
+version = "0.2.0"
+description = "Offline equipment report cleaning engine and validation foundation"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = ["pandas==2.2.3", "openpyxl==3.1.5"]
 
 [project.optional-dependencies]
-# Used only to inspect and characterize the supplied legacy scripts in M0.
-legacy = ["pandas==2.2.3", "openpyxl==3.1.5", "xlrd==2.0.2"]
+# XLS is discovery-only until an actual legacy export is supplied.
+legacy = ["openpyxl==3.1.5", "xlrd==2.0.2"]
+desktop = ["customtkinter==5.2.2", "Pillow==11.3.0"]
+packaging = ["pyinstaller==6.16.0"]
 
 [dependency-groups]
 dev = ["pytest==8.3.5"]
 
 [project.scripts]
 equipment-data-manager = "equipment_data_manager.__main__:main"
+
+[project.gui-scripts]
+equipment-data-manager-desktop = "equipment_data_manager.ui.app:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/equipment_data_manager"]

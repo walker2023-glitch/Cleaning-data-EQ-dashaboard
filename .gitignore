@@ -21,12 +21,15 @@ logs/
 build/
 dist/
 *.spec
+!packaging/EquipmentDataManager.spec
 
 # Departmental data
 data/
 raw_data/
 cleaned_data/
 *.db
+*.sqlite3
+*.sqlite3-*
 
 # Test and packaging artifacts
 .pytest_cache/
@@ -37,3 +40,17 @@ htmlcov/
 # Editor files
 .vscode/
 .idea/
+
+# Department-local folder configuration
+workspace.local.toml
+
+# Private desktop preferences / atomic-write leftovers
+app-settings.toml
+settings.local.toml
+.settings-*.tmp
+
+# Private organizational connection configuration / protected cache artifacts
+graph.local.toml
+msal-cache.bin
+msal-cache.bin.lock
+.protected-cache-*.tmp
