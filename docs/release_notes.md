@@ -1,5 +1,20 @@
 # Power BI CSV candidate exports — schema v1
 
+## Approval UX and identity readiness (review prototype)
+
+Reporting month is now visible/shared across processing and review and remembered
+after setup via backward-readable settings v2. Restart restores the month but never
+confirmation or old previews. Review defaults to labeled overview/issues/revisions/
+history tabs; structured evidence remains in Technical details. Status cards never
+infer remote pending/approved/published outcomes from local requests. The default
+Entra reviewer interface refuses sign-in and verification; Approve/Publish stay
+disabled. No cleaning, financial, request-record or business-state changes.
+
+Local suite: 533 passed; source/installed-wheel phase-26 GUI and fresh-process
+January restore passed. Hosted Windows/Linux and executable outcomes remain
+unverified. Identify prototype 0.2.0 builds by exact commit and ZIP hash; old ZIPs do
+not update with a Git checkout. See approval_ux_identity_readiness.md.
+
 ## Approval / publishing foundation (review prototype)
 
 Adds monthly review evidence and exact revision/hash binding, local unsent request

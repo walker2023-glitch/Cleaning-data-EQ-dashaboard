@@ -1,5 +1,17 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## Identity-readiness next decisions
+
+No additional real reports or credentials are needed for the UX tests. Before live
+reviewer identity work, name the data/IT policy owners and choose authoritative
+reviewer-role/resource verification, tenant/public-client registration/redirect/
+scopes, conditional access, signed evidence/receipts, revocation/expiry/separation of
+duties and cache/retention policy. Keep actual tenant/user/assertion data private.
+A successful sign-in alone cannot approve a candidate. See approval_ux_identity_readiness.md.
+Windows managed-PC usability/scaling/profile migration and exact-head hosted build
+checks remain separate evidence gates. Existing raw/expected/business requirements
+below remain; do not resend already-tested January/February files just for UI work.
+
 ## Approval milestone decisions
 
 Do not resend already-tested January/February reports merely for this foundation.

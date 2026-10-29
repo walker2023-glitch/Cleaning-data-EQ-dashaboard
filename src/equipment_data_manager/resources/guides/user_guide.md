@@ -1,5 +1,23 @@
 # Equipment Data Manager: local prototype
 
+## Remembering your month and reviewing evidence
+
+Choose the reporting month on **Process Reports** or **Review & Approval**; they
+share the same selection. After you save Settings, valid changes are remembered
+on this computer for the same profile. Navigation does not replace January with
+the calendar month. After restarting, check the displayed month and confirm it
+again before processing. A new profile without a saved period starts at the
+calendar month; loading a synthetic sample deliberately selects its sample month.
+
+On Review & Approval choose **Review candidate**. Overview shows report counts and
+reported financial totals. Issues shows warnings/missing data; Revisions shows IDs
+and hashes; Review history shows local requests; Technical details retains the
+original structured evidence. Switching months clears old evidence until refreshed.
+Not supplied is different from zero. A local request is **recorded here, not sent**.
+Approval Pending, Approved and Published require authoritative evidence and are
+unavailable. Entra sign-in, Approve and Publish remain disabled. F1 explains why.
+See approval_ux_identity_readiness.md for synthetic preview and profile/rollback notes.
+
 ## Review & Approval — local foundation
 
 After processing the month in Power BI CSV candidate mode, open **Review & Approval**

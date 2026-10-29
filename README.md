@@ -1,5 +1,15 @@
 # Equipment Data Manager
 
+## Approval UX and identity readiness
+
+Owner merged approval foundation PR #15 into main a01ebb5. The new
+**feature/approval-ux-identity-readiness** branch remembers the reporting month after
+setup, shares its selector across Process Reports and Review & Approval, and splits
+review evidence into employee-readable tabs with optional technical details.
+Local requests remain unsent; later approval/publication stages require authoritative
+evidence and stay unavailable. Entra sign-in, Approve and Publish remain disabled.
+See [preview, persistence policy and identity architecture](docs/approval_ux_identity_readiness.md).
+
 ## Approval and publishing foundation
 
 The **feature/approval-publishing-foundation** branch adds **Review & Approval**:

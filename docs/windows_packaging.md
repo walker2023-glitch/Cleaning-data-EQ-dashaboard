@@ -1,5 +1,15 @@
 # Windows prototype packaging and distribution
 
+## Approval UX / identity build
+
+Build feature/approval-ux-identity-readiness at its reviewed commit. Windows CI
+schedules packaging/executable smoke on this branch's pushes as well as PRs. The
+smoke checks the readable overview, disabled identity/approval/publish controls,
+and January restored in a fresh process with processing confirmation unchecked.
+Settings saves use version 2; retain a private profile backup before older-build
+rollback. Hosted Windows evidence is separate from local Linux tests and remains
+unverified until actual check results are available. See approval_ux_identity_readiness.md.
+
 ## Approval foundation build
 
 Build feature/approval-publishing-foundation at its exact reviewed commit. The new

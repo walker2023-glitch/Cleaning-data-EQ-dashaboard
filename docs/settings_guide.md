@@ -1,5 +1,19 @@
 # Settings and first-run setup
 
+## Reporting-month preference (settings v2)
+
+After setup has been saved, valid month/year changes are remembered in the same
+local profile and restored on restart. Review and Process Reports share the selector.
+Processing confirmation and previews are never restored. First-run selection alone
+writes no profile; Save Settings enables persistence. Invalid edits or failed writes
+retain the last saved period and display a session-only/error message.
+
+Version-1 settings and legacy folder imports still load. New saves use version 2
+with reporting_period; blank means no remembered month. An older v1-only build
+cannot read v2, so keep a private settings backup before rollback. Reset forgets
+the remembered period; drafts/imports do not silently change the active month.
+See approval_ux_identity_readiness.md. No candidate/request/financial data is migrated.
+
 Ordinary use requires no TOML editing, Python or terminal. Open the Windows review
 build and use **Settings**. On a normal first launch, this page opens automatically.
 

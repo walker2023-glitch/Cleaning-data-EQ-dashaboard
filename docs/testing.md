@@ -1,5 +1,34 @@
 # Test instructions and evidence limits
 
+## Approval UX / identity readiness results
+
+**533 passed, 0 failures/errors/skips**, Python 3.12.14/Linux with the existing
+fresh-process GUI runner: all 508 baseline cases retained plus 25 new cases
+(9 settings, 10 identity/presentation, 6 real-widget cases). The existing corrupted-
+settings recovery test now checks intentional settings schema v2 and the remembered
+period; its original scenario/assertions remain. No financial expectations changed.
+
+Coverage includes fixed-October January navigation/restart, shared month/year
+selectors and invalid-year retention, explicit choice during delayed startup,
+latest-save completion on close, failed saves/session-only feedback, v1-to-v2
+compatibility, readable sections with full hashes, duplicates/missing reports,
+nullable/zero costs, unknown/forged statuses and unavailable identity/approval/
+publishing. Existing request/stale/financial/processing tests all remain.
+
+Source and isolated installed-wheel actual-window smoke passed through phase 26,
+including January restored in a fresh process with confirmation unchecked, overview
+and disabled identity controls. Wheel/sdist build, installed-wheel synthetic v2
+pilot/readiness and local unsent request checks passed. Workflow YAML parsed with
+both OS jobs and new-branch Windows packaging guards. Hosted Windows/Linux checks
+and Windows executable build/native platform results are **unverified** because
+GitHub API access returns HTTP 403. These Linux results are not Windows evidence.
+
+Local ignored artifacts: data/approval-ux-final-tests.log, data/ci-test-results.xml,
+data/approval-ux-final-build.log, data/approval-ux-source-smoke/,
+data/approval-ux-wheel-smoke/ and data/approval-ux-wheel-request.log. See
+approval_ux_identity_readiness.md for reproduction, profile migration and IT gates.
+Older results below are historical.
+
 ## Approval / publishing foundation results
 
 Local Python 3.12.14/Linux isolated full suite: **508 passed, 0 failures/errors/skips**
