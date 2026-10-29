@@ -1,5 +1,36 @@
 # Departmental workflow roadmap and project review
 
+## Current checkpoint — 2026-10-28, Milestone C foundation
+
+This branch builds on the locally reviewed Milestone A head 454c7a0. Git remote
+branch refs confirm that parent head; GitHub API/PR status access is currently
+blocked by the environment proxy. Last confirmed PR review (2026-10-27): #1 merged,
+#2–#12 open in their dependency stack. Do not assume additional merges or retarget
+anything automatically; recheck live PR states when access is available.
+
+Owner now reports successful January/February structural/source-integrity/financial
+checks and Desktop imports/visual testing, plus an inventory matrix prototyped
+separately in Power BI. These are owner-reported results, not production approval
+or evidence that an inventory adapter/Graph connection exists in the application.
+
+Implemented C foundation: read-only local/synced provider and availability/stability
+checks; existing engine bridge; injected Graph site/library/list/download/retry/
+version/hash behavior; MSAL-compatible session logic; DPAPI/cache persistence
+component; fixed nonproduction probe-only write verification/recovery; truthful
+Settings/Guided Mode with Graph disabled. No raw/candidate/approved publication state
+changes, calculation/schema changes or live Microsoft/SharePoint/PBIX operations.
+
+Next focused C PR, only after IT/test authorization: real MSAL/cache/HTTP bootstrap,
+account/site/library selection and connected read-only test UI. Actual SDK/tenant/
+redirect/device/permission/cache behavior needs an approved test-site pilot. Optional
+probe server conflict semantics must be verified before any write feature is enabled.
+Business approval/publisher, approved snapshot selection, shared concurrency,
+production refresh and D deployment/recovery/handoff remain separate later gates.
+Inventory parsing still needs verified input fixtures/keys; the separate matrix
+prototype does not resolve that contract. See sharepoint_foundation.md and
+sharepoint_live_pilot.md for the status matrix, safe folder layout and IT checklist.
+
+
 ## Current checkpoint — 2026-10-27
 
 Reviewed local/remote branches, all PR states, documentation, cleaners/export schemas,

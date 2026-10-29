@@ -3,6 +3,12 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    "storage_source_changed": "The file version changed since discovery. Select or discover it again, then preview before processing.",
+    "storage_source_hash_mismatch": "The selected source does not match its expected content hash. Stop and review the intended file version.",
+    "storage_file_not_downloaded": "This file is offline or needs downloading. Make it available on this device in OneDrive, wait for download to finish, then preview again. Cloud synchronization is unverified.",
+    "storage_source_changed_or_partial": "This file changed or was only partly readable during the read. Wait for the export/download to finish, then preview again.",
+    "storage_file_unavailable": "The local file could not be read. Check permissions and download availability; synchronization is unverified.",
+    "storage_access_denied": "Access to the selected file was denied. Check your permissions and preview again.",
     "financial_summary_hash_mismatch": "The saved monthly financial summary changed. Processing stopped to protect its revision; keep the store intact.",
     "financial_summary_missing_or_unreadable": "The monthly financial summary is missing or unavailable. Keep the candidate store intact and contact your maintainer.",
     "review_packet_missing_reports": "A complete review packet requires all three current Power BI candidates for this month. Process the missing reports first.",

@@ -187,3 +187,15 @@ examples and actual Building_Dim key/map contract. Its original helper/Type.csv 
 missing; code aliases are not verification of the source layout. Inventory remains
 outside three-report monthly completeness. Nonzero unequal repair subtotal meanings,
 hours/rate/cross-month service policies and authenticated approval remain open.
+
+## Milestone C inputs and limits
+
+No credentials/live access are needed for the foundation or offline demo. Owner reports
+successful real-data Power BI checks/imports/visuals and a separate inventory matrix;
+do not request previously tested reports again merely to exercise storage mocks.
+Before a connected read-only test PR, IT must supply/approve the public-client Entra
+registration, delegated scope/resource-grant combination, exact nonproduction site/
+library/raw/probe IDs, permitted download hosts, protected-cache/ACL/retention/sign-out
+policy, device/proxy/executable restrictions and authorized test users. Keep actual
+configuration local; never send secrets/tokens in chat/GitHub. See the live-pilot
+checklist. Real HTTP/SDK wiring and authenticated approval/publication remain absent.

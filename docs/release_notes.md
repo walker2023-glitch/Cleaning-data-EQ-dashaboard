@@ -140,3 +140,13 @@ backup-model preservation, management decisions and B/C/D dependencies. Original
 cleaners, financial schema/estimates and desktop behavior are unchanged. Owner-reported
 January/February source reconciliation does not approve production or establish real
 v2 M/DAX execution; that trial remains manual. No inventory or live Graph added.
+
+## Milestone C — SharePoint connectivity foundation
+
+Adds local/synced read-provider contracts, stable/placeholder-aware GUI reads,
+nonrecursive provider discovery, injected offline Graph operations/error/retry/
+verification and fixed synthetic probe recovery, MSAL-compatible session behavior
+and Windows user-DPAPI encrypted-cache component. Settings/Guided Mode make unavailable
+Graph and unverified sync explicit. No SDK/HTTP bootstrap, real sign-in, arbitrary
+upload, approval-state change, production SharePoint/PBIX access or cleaner/schema/
+calculation change. See sharepoint_foundation.md for the tested versus deferred matrix.
