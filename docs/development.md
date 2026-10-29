@@ -280,3 +280,23 @@ and backup-PBIX migration. LegacyCsvCleaner and PowerBiCleaner v1 remain unchang
 the v2 wrapper reuses their exact retained-record trace and calculated values.
 Desktop Power BI mode and CLI powerbi use v2 repairs; explicit CLI powerbi-v1 and
 the processing.powerbi factory preserve v1 compatibility. No dependency changes.
+
+## Milestone A readiness tooling
+
+Branch feature/powerbi-real-data-readiness is based on PR #11, not main. Follow
+powerbi_real_data_readiness.md for precise source-clone commands and a complete
+fictional walkthrough. powerbi_readiness.py is a read-only assessment layer over
+hash-checked snapshot data; it never cleans, changes statuses, authenticates or
+publishes. Private expected/source-index CSVs and assessment folders belong under
+ignored data/ or another approved local private directory. Exit 2 means report
+saved with review questions, not approval. Real M execution/model tests are manual.
+
+## Milestone C offline foundation
+
+Branch feature/sharepoint-connectivity-foundation starts from Milestone A/PR #12
+at 454c7a0; no earlier PR is merged. Run the synthetic demo and new provider/Graph/
+MSAL tests in sharepoint_foundation.md from the source clone. No MSAL package, HTTP
+transport, browser or actual account is needed. The example/transport is explicitly
+in-memory. The existing engine consumes the same bytes/SourceFile API and writes
+only local immutable candidates; the Graph adapter cannot publish outputs.
+See the module/status map and future live-pilot checklist before wiring any SDK.

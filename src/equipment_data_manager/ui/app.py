@@ -813,7 +813,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.settings_page.check_button:'check_locations',self.settings_page.save_button:'save_settings',
             self.settings_page.reset_button:'reset',self.settings_page.import_button:'import_settings',
             self.settings_page.export_button:'export_settings',self.settings_page.local_check:'candidate_folder',
-            self.settings_page.recommended_button:'candidate_folder'}
+            self.settings_page.recommended_button:'candidate_folder',
+            self.settings_page.graph_button:'storage_connection',self.settings_page.connection_status:'storage_connection'}
         for widget,key in controls.items():
             self.guidance.register(widget,key)
         for widget,kind in zip(self.report_buttons,SUPPORTED_REPORTS):

@@ -32,8 +32,7 @@ a corrected monthly revision. Inputs and previous output revisions are retained.
 Production cleaning accuracy is **unverified**. Supported layouts are conservative,
 source-derived gates, not approved departmental schemas. TMA processing is
 available as provisional XLSX candidates for the observed title/header/footer layout. Inventory's
-taxonomy dependency is missing. No sign-in, SharePoint operation or Power BI change
-is implemented. An automated packaged-window smoke check does not establish
+taxonomy dependency is missing. No live sign-in or SharePoint operation is enabled; production Power BI is unchanged. An automated packaged-window smoke check does not establish
 employee-release readiness; a managed-PC usability/security pilot remains required.
 
 M0's verified-sample acceptance criterion remains open: sanitized raw/expected
@@ -87,8 +86,9 @@ Recommended Power BI mode now uses repair schema v2: reported repair totals,
 estimated labor and original legacy arithmetic are separate, with a hashed monthly
 financial-summary CSV. Legacy/v1 compatibility remains. See the
 [financial contract, evidence limits and migration guide](docs/repair_financial_v2.md).
-January arithmetic reconciliation passed locally; formatted repair XLSX, actual
-February and nonzero equipment-subtotal semantics still need evidence. No approval
+January arithmetic reconciliation passed locally; the owner now reports January/February
+v2 reconciliation and successful real-data Desktop imports/visual testing. Nonzero
+unequal equipment-subtotal semantics and formal business/model approval remain open. No approval
 or production change is implied.
 
 ## Power BI integration pilot
@@ -100,6 +100,29 @@ hashes and duplicate checks keep historical revisions outside ingestion folders.
 See [model mappings](docs/powerbi_compatibility.md) and the
 [unresolved repair-cost decisions](docs/repair_cost_reconciliation.md). Candidates
 remain unverified; actual model/M execution and financial approval are still open.
+
+## Real-data Power BI readiness (Milestone A)
+
+Use the [January/February v2 workflow](docs/powerbi_real_data_readiness.md) for explicit
+packet selection, a four-folder snapshot, private monthly/combined expectations,
+optional original-file SHA-256 verification, a readiness report and shared-period
+Power Query examples. The complete synthetic walkthrough is runnable without data.
+See the [backup-dashboard migration plan](docs/powerbi_backup_migration.md),
+[management decisions](docs/management_decisions.md) and
+[inventory design/required inputs](docs/inventory_foundation_design.md).
+No cleaning rules or production state change. The owner reports successful local v2
+imports/visual testing; formal acceptance/production approval remains separate.
+
+## SharePoint connectivity foundation (Milestone C)
+
+Local/downloaded synced raw reads now check Windows placeholder availability,
+stable file identity/length and hashes. Settings explains sync limits and keeps
+Graph disabled. Provider contracts, an injected offline Graph adapter, an
+MSAL-compatible session and DPAPI protected-cache component are tested without
+credentials. No HTTP/SDK bootstrap or business publication is enabled. See the
+[implementation/status guide](docs/sharepoint_foundation.md),
+[future authorized live pilot](docs/sharepoint_live_pilot.md) and inert
+graph.example.toml. Candidate history/SQLite remain on trusted local disk.
 
 ## Development
 

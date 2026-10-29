@@ -257,3 +257,54 @@ with real desktop tests isolated per case (357 preserved tests + 19 new cases).
 All eleven M files passed Microsoft's powerquery-parser 4.0.0 syntax parser.
 Wheel/sdist build and installed-wheel v2 synthetic generation/snapshot checks passed.
 These are not actual Power BI M/DAX execution or production accuracy approval.
+
+## Milestone A assessment checks
+
+Run `uv run --frozen pytest tests/test_powerbi_readiness.py` for independent synthetic
+monthly/combined expectations, six original-file hash checks, unknown observations,
+source/revision provenance, recomputed financial controls despite self-consistent
+edited hashes, source-cost/date contracts and retained service OR-period behavior,
+missing/duplicate/invalid periods, v1 rejection without losing compatibility,
+null/partial totals, safe output aliases/overwrite/write failure, single-read
+hash/data binding, CLI exit semantics and shared M month/aggregate-before-join rules.
+The 29/5-record case uses invented financial amounts. No real report is a test fixture.
+
+Local full-suite result: **419 passed, 0 failures/errors/skips** (376 preserved +
+43 new), Python 3.12.14/Linux with all real desktop tests isolated per case. All
+15 M files passed Microsoft's powerquery-parser 4.0.0 syntax parser. Wheel/sdist
+build and installed-wheel complete walkthrough plus readiness CLI passed. Hosted
+Windows/Linux and packaged smoke results are recorded on the PR separately.
+These checks do not execute a Power BI Desktop mashup engine, existing DAX or Graph.
+
+Real-data manual acceptance belongs in the private record described in
+powerbi_real_data_readiness.md. Record Desktop version/build/snapshot hashes,
+monthly/combined expected controls, null/leading-zero IDs, all query errors,
+relationships, financial measures and unchanged hour/capacity visuals. The owner's
+previous-schema Desktop success is not proof of v2 success. SharePoint live tests,
+auth/cache/permissions/sync and approval/publication are outside this milestone.
+
+## Milestone C connectivity foundation
+
+Run `uv run --frozen pytest tests/test_storage_providers.py tests/test_graph_adapter.py tests/test_msal_foundation.py`
+for synthetic local/synced availability, missing/partial/changed reads, identities,
+nonrecursive discovery, real-engine provider bridges, fake MSAL account/tenant/
+expiry/permission behavior, protected-cache atomicity/dirty-state/lock recovery,
+Graph pagination/redirect/token protection, permissions/folder errors, bounded
+Retry-After behavior (including HTTP header casing), source/transfer integrity,
+upload conflicts and unknown-outcome probe recovery. No arbitrary candidate upload
+or approved state exists. Existing default-disabled Graph smoke tests remain.
+The added real-window case checks honest Settings status and permanently disabled
+Graph controls; all prior GUI/settings/cleaning/financial/history tests remain.
+
+Local Linux result: **473 passed, 0 failures/errors/skips** (419 prior + 54 new),
+with real desktop cases isolated per process. Wheel/sdist build and the installed-wheel
+in-memory Graph-to-real-engine preview passed. No Microsoft credentials or live
+SDK/HTTP operation was used. Windows DPAPI roundtrip coverage is in the platform
+branch of the tests; Linux verifies fail-closed unsupported protection and injected
+test-protector behavior, not Windows DPAPI itself. Windows/Linux CI and packaged
+smoke need their actual hosted results; GitHub API access is currently proxy-blocked.
+
+Actual OneDrive hydration/sync/device behavior, MSAL construction/interactive sign-in,
+claims/redirect/cache ACL policy, Graph server conflict enforcement and publication
+are not proven by mocks. Follow sharepoint_live_pilot.md only after the separate
+IT/user authorization. Do not label a synthetic probe or reconciliation as approval.

@@ -100,3 +100,34 @@ Real January was checked read-only and reconciles. Synthetic January/February-sh
 and grouped/zero/missing/malformed tests use invented financial amounts. Actual
 February and formatted repair XLSX are missing; nonzero unequal field/subtotal
 grain remains blocked. No production approval or per-repair parts/labor allocation.
+
+## Milestone A — real-data Power BI readiness (2026-10-27)
+
+Implements v2-only assembly guard, one-read/hash-checked snapshot data, recomputed
+four-table financial/count/null/identifier/provenance controls, private monthly and
+combined expectations plus explicit original-byte checks and report, shared M month
+configuration and a monthly comparison query. Existing legacy/v1 functionality,
+repair v2 schema, cleaners/estimates/GUI/settings/correction rules remain unchanged.
+Synthetic complete/incomplete/malformed/corrected/history cases are tested.
+
+Owner reports real January/February v2 arithmetic matches and a successful previous
+schema Desktop pilot. Real v2 Power BI Desktop/model evaluation is still manual;
+no production approval, PBIX change, inventory adapter or Graph operation is claimed.
+B/C/D remain design/dependency work; see the current roadmap and real-data SOP.
+
+## Milestone C — connectivity foundation (2026-10-28)
+
+Implemented/testable offline: common read storage contracts, local/synced availability
+and stable-byte reads, source-to-engine bridge and explicit nonrecursive discovery;
+scoped injected Graph metadata/pagination/download/ETag/hash/error/retry logic;
+MSAL-compatible injected session and Windows DPAPI encrypted-cache component; fixed
+synthetic probe create-only/read-back/recovery behavior. Settings/Guided Mode show
+local/sync limits and keep Graph unavailable. The old default Graph stub still fails
+closed. Existing cleaners, financial v2/four datasets, settings schema, SQLite,
+corrections/revisions and monthly completeness stay unchanged.
+
+Mock-only: Graph/SDK responses; no HTTP transport or real MSAL bootstrap is shipped.
+Native DPAPI Windows tests do not establish departmental cache/ACL/device approval.
+Live sign-in/selection, approved publication and production use remain gated; see
+sharepoint_foundation.md and sharepoint_live_pilot.md. The owner reports successful
+Power BI imports/visual tests and a separate inventory matrix, not production approval.

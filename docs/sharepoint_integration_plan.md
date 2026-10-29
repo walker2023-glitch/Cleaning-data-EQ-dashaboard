@@ -1,12 +1,15 @@
-# Delegated Microsoft Graph integration requirements — design only
+# Delegated Microsoft Graph integration requirements and foundation status
 
-No live authentication, HTTP client, token cache or Graph operation is implemented.
+Current Milestone C adds read-provider abstractions, an injected offline Graph
+adapter, an MSAL-compatible session facade and a Windows DPAPI protected-cache
+component. See sharepoint_foundation.md for exact implementation/test boundaries.
+No live authentication/HTTP bootstrap or business publication is enabled.
 `storage/interface.py` defines list/download/create-only output contracts;
 `GraphSharePointRepository` still rejects every operation before network access.
 `FileSource.read(SourceFile)` supplies bytes to the GUI workflow, and the cleaning
 coordinator remains independent of storage and Microsoft. Do not turn the disabled
 stub into a connector by populating configuration. Separate user approval and IT
-approval/test registration are required before implementation or live access.
+approval/test registration are required before live SDK/transport wiring or access.
 
 ## IT decisions and configuration
 
@@ -82,3 +85,64 @@ Follow `powerbi_output_design.md` for the proposed publication contract.
    evidence that Graph authentication or uploads work.
 4. Business/financial/schema validation and signed publication policy; then separate
    approval for production destinations. No existing PR or prototype grants it.
+
+## Milestone C/D follow-up — design only (2026-10-27)
+
+Milestone A remains the implemented priority. Existing storage protocols/disabled
+Graph stub were reviewed; no SDK, auth/cache, library-listing or upload implementation
+is added here. Proposed next boundaries:
+
+- LocalFolderSource reads explicitly selected local bytes; SyncedFolderSource reads
+  only locally available/downloaded bytes and surfaces unavailable/permission errors.
+  Neither claims cloud synchronization. Cleaning/history and SQLite remain on an
+  independently confirmed trusted local disk, never the synced raw/candidate path.
+- OrganizationalSession supports delegated organizational sign-in, tenant/account
+  confirmation and expiry/sign-out. Its credentials/tokens belong only in an
+  IT-approved protected cache. A future library-listing API returns opaque authorized
+  drive/library IDs; it must not assume administrator visibility or access.
+- GraphSource lists authorized direct month/type children with safe pagination,
+  downloads the expected ETag/version, and verifies the source content hash. Separate
+  proposed error categories include access denied, session expired, unavailable
+  network, throttled, version conflict and integrity mismatch. They are not current
+  implemented exception classes or evidence of connectivity.
+- ApprovedSnapshotPublisher accepts an authenticated approval record bound to exact
+  selected hashes/versions, stages create-only immutable output, verifies uploads,
+  then conditionally selects one pointer under an approved shared lease. Do not
+  assume Graph exposes SHA-256 for every drive; use an approved download-and-compare
+  verification strategy where necessary. Interrupted uploads stay unselected.
+
+### Proposed approval states and record
+
+Raw source → cleaned candidate → financially reconciled candidate → business-approved
+revision → published approved snapshot are distinct events, not edits to a CSV cell.
+Reconciliation changes no ValidationStatus today. Future approval evidence must record
+reviewer organizational identity/authority, UTC timestamp, selected revision/type/month,
+source/output/summary hashes, cleaner/schema/map versions, counts, financial/business
+comparison evidence, decision and scope. A correction requires fresh approval bound
+to its exact hashes; a local replacement token is not reviewer authentication.
+Publication also records destination identity/version, integrity verification and
+selected-pointer ETag. Failed publication does not revoke or overwrite prior data.
+No approval or publication service is implemented by this document.
+
+### IT and release approval checklist
+
+Every row is pending; record the accountable owner and approved evidence privately.
+
+| Required decision/evidence | Gate |
+|---|---|
+| IT-owned native/public Entra app, supported redirect and organizational tenant scope | Before auth implementation/test |
+| Tested least-privilege delegated Graph scopes plus explicit site/library resource grants | Before approved test access; no broad-scope fallback |
+| Employee read/create permissions, consent/admin-consent requirements and conditional access/MFA behavior | Before authorized nonproduction pilot |
+| Protected Windows token cache/ACLs, sign-out/revocation, retention and redacted diagnostics | Before distributing connected code |
+| Exact authorized test site/drive/folder IDs and library-discovery policy | Local nonsecret config; never guessed production paths |
+| Windows signing/distribution/endpoint policy, dependency ownership and named support backup | Before employee release |
+| Power BI model/refresh owner, gateway/Service identity and test-workspace permissions | Before separately authorized publish/refresh |
+| Shared concurrency, immutable snapshot retention, backup/restore and orphan/stale-pointer recovery drills | Before multi-operator publication |
+| Business/finance/schema/model approval and production-specific authorization | Before any production destination/Power BI change |
+
+Future offline mocks must exercise denied permission, expired sessions, pagination,
+ETag conflicts, retries/timeouts/cancellation, interrupted transfers and uploaded-byte
+verification. Real test-site, MFA, token-protection and Service refresh behavior need
+separately authorized live tests; mocks or a readable OneDrive file cannot prove them.
+Milestone D additionally needs a signed release/checksum, employee SOP/training,
+second managed-PC acceptance, rollback drill and successor-maintainer handoff.

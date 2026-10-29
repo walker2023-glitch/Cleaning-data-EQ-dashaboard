@@ -1,5 +1,60 @@
 # Departmental workflow roadmap and project review
 
+## Current checkpoint — 2026-10-28, Milestone C foundation
+
+This branch builds on the locally reviewed Milestone A head 454c7a0. Git remote
+branch refs confirm that parent head; GitHub API/PR status access is currently
+blocked by the environment proxy. Last confirmed PR review (2026-10-27): #1 merged,
+#2–#12 open in their dependency stack. Do not assume additional merges or retarget
+anything automatically; recheck live PR states when access is available.
+
+Owner now reports successful January/February structural/source-integrity/financial
+checks and Desktop imports/visual testing, plus an inventory matrix prototyped
+separately in Power BI. These are owner-reported results, not production approval
+or evidence that an inventory adapter/Graph connection exists in the application.
+
+Implemented C foundation: read-only local/synced provider and availability/stability
+checks; existing engine bridge; injected Graph site/library/list/download/retry/
+version/hash behavior; MSAL-compatible session logic; DPAPI/cache persistence
+component; fixed nonproduction probe-only write verification/recovery; truthful
+Settings/Guided Mode with Graph disabled. No raw/candidate/approved publication state
+changes, calculation/schema changes or live Microsoft/SharePoint/PBIX operations.
+
+Next focused C PR, only after IT/test authorization: real MSAL/cache/HTTP bootstrap,
+account/site/library selection and connected read-only test UI. Actual SDK/tenant/
+redirect/device/permission/cache behavior needs an approved test-site pilot. Optional
+probe server conflict semantics must be verified before any write feature is enabled.
+Business approval/publisher, approved snapshot selection, shared concurrency,
+production refresh and D deployment/recovery/handoff remain separate later gates.
+Inventory parsing still needs verified input fixtures/keys; the separate matrix
+prototype does not resolve that contract. See sharepoint_foundation.md and
+sharepoint_live_pilot.md for the status matrix, safe folder layout and IT checklist.
+
+
+## Current checkpoint — 2026-10-27
+
+Reviewed local/remote branches, all PR states, documentation, cleaners/export schemas,
+monthly packets/snapshots, M queries, storage boundaries and tests. Only #1 is merged;
+#2–#11 remain open in the existing dependency chain. PR #11 at bffd53f is the base
+of feature/powerbi-real-data-readiness. Its Windows/Linux checks passed. No automatic
+merge/retarget is performed. Prior dated reviews below remain historical records.
+
+| Milestone | Current work / completion boundary | Next gate |
+|---|---|---|
+| A — Real-data Power BI readiness | Explicit v2-only packet selection, four-table snapshots, hash/provenance checks, recomputed financial controls, private monthly/combined expectations and raw-file verification, shared-period M comparison and migration instructions | Owner runs real v2 Desktop/model trial and records page/DAX/relationship/ID/null/hour/capacity results |
+| B — Inventory foundation | Design and original-module dependency review only; inventory not in monthly completeness | Actual sanitized inventory/raw-expected snapshots, status/grain/duplicate policy and Building_Dim/location map |
+| C — SharePoint foundation | Existing disabled Graph boundary and delegated/local/synced/approval/IT design only | Separate auth/test-resource authorization, IT registration/scopes/cache/device policy, offline mocks then approved test site |
+| D — Production readiness | Checklist/design only; no approval/publisher/deployment | Data/finance/model/IT sign-off, authenticated approvals, recovery/rollback/shared locking, employee training and managed-PC handoff |
+
+Owner-reported evidence now includes January/February v2 arithmetic reconciliation
+and a successful synthetic **previous repair schema** Desktop pilot. Do not relabel
+that pilot as v2 or production-approved. Real v2 Desktop testing remains manual.
+No exact existing model/DAX inventory or actual inventory export is supplied here.
+All new repository fixtures/dollar values are invented; private expectations remain local.
+See powerbi_real_data_readiness.md, powerbi_backup_migration.md,
+inventory_foundation_design.md, management_decisions.md and sharepoint_integration_plan.md.
+
+
 Review date: 2026-10-22. Remote branch heads, all seven existing PRs, current tests,
 architecture and documentation were inspected. This branch starts from PR #7's
 74cb7d3. Prior docs referring to PR #1 as an unmerged draft were historical and

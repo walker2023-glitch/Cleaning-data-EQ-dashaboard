@@ -6,13 +6,14 @@ Use a trusted local disk and a single operator; snapshots are immutable by proce
 
 import argparse
 import csv
+from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import json
 from pathlib import Path
 import shutil
 
-from equipment_data_manager.powerquery_contract import read_folder, read_table
+from equipment_data_manager.powerquery_contract import read_table
 from equipment_data_manager.processing.cleaners import validate_period
 from equipment_data_manager.processing.manifest import OUTPUT_NAMES
 from equipment_data_manager.processing.models import ProcessingError, ReportType
@@ -53,7 +54,7 @@ def _unlinked(path):
         raise ProcessingError('pilot_link_rejected')
 
 
-def assemble(packet_paths: list[Path], periods: list[str], destination: Path) -> Path:
+def assemble(packet_paths: list[Path], periods: list[str], destination: Path, *, require_repair_v2=False) -> Path:
     """Select exactly one explicit complete review packet/month; fail before writes.
 
     Creates a new exclusive destination containing snapshot/. Existing folders are
@@ -90,12 +91,15 @@ def assemble(packet_paths: list[Path], periods: list[str], destination: Path) ->
         extra = data.get('supplemental_files', [])
         repair_raw = next(raw for name, raw in payloads if name == f'repairs/{OUTPUT_NAMES[ReportType.REPAIRS]}_{period}.csv')
         repair_rows = read_table(repair_raw, ReportType.REPAIRS, allow_candidates=True)
+        if require_repair_v2 and repair_rows[0]['SchemaVersion'] != '2':
+            raise ProcessingError('readiness_requires_repair_schema_v2')
         _summary_payload(packet, repair_rows, extra, payloads, summaries)
         seen.add(period)
     if seen != set(periods):
         raise ProcessingError('pilot_missing_month')
     destination = destination.absolute()
     _unlinked(destination)
+    destination = destination.resolve()
     if candidate_location_error(destination):
         raise ProcessingError('pilot_requires_trusted_local_unsynced_destination')
     if any(destination.is_relative_to(p.resolve()) or p.resolve().is_relative_to(destination)
@@ -121,12 +125,26 @@ def assemble(packet_paths: list[Path], periods: list[str], destination: Path) ->
     return destination / 'snapshot'
 
 
+@dataclass(repr=False)
+class SnapshotData:
+    tables: dict = field(repr=False)
+    summaries: dict = field(repr=False)
+    manifest: dict = field(repr=False)
+    manifest_hash: str
+
+
 def validate_snapshot(root: Path):
-    """Recheck manifest hashes, exact direct file set, expected months and schemas."""
+    """Backward-compatible table view of a fully hash-checked snapshot."""
+    return read_snapshot(root).tables
+
+
+def read_snapshot(root: Path):
+    """Parse the SAME bytes whose hashes were checked, once per artifact."""
     _unlinked(root.absolute())
     if candidate_location_error(root.absolute()):
         raise ProcessingError('pilot_requires_trusted_local_unsynced_destination')
-    manifest = json.loads((root / 'snapshot.json').read_text(encoding='utf-8'))
+    manifest_raw = (root / 'snapshot.json').read_bytes()
+    manifest = json.loads(manifest_raw.decode('utf-8'))
     periods = _periods(manifest['periods'])
     if manifest['status'] != 'CandidateUnverified' or manifest['production_ready'] is not False:
         raise ProcessingError('pilot_candidate_snapshot_required')
@@ -134,7 +152,7 @@ def validate_snapshot(root: Path):
     expected = {(kind.value, period) for kind in ReportType for period in periods}
     if len(entries) != len(expected) or {(e['report_type'], e['period']) for e in entries} != expected:
         raise ProcessingError('pilot_incomplete_manifest')
-    all_rows = {}
+    all_rows, financial_rows = {}, {}
     tables = root / 'tables'
     summaries = manifest.get('financial_summaries', [])
     expected_folders = {k.value for k in ReportType} | ({'repair_financial_summary'} if summaries else set())
@@ -147,6 +165,7 @@ def validate_snapshot(root: Path):
         _unlinked(folder.absolute())
         if {p.name for p in folder.iterdir()} != names:
             raise ProcessingError('pilot_missing_or_extra_files')
+        records, versions, identifiers = [], set(), set()
         for entry in chosen:
             name = f'{OUTPUT_NAMES[kind]}_{entry["period"]}.csv'
             if entry['file'] != f'{kind.value}/{name}':
@@ -159,7 +178,14 @@ def validate_snapshot(root: Path):
             rows = read_table(raw, kind, allow_candidates=True)
             if rows[0]['ReportMonth'] != entry['period'] or len(rows) != entry['rows']:
                 raise ProcessingError('pilot_snapshot_count_or_period_mismatch')
-        rows = read_folder(folder, kind, allow_candidates=True)
+            versions.add(rows[0]['SchemaVersion'])
+            if len(versions) > 1:
+                raise ProcessingError('folder_ingestion_mixed_schema_versions')
+            if any(r['RecordId'] in identifiers for r in rows):
+                raise ProcessingError('folder_ingestion_duplicate_month_or_record')
+            identifiers.update(r['RecordId'] for r in rows)
+            records.extend(rows)
+        rows = records
         if {r['ReportMonth'] for r in rows} != set(periods):
             raise ProcessingError('pilot_missing_month')
         all_rows[kind] = rows
@@ -167,13 +193,15 @@ def validate_snapshot(root: Path):
     for period in periods:
         monthly = [r for r in repairs if r['ReportMonth'] == period]
         extra = [e for e in summaries if e['period'] == period]
-        _summary_payload(tables, monthly, extra, [], [])
+        summary = _summary_payload(tables, monthly, extra, [], [])
+        if summary is not None:
+            financial_rows[period] = summary
     if summaries:
         folder = tables / 'repair_financial_summary'
         _unlinked(folder.absolute())
         if len(summaries) != len(periods) or {p.name for p in folder.iterdir()} != {Path(e['file']).name for e in summaries}:
             raise ProcessingError('pilot_missing_or_extra_financial_summaries')
-    return all_rows
+    return SnapshotData(all_rows, financial_rows, manifest, sha256(manifest_raw).hexdigest())
 
 
 def _summary_payload(parent, repair_rows, entries, payloads, manifests):
@@ -199,6 +227,7 @@ def _summary_payload(parent, repair_rows, entries, payloads, manifests):
         raise ProcessingError('pilot_financial_summary_provenance_mismatch')
     payloads.append((relative, raw))
     manifests.extend(entries)
+    return summary
 
 
 def baseline_template(root: Path, target: Path):
@@ -297,6 +326,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     build = commands.add_parser('assemble', help='Select explicit monthly candidate packets; never scan history')
+    build.add_argument('--require-repair-v2', action='store_true', help='Reject legacy repair packets before writing a new snapshot')
     build.add_argument('--packet', action='append', type=Path, required=True)
     build.add_argument('--month', action='append', required=True)
     build.add_argument('--output', type=Path, required=True, help='NEW local directory; existing directories rejected')
@@ -312,7 +342,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == 'assemble':
-            assemble(args.packet, args.month, args.output)
+            assemble(args.packet, args.month, args.output, require_repair_v2=args.require_repair_v2)
         elif args.command == 'check':
             validate_snapshot(args.snapshot)
         elif args.command == 'baseline-template':
