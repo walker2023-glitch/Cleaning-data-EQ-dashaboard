@@ -93,6 +93,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.initialize_settings(settings_path or (default_settings_path() if autoload else self.initial_output_root / 'app-settings.toml'))
         self.guided = ctk.BooleanVar(value=True)
         self.explanation_level = ctk.StringVar(value='Detailed')
+        self._restoring_period = False
+        self._period_user_changed = False
         self.last_packet = None
         self.workspace = None
         self.monthly_selection = None
@@ -115,6 +117,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.report.trace_add("write", self._report_changed)
         self.month.trace_add("write", self._selection_changed)
         self.year.trace_add("write", self._selection_changed)
+        self.month.trace_add("write", self.reporting_month_changed)
+        self.year.trace_add("write", self.reporting_month_changed)
         self.guidance = Guidance(self, self.help_context, self.open_context_help,
             self.guided.get, lambda: self.explanation_level.get().lower())
         self.register_guidance()
@@ -584,6 +588,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                         self.process_button.configure(state="normal" if self.can_process() else "disabled")
                         self.status.set("Preview complete. Review each row and its warnings before processing.")
                     elif self.job == "process":
+                        self.business_review_page.invalidate('Processing finished. Refresh current candidate revisions before review.')
                         self.results = event.payload
                         self.previews = ()
                         self.approvals.clear()
@@ -634,6 +639,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.load_history()
         elif name == "Review & Approval":
             self.business_review_page.grid(row=0,column=0,sticky="nsew")
+            self.business_review_page.selection_label()
         elif name == "Settings":
             self.settings_page.grid(row=0,column=0,sticky="nsew")
         else:
@@ -791,6 +797,10 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                 self.status.set("This revision folder is missing or unavailable. Keep the remaining history intact.")
 
     def request_close(self):
+        self.flush_help_preferences()
+        if not self.worker.busy and self.settings_worker.busy and self.settings_task == 'preferences':
+            self.close_pending = True
+            return
         if self.worker.busy or self.settings_worker.busy:
             if messagebox.askyesno("Finish current operation?", "Finish the active file or folder/settings check, then close? Completed outputs and saved settings will remain.", parent=self):
                 self.close_pending = True
@@ -827,6 +837,11 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.business_review_page.request_button:'request_approval',self.business_review_page.note:'validation_evidence',
             self.business_review_page.approve_button:'approval_status',self.business_review_page.publish_button:'publication_readiness',
             self.business_review_page.history_button:'publication_history',
+            self.business_review_page.month_picker:'review_month',self.business_review_page.year_entry:'review_month',
+            self.business_review_page.month_caption:'review_month',self.business_review_page.tabs:'review_sections',
+            self.business_review_page.counts:'review_sections',self.business_review_page.financial:'review_sections',
+            self.business_review_page.issues:'warnings',self.business_review_page.revisions:'validation_evidence',
+            self.business_review_page.review_history:'review_stages',self.business_review_page.sign_in_button:'review_identity',
             self.settings_page.graph_button:'storage_connection',self.settings_page.connection_status:'storage_connection'}
         for widget,key in controls.items():
             self.guidance.register(widget,key)
@@ -837,10 +852,16 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                 self.guidance.register(widget,key)
         for name,widget in self.navigation.items():
             self.guidance.register(widget, 'business_review' if name=='Review & Approval' else 'history' if name=='History' else 'save_settings' if name=='Settings' else 'status')
+        for widget in self.business_review_page.stage_labels:
+            self.guidance.register(widget,'review_stages')
         self.guidance.register(self.format_selector,'powerbi')
         self.guidance.register(self.settings_page.format_picker,'powerbi')
 
     def help_context(self,key):
+        if key=='review_identity':
+            return self.business_review_page.identity_provider.readiness().explanation
+        if key=='review_month':
+            return f'Current selection: {self.month.get()} {self.year.get()}. Saved reporting period: {self.saved_settings.preferences.reporting_period or "none yet"}. Month confirmation is never restored.'
         if key=='legacy' or key=='powerbi':
             active='Legacy candidate' if self.workflow.output_format=='legacy' else 'Power BI CSV candidate'
             return f'Current processing format: {active}. Changing format requires another preview; histories are separate.'

@@ -178,3 +178,29 @@ def test_settings_file_cannot_target_a_csv_report(tmp_path):
     with pytest.raises(ProcessingError,match='settings_invalid'):
         SettingsStore(source)
     assert source.read_bytes()==b'SYNTHETIC ORIGINAL'
+
+
+def test_version_one_settings_load_without_month_and_upgrade_losslessly(tmp_path, settings):
+    text=encode_settings(settings).replace('version = 2','version = 1')
+    text='\n'.join(line for line in text.splitlines() if not line.startswith('reporting_period ='))
+    original=parse_settings(text,base=tmp_path)
+    assert original==settings and original.preferences.reporting_period==''
+    selected=replace(original,preferences=replace(original.preferences,reporting_period='2026-01'))
+    store=SettingsStore(tmp_path/'private/settings.toml');store.save(selected)
+    assert store.load()==selected and 'version = 2' in store.path.read_text()
+    assert original.folders==selected.folders
+
+
+@pytest.mark.parametrize('value',['"2026-13"','"2026-1"','"0000-01"','"January"','true','1','[]'])
+def test_invalid_saved_reporting_month_is_rejected_without_rewriting(tmp_path,value):
+    text=encode_settings(UserSettings()).replace('reporting_period = ""','reporting_period = '+value)
+    path=tmp_path/'settings.toml';path.write_text(text)
+    with pytest.raises(ProcessingError,match='settings_invalid'):
+        SettingsStore(path).load()
+    assert path.read_text()==text
+
+
+def test_empty_reporting_month_is_not_a_report_inference_or_template_leak(tmp_path):
+    defaults=parse_settings(encode_settings(UserSettings()),base=tmp_path)
+    assert defaults.preferences.reporting_period==''
+    assert defaults==UserSettings()

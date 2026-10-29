@@ -529,7 +529,8 @@ def test_corrupted_configuration_recovery_keeps_original_until_explicit_save(tmp
         assert path.read_text()=='INVALID SYNTHETIC CONFIG'
         fill_settings(app,tmp_path,monkeypatch)
         app.settings_page.save_button.invoke();wait_settings(app)
-        assert app.page=='Process Reports' and path.read_text().startswith('version = 1')
+        assert app.page=='Process Reports' and path.read_text().startswith('version = 2')
+        assert app.settings_store.load().preferences.reporting_period==app.period()
     finally:
         wait_settings(app);app._close()
 
@@ -841,3 +842,152 @@ def test_business_review_guidance_explains_disabled_approval_and_publication(app
     assert page.approve_button.cget('state')==page.publish_button.cget('state')=='disabled'
     assert 'not sent' in HELP['request_approval'].text('brief')
     assert 'Mock approvals' in HELP['publication_readiness'].text()
+
+
+def review_profile(tmp_path, reporting_period=''):
+    from test_powerbi_readiness import build
+    from equipment_data_manager.settings import SettingsStore, UserSettings, Preferences
+    workspace,_,_,_,_=build(tmp_path/'monthly')
+    workspace.approved_folder.mkdir()
+    settings_path=tmp_path/'profile/settings.toml'
+    SettingsStore(settings_path).save(UserSettings({key:str(getattr(workspace,key)) for key in
+        ('raw_folder','candidate_folder','approved_folder')},Preferences(candidate_local_confirmed=True,reporting_period=reporting_period)))
+    return workspace,settings_path
+
+
+def test_reporting_month_preserved_across_navigation_and_restart_in_october(tmp_path,monkeypatch):
+    import datetime
+    class October:
+        @staticmethod
+        def today():return datetime.date(2026,10,15)
+    monkeypatch.setattr('equipment_data_manager.ui.app.date',October)
+    workspace,path=review_profile(tmp_path)
+    first=EquipmentDataManager(tmp_path/'defaults',settings_path=path)
+    try:
+        wait_settings(first)
+        assert first.period()=='2026-10'
+        first.month.set('January');first.year.set('2026')
+        wait_settings(first)
+        for page in ('Review & Approval','History','Settings','Help','Process Reports','Review & Approval'):
+            first.show_page(page)
+            pump(first,lambda:not first.worker.busy and not first.settings_worker.busy)
+            assert first.period()=='2026-01'
+        assert first.business_review_page.month_picker.get()=='January'
+        assert '2026-01' in first.business_review_page.month_caption.cget('text')
+        assert first.settings_store.load().preferences.reporting_period=='2026-01'
+    finally:
+        wait_settings(first);first._close()
+    second=EquipmentDataManager(tmp_path/'defaults',settings_path=path)
+    try:
+        wait_settings(second)
+        assert second.period()=='2026-01' and second.workspace.raw_folder==workspace.raw_folder
+        assert second.month_confirmed.get() is False and second.previews==()
+        second.show_page('Review & Approval');second.business_review_page.load_button.invoke()
+        pump(second,lambda:not second.worker.busy)
+        assert second.business_review_page.captured['evidence']['period']=='2026-01'
+    finally:
+        wait_settings(second);second._close()
+
+
+def test_review_month_selector_invalidates_evidence_and_invalid_year_does_not_replace_saved_month(app,tmp_path):
+    _,page=prepare_business_review(app,tmp_path)
+    # Explicitly save an existing profile so valid month changes persist.
+    app.settings_store.save(app.saved_settings)
+    page.month_picker.set('February')
+    pump(app,lambda:not app.settings_worker.busy and not app.pending_preferences)
+    assert app.period()=='2026-02' and page.captured is None
+    assert page.request_button.cget('state')=='disabled'
+    assert 'Reporting month changed' in page.counts.get('1.0','end')
+    page.year_entry.delete(0,'end');page.year_entry.insert(0,'20')
+    assert page.captured is None and 'valid month' in app.status.get()
+    assert app.settings_store.load().preferences.reporting_period=='2026-02'
+    page.load_button.invoke()
+    assert 'valid reporting month' in page.counts.get('1.0','end')
+    page.year_entry.delete(0,'end');page.year_entry.insert(0,'2026')
+    wait_settings(app)
+
+
+def test_explicit_month_change_during_settings_load_wins_over_restored_month(tmp_path,monkeypatch):
+    from equipment_data_manager.settings import SettingsStore
+    _,path=review_profile(tmp_path,'2026-01')
+    entered,release=Event(),Event()
+    real_load=SettingsStore.load
+    def delayed(self):
+        entered.set();assert release.wait(5)
+        return real_load(self)
+    with monkeypatch.context() as patch:
+        patch.setattr(SettingsStore,'load',delayed)
+        window=EquipmentDataManager(tmp_path/'defaults',settings_path=path)
+        try:
+            pump(window,entered.is_set)
+            window.month.set('May');window.year.set('2027')
+            release.set();wait_settings(window)
+            assert window.period()=='2027-05'
+            assert real_load(window.settings_store).preferences.reporting_period=='2027-05'
+        finally:
+            release.set();wait_settings(window);window._close()
+
+
+def test_close_drains_latest_month_save_without_prompting_or_losing_selection(tmp_path,monkeypatch):
+    from equipment_data_manager.settings import SettingsStore
+    _,path=review_profile(tmp_path,'2026-01')
+    window=EquipmentDataManager(tmp_path/'defaults',settings_path=path)
+    closed=[];original_close=window._close
+    def close():
+        closed.append(True);original_close()
+    window._close=close
+    monkeypatch.setattr('equipment_data_manager.ui.app.messagebox.askyesno',lambda *a,**k:pytest.fail('Preference-only close must not prompt'))
+    try:
+        wait_settings(window)
+        window.month.set('May');window.year.set('2027')
+        window.request_close()
+        pump(window,lambda:bool(closed))
+        assert SettingsStore(path).load().preferences.reporting_period=='2027-05'
+    finally:
+        if not closed:
+            wait_settings(window);window._close()
+
+
+def test_review_tabs_are_employee_friendly_keep_technical_details_and_all_states_guarded(app,tmp_path):
+    _,page=prepare_business_review(app,tmp_path)
+    assert page.tabs.get()=='Overview'
+    assert 'Repair Reports: 3 retained' in page.counts.get('1.0','end')
+    assert 'Reported monthly total: $30.00' in page.financial.get('1.0','end')
+    assert 'Missing values' in page.issues.get('1.0','end')
+    assert 'Output SHA-256' in page.revisions.get('1.0','end')
+    assert 'source_sha256' in page.evidence.get('1.0','end')
+    assert '{' not in page.counts.get('1.0','end')+page.financial.get('1.0','end')
+    page.note.insert(0,'Synthetic independent checks')
+    page.request_button.invoke();pump(app,lambda:not app.worker.busy)
+    first=page.service().history()
+    page.request_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert page.service().history()==first and len(first)==1
+    assert 'Review Requested Locally — not sent' in page.review_history.get('1.0','end')
+    assert 'Recorded here — not sent' in page.stage_labels[0].cget('text')
+    assert 'Not submitted' in page.stage_labels[1].cget('text')
+    assert 'No authoritative' in page.stage_labels[2].cget('text')
+    assert 'publishing disabled' in page.stage_labels[3].cget('text')
+    app._busy_controls(True);app._busy_controls(False)
+    for control in (page.sign_in_button,page.approve_button,page.publish_button):
+        assert control.cget('state')=='disabled'
+    page.tabs.set('Technical details')
+    assert 'summary_sha256' in page.evidence.get('1.0','end')
+
+
+def test_failed_month_save_is_session_only_and_retains_previous_profile(tmp_path,monkeypatch):
+    from equipment_data_manager.settings import SettingsStore
+    from equipment_data_manager.processing.models import ProcessingError
+    _,path=review_profile(tmp_path,'2026-01')
+    window=EquipmentDataManager(tmp_path/'defaults',settings_path=path)
+    try:
+        wait_settings(window);before=path.read_bytes()
+        def denied(self,settings):raise ProcessingError('settings_unavailable')
+        with monkeypatch.context() as patch:
+            patch.setattr(SettingsStore,'save',denied)
+            window.month.set('February');wait_settings(window)
+            assert window.period()=='2026-02'
+            assert 'only to this session' in window.status.get()
+            assert path.read_bytes()==before and SettingsStore(path).load().preferences.reporting_period=='2026-01'
+        assert window.business_review_page.publish_button.cget('state')=='disabled'
+    finally:
+        wait_settings(window);window._close()

@@ -31,6 +31,7 @@ class Preferences:
     detail: str = 'detailed'
     output_format: str = 'powerbi'
     candidate_local_confirmed: bool = False
+    reporting_period: str = ''
 
 
 @dataclass(frozen=True)
@@ -51,11 +52,23 @@ def parse_settings(text, *, base: Path):
         if set(data) == set(FOLDER_KEYS):
             folders, prefs = data, Preferences()
         else:
-            if set(data) != {'version', 'folders', 'preferences'} or type(data['version']) is not int or data['version'] != 1:
+            if set(data) != {'version', 'folders', 'preferences'} or type(data['version']) is not int or data['version'] not in (1, 2):
                 raise ValueError
             folders, p = data['folders'], data['preferences']
-            if set(p) != {'guided', 'detail', 'output_format', 'candidate_local_confirmed'}:
+            expected = {'guided', 'detail', 'output_format', 'candidate_local_confirmed'}
+            if data['version'] == 2:
+                expected.add('reporting_period')
+            if set(p) != expected:
                 raise ValueError
+            period = p.get('reporting_period', '')
+            if not isinstance(period, str):
+                raise ValueError
+            if period:
+                from equipment_data_manager.processing.cleaners import validate_period
+                try:
+                    validate_period(period)
+                except ProcessingError:
+                    raise ValueError from None
             if (type(p['guided']) is not bool or type(p['candidate_local_confirmed']) is not bool
                     or p['detail'] not in ('brief', 'detailed') or p['output_format'] not in ('legacy', 'powerbi')):
                 raise ValueError
@@ -73,11 +86,12 @@ def encode_settings(settings):
     if set(settings.folders) != set(FOLDER_KEYS) or any(not isinstance(v,str) for v in settings.folders.values()):
         raise ProcessingError('settings_invalid')
     p = settings.preferences
-    body = ['version = 1', '', '[folders]']
+    body = ['version = 2', '', '[folders]']
     body.extend(f'{k} = {json.dumps(settings.folders[k], ensure_ascii=False)}' for k in FOLDER_KEYS)
     body.extend(['', '[preferences]', f'guided = {str(p.guided).lower()}',
         f'detail = "{p.detail}"', f'output_format = "{p.output_format}"',
-        f'candidate_local_confirmed = {str(p.candidate_local_confirmed).lower()}', ''])
+        f'candidate_local_confirmed = {str(p.candidate_local_confirmed).lower()}',
+        f'reporting_period = {json.dumps(p.reporting_period)}', ''])
     text = '\n'.join(body)
     parse_settings(text, base=Path.cwd())  # Reject accidental extra/malformed state before writing.
     return text
