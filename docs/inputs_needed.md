@@ -1,5 +1,22 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## Microsoft 365 pilot blockers — no secrets in chat
+
+Needed privately through IT: written test authorization/reference and tester/device;
+single-tenant public-client registration, tenant/client IDs and localhost redirect;
+selected delegated Graph consent plus READ resource grants/user permissions; exact
+nonproduction site/drive and three raw folder IDs; known synthetic item IDs/report
+types/independent lowercase SHA-256s; exact signed-download hosts; trusted local
+cache/candidate paths, NTFS ACL/lease/retention/sign-out policy; proxy/CA/MFA/device/
+broker compatibility and executable approval. Keep real config in ignored
+m365-test.local.toml. No client secret, token, password, private report or production
+PBIX is requested. Offline checks require no real configuration.
+
+Current development has none of that live authorization and has not contacted
+Microsoft. Review m365_readonly_pilot.md before enabling the manual test profile.
+Broker-required policy is not bypassed; no broad Graph fallback exists. Reviewer
+roles/business approval and production publication remain unconfigured.
+
 ## Identity-readiness next decisions
 
 No additional real reports or credentials are needed for the UX tests. Before live

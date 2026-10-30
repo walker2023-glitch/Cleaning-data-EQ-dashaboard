@@ -1,5 +1,22 @@
 # Equipment Data Manager: local prototype
 
+## Microsoft 365 connectivity status
+
+Local and downloaded OneDrive-synced raw processing continue to work as before.
+In Settings, **Check Microsoft 365 test configuration** reads an IT-owned local
+TOML and validates it offline. A valid result is **not connected**, not a sign-in,
+not permission verification and not proof of synchronization. No folder is queried
+remotely and no cache is created by this check. An incomplete/invalid template says
+configuration is not ready; contact IT rather than adding broad permissions.
+
+Desktop Graph/reviewer sign-in, Approve and Publish remain unavailable. A separate
+operator/API read-only pilot can run only after written IT authorization and exact
+nonproduction configuration; it is not the normal employee workflow yet. See
+m365_readonly_pilot.md. Do not enter passwords, secrets or token values into settings
+or send them with diagnostics. Existing month persistence and local review requests
+are unchanged. A successful organizational sign-in would still not grant business
+approval or upload permission.
+
 ## Remembering your month and reviewing evidence
 
 Choose the reporting month on **Process Reports** or **Review & Approval**; they

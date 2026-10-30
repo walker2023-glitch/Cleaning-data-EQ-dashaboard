@@ -1,20 +1,18 @@
-# Next checkpoint after approval UX
+# Next checkpoint after Microsoft 365 read-only components
 
-Owner merged approval foundation PR #15 into main a01ebb5. Review the new approval
-UX/identity-readiness PR without automatically merging. Require exact-head hosted
-Windows/Linux and Windows executable/managed-PC acceptance; local Linux tests do
-not establish Windows success. Preserve a private settings backup for older-build
-rollback because new saves use preference schema v2.
+Review feature/m365-readonly-connectivity from owner-merged main 6b7e861 without
+automatic merge. Require exact-head Windows/Linux and packaged SDK/GUI checks;
+local Linux success is not Windows or live Microsoft evidence.
 
-Next, agree an authoritative Entra reviewer identity/role/evidence design with the
-data owner and IT, then implement a separately authorized nonproduction identity
-pilot. Keep final approval and publishing disabled until independently verified
-role scope, signed/validated decision evidence, revocation/expiry and final-byte
-approval contracts are reviewed. Typed names, dataclasses, local requests and mock
-grants are not authority. Authentication alone never advances a business state.
+Next obtain actual IT authorization, private single-tenant registration/config,
+selected-resource READ grants and approved synthetic files/device/cache policy.
+Run only the separately authorized nonproduction procedure in m365_readonly_pilot.md,
+record actual MFA/CA/account/permissions/redirect/hash/cache/failure outcomes privately,
+and stop on any scope/policy/integrity issue. No production fallback or uploads.
 
-Preserve the shared remembered month, employee evidence sections, local request
-history/deduplication/staleness, cleaning calculations, financial v2 and Power BI
-relationships. No production SharePoint/PBIX/refresh or automatic merge. Use a
-feature branch from the latest reviewed main and synthetic fixtures. See
-approval_ux_identity_readiness.md and sharepoint_live_pilot.md.
+Only after reviewing live evidence, propose a small connected read-only desktop
+picker/status/sign-out/worker UI PR. Preserve byte/version/hash checks, local SQLite/
+cache/origin receipts, corrections, month persistence, financial v2 and business-state
+boundaries. Successful sign-in does not grant reviewer roles. Approval, publishing
+and Power BI production changes remain separate, explicitly authorized milestones.
+Do not request credentials/tokens/private reports in chat or commit them to GitHub.

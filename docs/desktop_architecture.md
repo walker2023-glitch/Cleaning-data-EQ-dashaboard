@@ -1,5 +1,20 @@
 # M2 local desktop architecture
 
+## Microsoft 365 read-only components
+
+The existing FileSource/ProcessingCoordinator seam now has a verified Graph source
+for an explicitly authorized operator/API test pilot. It reuses the same preview,
+re-read, period, correction, cleaning and candidate store APIs. Graph identities/
+versions and original bytes are kept in private local receipt bundles after
+processing; no CSV schema change or production writer is added.
+
+Desktop Settings adds only an offline test-config checker using the existing serial
+settings worker. It does not construct MSAL, create caches or activate sign-in.
+The default reviewer identity provider and Graph controls remain unavailable. A real
+connected picker/worker/sign-out UI is a later focused PR after the IT live pilot;
+this milestone does not pretend the component/API is an employee connected journey.
+See m365_readonly_pilot.md for implemented versus mock/live-tested boundaries.
+
 ## Approval review and remembered period
 
 Both pages bind to the same Tk month/year variables. Settings v2 remembers only a
