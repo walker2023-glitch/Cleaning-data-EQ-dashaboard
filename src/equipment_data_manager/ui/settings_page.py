@@ -68,10 +68,12 @@ class SettingsPage(ctk.CTkFrame):
             text='Local reads enabled. Downloaded SharePoint-synced raw folders supported. Cloud synchronization unverified.',
             anchor='w',justify='left',wraplength=760,text_color='#52647A')
         self.connection_status.grid(row=1,column=0,sticky='ew',padx=12,pady=4)
-        self.graph_button=ctk.CTkButton(self.connection_card,text='Microsoft Graph — unavailable (offline foundation)',state='disabled',width=390)
+        self.graph_button=ctk.CTkButton(self.connection_card,text='Graph test pilot — desktop connection unavailable',state='disabled',width=390)
         self.graph_button.grid(row=2,column=0,sticky='w',padx=12,pady=6)
+        self.m365_check_button=ctk.CTkButton(self.connection_card,text='Check Microsoft 365 test configuration',command=app.check_m365_config,width=390,fg_color='#172B4D')
+        self.m365_check_button.grid(row=3,column=0,sticky='w',padx=12,pady=6)
         ctk.CTkLabel(self.connection_card,text='Candidate history and SQLite stay local. Approval and publication remain unavailable.',
-            anchor='w',justify='left',wraplength=760,text_color='#52647A').grid(row=3,column=0,sticky='ew',padx=12,pady=(0,8))
+            anchor='w',justify='left',wraplength=760,text_color='#52647A').grid(row=4,column=0,sticky='ew',padx=12,pady=(0,8))
         actions=ctk.CTkFrame(self.footer,fg_color='transparent');actions.grid(row=0,column=0,sticky='ew',padx=22,pady=10)
         self.check_button=ctk.CTkButton(actions,text='Check Locations',command=app.check_settings,fg_color='#172B4D')
         self.check_button.pack(side='left')
@@ -122,6 +124,6 @@ class SettingsPage(ctk.CTkFrame):
                 text_color='#087F8C' if ready else '#754C0B' if creation else '#9F2639')
 
     def busy(self, value):
-        for widget in (*self.browse_buttons.values(),self.recommended_button,self.local_check,self.check_button,self.save_button,self.reset_button,self.import_button,self.export_button):
+        for widget in (*self.browse_buttons.values(),self.recommended_button,self.local_check,self.check_button,self.save_button,self.reset_button,self.import_button,self.export_button,self.m365_check_button):
             widget.configure(state='disabled' if value else 'normal')
         self.format_picker.configure(state='disabled' if value else 'readonly')

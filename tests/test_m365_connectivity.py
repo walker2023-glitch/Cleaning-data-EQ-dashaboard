@@ -528,3 +528,19 @@ def test_wrong_site_library_or_redirected_folder_blocks_discovery(config,tmp_pat
         assert pilot.resources_verified is False and not pilot.output_root.exists()
         with pytest.raises(StorageError,match='resources_not_verified'):pilot.list_reports('service_orders')
     finally:pilot.close()
+
+
+def test_encoded_http_length_is_not_mistaken_for_decoded_file_size():
+    response=Response(body=b'decoded source bytes',headers={'Content-Length':'4','Content-Encoding':'gzip'})
+    transport=ReadOnlyHttpsTransport((),session=HttpSession(response))
+    assert transport.request('GET','/v1.0/drives/synthetic/items/file/content',headers={},body=None,timeout=30).body==b'decoded source bytes'
+
+
+def test_invalid_pilot_month_is_rejected_before_any_auth_initialization(config,tmp_path,monkeypatch,capsys):
+    from equipment_data_manager.m365_pilot import main
+    path=tmp_path/'test.toml';path.write_text(config_text(config))
+    monkeypatch.setattr(ReadOnlyTestPilot,'authorized',lambda *a,**k:pytest.fail('No SDK/auth initialization for invalid input'))
+    assert main(['preview','--config',str(path),'--it-authorized-test-only','--output-root',str(tmp_path/'candidates'),
+        '--report-type','service_orders','--item-id','item-1','--month','not-a-month'])==1
+    assert json.loads(capsys.readouterr().out)['error']=='invalid_reporting_period'
+    assert not config.cache_path.parent.exists()

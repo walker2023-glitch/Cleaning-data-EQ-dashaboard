@@ -164,6 +164,13 @@ def main(argv=None):
             print(json.dumps(dict(configuration='valid_test_allowlist',enabled=config.enabled,network_contacted=False,
                 authorization_verified=False,reviewer_authority=False,publication_enabled=False)));return 0
         if not args.output_root or not args.report_type:raise StorageError('m365_pilot_selection_required')
+        if args.action in ('preview','process'):
+            from equipment_data_manager.processing.cleaners import validate_period
+            from equipment_data_manager.processing.models import ProcessingError
+            try:validate_period(args.month)
+            except ProcessingError:raise StorageError('invalid_reporting_period') from None
+            if args.item_id not in {f.item_id for f in config.files if f.report_type.value==args.report_type}:
+                raise StorageError('m365_pilot_selection_required')
         pilot=ReadOnlyTestPilot.authorized(config,args.output_root,operator_authorized=args.it_authorized_test_only)
         pilot.sign_in();files=pilot.list_reports(args.report_type)
         if args.action=='list':

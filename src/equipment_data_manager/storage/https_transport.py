@@ -73,7 +73,10 @@ class ReadOnlyHttpsTransport:
                     if size>self.max_bytes:raise StorageError('storage_file_too_large')
                     chunks.append(chunk)
                 raw=b''.join(chunks)
-                if length is not None and len(raw)!=int(length):raise OSError('download_interrupted')
+                # Content-Length describes wire bytes; requests decodes Content-Encoding.
+                # File metadata/hash checks still verify the exact decoded source bytes.
+                if (length is not None and response.headers.get('Content-Encoding','identity').casefold() in ('','identity')
+                        and len(raw)!=int(length)):raise OSError('download_interrupted')
             payload=None
             if status==200 and parsed.hostname=='graph.microsoft.com' and 'json' in response.headers.get('Content-Type','').lower():
                 try:payload=json.loads(raw)

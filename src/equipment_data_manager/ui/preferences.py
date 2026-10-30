@@ -62,6 +62,13 @@ class SettingsMixin:
             return settings, validate_locations(settings) if settings else None
         self.start_settings_job('load', load)
 
+    def check_m365_config(self):
+        if self.worker.busy or self.settings_worker.busy:return
+        path=filedialog.askopenfilename(parent=self,title='Check IT-owned nonproduction Microsoft 365 configuration (offline)',filetypes=[('TOML test configuration','*.toml')])
+        if path:
+            from equipment_data_manager.m365_config import load_test_config
+            self.start_settings_job('m365-check',lambda:load_test_config(Path(path)))
+
     def check_settings(self):
         self.validate_settings_form('check')
 
@@ -190,6 +197,9 @@ class SettingsMixin:
                 self._busy_controls(self.worker.busy)
                 if event.kind=='error':
                     message='Settings could not be read or saved safely. The existing file was kept. Check permissions, or select folders and save again.'
+                    if kind=='m365-check':
+                        message='Microsoft 365 test configuration is not ready. Check the IT template, selected scopes, synthetic file hashes and local cache path. No connection was attempted.'
+                        self.settings_page.connection_status.configure(text=message+' Cloud synchronization remains unverified.')
                     if kind=='preferences':
                         message='Reporting month and help choices could not be saved. They apply only to this session; the previous settings file was kept. Check permissions, then Save Settings.'
                     self.settings_page.message.configure(text=message)
@@ -197,6 +207,11 @@ class SettingsMixin:
                     if kind=='load':
                         self.show_page('Settings')
                         self.settings_page.welcome.configure(text='Welcome: set up your folders')
+                elif kind=='m365-check':
+                    message='Test configuration validated offline. No Microsoft connection or sign-in was attempted. Desktop Graph remains unavailable; synchronization is unverified.'
+                    self.settings_page.connection_status.configure(text=message)
+                    self.settings_page.message.configure(text=message)
+                    self.status.set(message)
                 elif kind=='load':
                     settings,check=event.payload
                     self.preferences_writable=True

@@ -42,12 +42,19 @@ jobs:
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.powerbi_readiness assess data/ci-wheel-readiness/pilot/snapshot --month 2026-01 --month 2026-02 --expectations data/ci-wheel-readiness/readiness-expectations.csv --sources data/ci-wheel-readiness/source-index.csv --output data/ci-wheel-readiness/second-assessment
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/sharepoint_foundation_demo.py --preview-root data/ci-wheel-offline-graph-preview
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/request_candidate_review.py --candidate-folder data/ci-wheel-readiness/candidates --raw-folder data/ci-wheel-readiness/raw --month 2026-01 --note "Synthetic review evidence only"
+      - run: uv run --isolated --no-project --with './dist/equipment_data_manager-0.2.0-py3-none-any.whl[microsoft]' python -I -m equipment_data_manager.m365_components --output data/ci-wheel-m365-components.json
       # Foundation pushes must build even when API access prevents PR creation.
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity')
         run: ./packaging/build.ps1
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity')
         shell: pwsh
         run: |
+          $componentPath = Join-Path $PWD "data/packaged-m365/components.json"
+          $component = Start-Process -FilePath "dist/EquipmentDataManager/EquipmentDataManager.exe" -ArgumentList @("--check-m365-components", $componentPath) -PassThru
+          if (-not $component.WaitForExit(30000)) { $component.Kill(); throw "M365 component check timed out" }
+          if ($component.ExitCode -ne 0 -or -not (Test-Path $componentPath)) { throw "M365 component check failed" }
+          $offline = Get-Content $componentPath | ConvertFrom-Json
+          if ($offline.status -ne "offline_components_available" -or $offline.network_contacted -or $offline.authentication_attempted -or $offline.publication_enabled) { throw "M365 offline check invalid" }
           $checkDir = Join-Path $PWD "data/packaged-smoke"
           $process = Start-Process -FilePath "dist/EquipmentDataManager/EquipmentDataManager.exe" -ArgumentList @("--smoke-test", "--smoke-dir", $checkDir) -PassThru
           if (-not $process.WaitForExit(120000)) { $process.Kill(); throw "Desktop smoke timed out" }
@@ -62,20 +69,22 @@ jobs:
             throw "Desktop smoke failed"
           }
           if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity')
         uses: actions/upload-artifact@v4
         with:
           name: EquipmentDataManager-v0.2.0-Windows-prototype
           path: |
             dist/EquipmentDataManager_v0.2.0_win64.zip
             dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
+            data/packaged-m365/components.json
             data/packaged-smoke/desktop-smoke.json
 
-      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
+      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity')
         uses: actions/upload-artifact@v4
         with:
           name: desktop-smoke-diagnostics
           if-no-files-found: ignore
           path: |
+            data/packaged-m365/components.json
             data/packaged-smoke/desktop-smoke.json
             data/packaged-smoke/restore-smoke.json
