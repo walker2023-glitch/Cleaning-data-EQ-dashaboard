@@ -1,5 +1,18 @@
 # Future authorized SharePoint pilot and approval boundary
 
+## Read-only operator pilot implementation
+
+The concrete current profile, Entra checklist, exact config and authorized manual
+procedure are in m365_readonly_pilot.md. It implements official MSAL/HTTPS components
+but remains mock-tested: no actual tenant/client/test-resource permission was supplied
+and no real sign-in/Graph operation was attempted. This profile is READ ONLY;
+earlier optional-probe design below does not authorize or enable writes here.
+
+Complete written nonproduction authorization, selected-resource READ grants,
+synthetic item/hash manifest, exact download hosts, native public-client redirect,
+cache/device/CA/executable policies before any live command. Desktop config checking
+is offline only. Reviewer identity/role/business approval remains a separate gate.
+
 ## Reviewer identity readiness
 
 The desktop now exposes a ReviewerIdentityProvider contract and an unavailable

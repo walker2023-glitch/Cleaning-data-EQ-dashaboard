@@ -1,5 +1,15 @@
 # Milestone C — storage and offline Graph connectivity foundation
 
+## New read-only test-pilot profile
+
+m365_readonly_pilot.md supersedes the earlier "no HTTP/SDK bootstrap" implementation
+limit below: official MSAL/HTTPS components and an authorized-operator test pipeline
+now exist behind explicit configuration/permission gates. They were tested offline
+with injected responses, not against Microsoft. The original foundation/default
+Graph stub and fixed-probe model remain preserved; the new runtime profile refuses
+all probes/writes. Desktop live controls remain disabled while IT authorization is
+absent. No production permission, approval or publication is implied.
+
 This branch implements the bounded foundation requested for Milestone C. No
 credentials, live sign-in, SharePoint HTTP calls, candidate uploads, publication,
 approval changes or production PBIX/refresh are performed. Default application

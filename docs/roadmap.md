@@ -1,5 +1,26 @@
 # Departmental workflow roadmap and project review
 
+## Microsoft 365 read-only foundation — 2026-10-30
+
+Main 6b7e861 contains owner-merged PR #16. The feature starts there without replaying
+approval UX or SharePoint foundation commits. Owner-reported UX/OneDrive raw-read
+success is preserved; direct Microsoft connectivity remains unverified.
+
+Implemented for an authorized TEST-only operator pilot: pinned official MSAL and
+requests optional dependencies; tenant-bound gated public-client/session/cache/
+claims handling; TLS/read-only HTTP; exact site/library/folder and synthetic file
+hash allowlists; verified remote bytes into existing preview/process; local original/
+provenance bundles; offline configuration UI/help and executable dependency checks.
+Mock/SDK-with-mock-metadata tests establish offline behavior only. No real Microsoft
+request/browser/sign-in has run. Desktop connected picker/sign-in, reviewer roles,
+approval, publication and production remain unavailable.
+
+Next: actual written IT authorization and private config/grants/device/cache policy,
+then the manual nonproduction synthetic pilot in m365_readonly_pilot.md. Review real
+MFA/CA/permission/cache/redirect results before a small connected desktop UI PR.
+Require exact-head Windows/Linux/build and managed-PC checks; API HTTP 403 still
+prevents independently reading hosted results. Prior checkpoints are historical.
+
 ## Approval UX / identity readiness — 2026-10-29
 
 Owner merged PR #15 into main a01ebb5; c32d820 is already included. New branch:

@@ -1,5 +1,16 @@
 # Milestone status
 
+## Microsoft 365 read-only test-pilot foundation
+
+Based on owner-merged main 6b7e861 / PR #16. Official MSAL/bootstrap, protected cache
+lifecycle, constrained HTTPS, read-only resource/fixture allowlists, byte/version/hash
+verification and existing-engine operator bridge are implemented with offline tests.
+A local configuration check and packaged dependency check never connect. Actual
+MFA/conditional access/permissions/server/cache-device behavior is NOT verified;
+no IT configuration or authorization was provided. Desktop live picker/sign-in,
+reviewer role verification, uploads/approval/publication and production remain gated.
+See m365_readonly_pilot.md. Existing OneDrive/local workflows and financial v2 remain.
+
 ## Approval UX / identity readiness
 
 Owner merged PR #15 into main a01ebb5. The new branch adds reporting-month

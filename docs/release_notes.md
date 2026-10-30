@@ -1,5 +1,20 @@
 # Power BI CSV candidate exports — schema v1
 
+## Microsoft 365 read-only foundation (not live verified)
+
+Adds an optional pinned official MSAL/requests integration, tenant-bound authorized-
+test bootstrap, protected-cache lifecycle, constrained read-only HTTPS/Graph and
+synthetic-hash allowlists. Verified bytes feed existing cleaners; processing keeps
+local original/provenance bundles. Settings can check test config offline. The
+packaged component check verifies SDK/HTTP/CA availability without OAuth/network.
+
+Local suite: 589 passed. No real Microsoft authentication, Graph request or live
+conditional-access/permissions test was performed. Desktop live controls and all
+reviewer approval/publication remain unavailable. Written IT test authorization and
+configuration, actual nonproduction pilot and exact-head Windows build are required.
+No production data, calculations, financial v2/schema or review-state changes.
+See m365_readonly_pilot.md. Version remains prototype 0.2.0; identify by commit/hash.
+
 ## Approval UX and identity readiness (review prototype)
 
 Reporting month is now visible/shared across processing and review and remembered

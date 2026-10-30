@@ -103,6 +103,7 @@ class OfflineGraphAdapter:
                 if method!='GET':raise StorageError('storage_upload_outcome_unknown') from None
                 if attempt+1==self.attempts:raise StorageError('storage_network_interrupted') from None
                 self._delay(None,attempt);continue
+            except StorageError:raise
             except Exception:
                 raise StorageError('storage_transport_failed') from None
             if (not isinstance(response,GraphResponse) or type(response.status) is not int

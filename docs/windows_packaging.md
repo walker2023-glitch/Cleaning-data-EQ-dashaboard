@@ -1,5 +1,19 @@
 # Windows prototype packaging and distribution
 
+## Microsoft 365 dependency check
+
+The all-extras Windows build now includes the optional official MSAL/requests
+components, controller and certifi CA roots. CI invokes the actual executable with
+--check-m365-components to write a no-auth/no-network JSON report, then runs the
+existing GUI/restart/approval smoke. This feature branch's pushes schedule both
+OS tests and Windows build/checks even if PR API creation is blocked.
+
+No real IT config, cache, receipt or report is bundled. The blank
+m365-test.example.toml and manual pilot guide accompany the ZIP. Local Linux import/
+wheel checks do not establish Windows executable readiness: inspect the exact-head
+hosted result and managed-PC/dependency/security behavior before distribution.
+Desktop live controls remain disabled. See m365_readonly_pilot.md.
+
 ## Approval UX / identity build
 
 Build feature/approval-ux-identity-readiness at its reviewed commit. Windows CI

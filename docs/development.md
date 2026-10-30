@@ -1,5 +1,28 @@
 # Development (M2 offline desktop)
 
+## Microsoft 365 test-pilot development
+
+Use feature/m365-readonly-connectivity, based on main 6b7e861 (owner PR #16 merge).
+The optional microsoft extra pins msal 1.34.0 and requests 2.32.5; all-extras installs
+it for tests/builds. uv.lock pins transitive artifacts. Default local engine use
+remains independent of that extra. No SDK constructor runs at module/UI startup.
+
+```powershell
+git fetch origin
+git switch feature/m365-readonly-connectivity
+python -m uv sync --frozen --all-extras
+python -m uv run --frozen --all-extras python .github/run_tests.py
+python -m uv run --frozen --all-extras python -m equipment_data_manager.m365_components --output data/m365-components.json
+```
+
+See m365_readonly_pilot.md for strict template, offline Settings check and the live
+commands that require actual IT authorization. Do not run the latter as a routine
+development smoke. New source packages have injected SDK/HTTP seams; tests must
+never construct a real network-backed PublicClientApplication or open a browser.
+Actual SDK construction is tested only with injected discovery metadata. No real
+credentials/reports/tenant config/receipts belong in GitHub. Request/cleaner/financial
+schemas and business state remain unchanged.
+
 ## Current approval UX branch
 
 Use feature/approval-ux-identity-readiness, based on the owner's main merge a01ebb5.

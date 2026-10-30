@@ -54,3 +54,7 @@ graph.local.toml
 msal-cache.bin
 msal-cache.bin.lock
 .protected-cache-*.tmp
+
+# Microsoft 365 test-pilot local configuration and session cache lease
+m365-test.local.toml
+msal-cache.bin.session.lock

@@ -1,5 +1,33 @@
 # Test instructions and evidence limits
 
+## Microsoft 365 read-only components — 2026-10-30
+
+Local full suite: **589 passed, 0 failures/errors/skips** on Python 3.12.14/Linux
+with all 533 prior cases retained, 55 new backend/SDK/HTTP tests and one new real-
+widget test. Tests construct the actual official MSAL client only with injected
+synthetic discovery metadata; no real OAuth/browser/Microsoft request is attempted.
+
+New scope: strict test/synthetic allowlists and authorization-before-construction,
+actual SDK constructor/options/cache format, tenant/subject/account/expired-session
+checks, claims/MFA-interaction boundaries, protected-cache lifetime locks/restart/
+sign-out/failure, HTTPS/TLS/redirect/no-netrc/size/encoded-body behavior, safe log
+suppression, read-only methods, permissions/resource membership, changed versions,
+interrupted downloads, all three real cleaners, original-byte/identity receipts,
+repeat skips and invalid-input preflight. Settings checking never activates Graph,
+reviewer sign-in, approval or publishing. Prior financial/request/month tests stay.
+
+DPAPI native roundtrip runs only in the Windows platform branch of the tests;
+Linux tests inject a fake protector or verify the default fails closed. This is
+not proof of organizational cache/ACL/device or live MFA/CA/permission behavior.
+No tests were removed or financial/date/exclusion expectations changed.
+
+Wheel/installed component and GUI evidence are recorded separately from hosted
+Windows/Linux/executable results. API HTTP 403 prevents verifying hosted checks or
+creating the PR here. CI includes both OSes, installed-wheel Microsoft-extra checks,
+and Windows executable no-auth component plus GUI/restart checks on this branch.
+See m365_readonly_pilot.md for the IT gates and commands that must NOT be run as
+ordinary offline tests. Local logs/reports stay under ignored data/m365-* paths.
+
 ## Approval UX / identity readiness results
 
 **533 passed, 0 failures/errors/skips**, Python 3.12.14/Linux with the existing

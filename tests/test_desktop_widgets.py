@@ -991,3 +991,27 @@ def test_failed_month_save_is_session_only_and_retains_previous_profile(tmp_path
         assert window.business_review_page.publish_button.cget('state')=='disabled'
     finally:
         wait_settings(window);window._close()
+
+
+def test_m365_configuration_check_is_offline_and_never_enables_identity_or_graph(app,tmp_path,monkeypatch):
+    from test_m365_connectivity import config_text,Config,SyntheticFile,TENANT,CLIENT,RAW
+    from equipment_data_manager.auth.msal_session import OrganizationalConfig
+    from equipment_data_manager.storage.graph_adapter import GraphScope
+    from hashlib import sha256
+    config=Config(OrganizationalConfig(TENANT,CLIENT,('Sites.Selected',)),
+        GraphScope('synthetic-site','synthetic-drive',('raw-repairs','raw-services','raw-tma'),download_hosts=('synthetic.sharepoint.com',)),
+        (SyntheticFile('item-1',ReportType.SERVICE_ORDERS,sha256(RAW).hexdigest()),),
+        tmp_path/TENANT/CLIENT/'msal-cache.bin',True,'Synthetic IT test authorization reference')
+    path=tmp_path/'m365-test.toml';path.write_text(config_text(config))
+    monkeypatch.setattr('equipment_data_manager.ui.preferences.filedialog.askopenfilename',lambda **k:str(path))
+    app.show_page('Settings');app.settings_page.m365_check_button.invoke();wait_settings(app)
+    text=app.settings_page.connection_status.cget('text')
+    assert 'validated offline' in text and 'No Microsoft connection' in text and 'unverified' in text
+    assert app.settings_page.graph_button.cget('state')=='disabled'
+    assert app.business_review_page.sign_in_button.cget('state')=='disabled'
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+    assert not config.cache_path.parent.exists()
+    path.write_text('INVALID SYNTHETIC CONFIG')
+    app.settings_page.m365_check_button.invoke();wait_settings(app)
+    assert 'configuration is not ready' in app.status.get() and 'No connection was attempted' in app.status.get()
+    assert app.settings_page.graph_button.cget('state')=='disabled'

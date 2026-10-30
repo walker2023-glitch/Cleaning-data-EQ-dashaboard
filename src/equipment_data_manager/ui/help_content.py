@@ -202,3 +202,9 @@ entry('review_identity', 'Reviewer identity readiness', 'Microsoft Entra reviewe
     'No credentials, tokens, Entra roles or authoritative decisions are stored in Settings.',
     'IT and the data owner must agree registration, reviewer roles, consent, evidence, expiry/revocation and verification policy.',
     'Sign-in, Approve and Publish remain disabled. Identity alone never establishes a business decision.')
+
+entry('m365_test_config', 'Check Microsoft 365 test configuration', 'Validates an IT-owned nonproduction configuration offline. It does not sign in or connect.',
+    'Checks tenant/client IDs, explicit selected-resource scopes, a test site/library and three raw folders, exact download hosts, known synthetic item IDs/hashes and a local tenant/client cache namespace. The official MSAL/HTTPS pilot components are available to an authorized operator separately; desktop live controls remain unavailable.',
+    'Only the selected local TOML is read. No tokens, roles or permission grants are created and no folders are listed remotely.',
+    'IT must authorize the test resources and manual pilot before any real sign-in attempt.',
+    'A valid configuration is not proof of IT permission, tenant access, MFA success, cloud synchronization or reviewer authority. No candidate is uploaded.')

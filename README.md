@@ -1,5 +1,17 @@
 # Equipment Data Manager
 
+## Microsoft 365 read-only test-pilot components
+
+Owner merged approval UX PR #16 into main 6b7e861. New work is on
+**feature/m365-readonly-connectivity**: official MSAL public-client bootstrap,
+DPAPI/session-cache lifecycle, constrained HTTPS and a read-only Graph-to-engine
+operator pipeline with an exact test-resource/synthetic-hash allowlist.
+**No real sign-in or Graph operation has been tested here.** IT configuration and
+written authorization are absent; desktop Graph/reviewer controls remain disabled.
+Settings can validate a private test config offline without connecting. See the
+[IT setup and separately authorized manual pilot](docs/m365_readonly_pilot.md).
+No upload, business approval or production Power BI/SharePoint change is enabled.
+
 ## Approval UX and identity readiness
 
 Owner merged approval foundation PR #15 into main a01ebb5. The new

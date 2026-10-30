@@ -1,0 +1,32 @@
+# IT-owned NONPRODUCTION pilot only. This blank template is intentionally NOT ready.
+# Parsing/checking never constructs MSAL, opens a browser or contacts Microsoft.
+# Copy privately to m365-test.local.toml; no credentials or client secret.
+[test_pilot]
+enabled = false
+environment = "nonproduction"
+authorization_reference = ""
+
+[organization]
+tenant_id = ""
+client_id = ""
+# Selected-resource delegated scopes only; IT must also grant READ on the test resource.
+scopes = ["Sites.Selected"]
+
+[resources]
+site_id = ""
+drive_id = ""
+# Order is fixed: repairs, service_orders, tma_work_orders. Direct folders only.
+raw_folder_ids = ["", "", ""]
+# Exact IT-approved signed-download host(s); no wildcard or permission fallback.
+download_hosts = []
+
+[cache]
+# Absolute trusted LOCAL path, outside sync, ending in:
+# <tenant-guid>/<client-guid>/msal-cache.bin. See the IT checklist.
+path = ""
+
+# One entry per known SYNTHETIC test file, max 128. Unknown items are never offered.
+[[synthetic_files]]
+item_id = ""
+report_type = "service_orders"
+sha256 = ""

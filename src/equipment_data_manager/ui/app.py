@@ -842,7 +842,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.business_review_page.counts:'review_sections',self.business_review_page.financial:'review_sections',
             self.business_review_page.issues:'warnings',self.business_review_page.revisions:'validation_evidence',
             self.business_review_page.review_history:'review_stages',self.business_review_page.sign_in_button:'review_identity',
-            self.settings_page.graph_button:'storage_connection',self.settings_page.connection_status:'storage_connection'}
+            self.settings_page.m365_check_button:'m365_test_config',self.settings_page.graph_button:'storage_connection',self.settings_page.connection_status:'storage_connection'}
         for widget,key in controls.items():
             self.guidance.register(widget,key)
         for widget,kind in zip(self.report_buttons,SUPPORTED_REPORTS):
@@ -943,7 +943,11 @@ def main(argv=None):
     parser.add_argument("--smoke-test", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--smoke-dir", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--smoke-restore-settings",type=Path,help=argparse.SUPPRESS)
+    parser.add_argument("--check-m365-components",type=Path,help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
+    if args.check_m365_components:
+        from equipment_data_manager.m365_components import main as component_main
+        return component_main(["--output",str(args.check_m365_components)])
     if args.smoke_restore_settings:
         from equipment_data_manager.ui.smoke import run_restore_smoke
         return run_restore_smoke(args.smoke_restore_settings,args.smoke_dir)
