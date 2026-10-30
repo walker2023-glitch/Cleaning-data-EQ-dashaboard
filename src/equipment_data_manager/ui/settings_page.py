@@ -110,7 +110,8 @@ class SettingsPage(ctk.CTkFrame):
     def snapshot(self):
         return UserSettings({key: var.get() for key,var in self.path_vars.items()}, Preferences(
             self.app.guided.get(), self.app.explanation_level.get().lower(),
-            'powerbi' if self.preferred_format.get()=='Power BI CSV candidate' else 'legacy', self.local_confirmed.get()))
+            'powerbi' if self.preferred_format.get()=='Power BI CSV candidate' else 'legacy', self.local_confirmed.get(),
+            self.app.selected_period_or_saved()))
 
     def show_check(self, check):
         for key in FOLDER_KEYS:

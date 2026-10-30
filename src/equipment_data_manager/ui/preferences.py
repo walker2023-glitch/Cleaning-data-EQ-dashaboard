@@ -5,6 +5,7 @@ from queue import Empty
 from tkinter import filedialog, messagebox
 
 from equipment_data_manager.monthly import Workspace
+from equipment_data_manager.processing.models import ProcessingError
 from equipment_data_manager.settings import (
     FOLDER_KEYS, SettingsStore, UserSettings, candidate_location_error,
     create_confirmed_folders, parse_settings, validate_locations,
@@ -106,6 +107,40 @@ class SettingsMixin:
                 return
             self.start_settings_job('template',lambda: SettingsStore(path).save(UserSettings()))
 
+    def selected_period_or_saved(self):
+        try:
+            return self.period()
+        except ProcessingError:
+            return self.saved_settings.preferences.reporting_period
+
+    def reporting_month_changed(self, *_):
+        self.business_review_page.invalidate('Reporting month changed. Refresh review evidence before requesting approval.')
+        if self._restoring_period:
+            return
+        self._period_user_changed = True
+        try:
+            self.period()
+        except ProcessingError:
+            self.status.set('Choose a valid month and four-digit year. The last saved reporting month was retained.')
+            return
+        self.status.set('Reporting month selected: '+self.period()+'. Refresh review evidence; confirm before processing.')
+        # Do not create candidate/settings directories during write-free first-run
+        # preview. Explicit setup/help save enables persistence on this profile.
+        if self.settings_store.path.exists():
+            self.pending_preferences = True
+            self.flush_help_preferences()
+
+    def restore_reporting_period(self, settings):
+        period = settings.preferences.reporting_period
+        if period and not self._period_user_changed:
+            from equipment_data_manager.ui.app import MONTHS
+            self._restoring_period = True
+            try:
+                self.month.set(MONTHS[int(period[5:])-1])
+                self.year.set(period[:4])
+            finally:
+                self._restoring_period = False
+
     def help_preferences_changed(self, *_):
         self.guidance.hide()
         self.refresh_help()
@@ -115,12 +150,13 @@ class SettingsMixin:
     def flush_help_preferences(self):
         if self.pending_preferences and not self.settings_worker.busy and not self.preferences_writable:
             self.pending_preferences=False
-            self.settings_page.message.configure(text='Help preference applied for this session. Save valid settings to remember it; the unreadable settings file was retained.')
+            self.settings_page.message.configure(text='Month and help preferences apply only to this session. Save valid Settings to remember them; the unreadable settings file was retained.')
             return
         if self.pending_preferences and not self.settings_worker.busy:
             self.pending_preferences=False
             settings=replace(self.saved_settings,preferences=replace(self.saved_settings.preferences,
-                guided=self.guided.get(),detail=self.explanation_level.get().lower()))
+                guided=self.guided.get(),detail=self.explanation_level.get().lower(),
+                reporting_period=self.selected_period_or_saved()))
             self.start_settings_job('preferences',lambda: self._persist(settings),settings)
 
     def apply_workspace(self, workspace, output_format='powerbi'):
@@ -129,6 +165,7 @@ class SettingsMixin:
         self.sources=self.previews=self.results=()
         self.approvals.clear()
         self.workflow=DesktopWorkflow(workspace.candidate_folder,output_format=output_format)
+        self.business_review_page.invalidate('Folder settings changed. Refresh evidence for the current candidate folder.')
         self.output_format.set('Power BI CSV candidate' if output_format=='powerbi' else 'Legacy candidate')
         self._selection_changed()
         self.folder_label.configure(text=f'Local candidates: {self.workflow.output_root}')
@@ -153,6 +190,8 @@ class SettingsMixin:
                 self._busy_controls(self.worker.busy)
                 if event.kind=='error':
                     message='Settings could not be read or saved safely. The existing file was kept. Check permissions, or select folders and save again.'
+                    if kind=='preferences':
+                        message='Reporting month and help choices could not be saved. They apply only to this session; the previous settings file was kept. Check permissions, then Save Settings.'
                     self.settings_page.message.configure(text=message)
                     self.status.set(message)
                     if kind=='load':
@@ -163,13 +202,14 @@ class SettingsMixin:
                     self.preferences_writable=True
                     if settings is not None:
                         self.saved_settings=settings
+                        self.restore_reporting_period(settings)
                         self.settings_page.populate(settings)
                         self.apply_help_preferences(settings)
                         self.settings_page.show_check(check)
                     if settings is not None and check.valid:
                         self.apply_workspace(check.workspace, settings.preferences.output_format)
                         self.show_page('Process Reports')
-                        self.status.set('Saved settings restored. Select the source reporting month and Discover month.')
+                        self.status.set('Saved settings restored. Reporting month: '+self.month.get()+' '+self.year.get()+'. Confirm the source month before processing.')
                     else:
                         self.show_page('Settings')
                         self.settings_page.welcome.configure(text='Welcome: set up your folders' if settings is None or not all(settings.folders.values()) else 'Check your saved folder locations')
@@ -189,7 +229,8 @@ class SettingsMixin:
                         # Global help controls can change during validation; preserve
                         # their latest value without adopting unsaved folder edits.
                         snapshot=replace(snapshot,preferences=replace(snapshot.preferences,
-                            guided=self.guided.get(),detail=self.explanation_level.get().lower()))
+                            guided=self.guided.get(),detail=self.explanation_level.get().lower(),
+                            reporting_period=self.selected_period_or_saved()))
                         self.start_settings_job('commit',lambda s=snapshot:self._persist(s),snapshot)
                     else:
                         self.settings_page.message.configure(text='Locations checked. Save Settings to remember them.' if check.valid else 'Settings not saved. Resolve the folder indicators, then try again.')
@@ -226,10 +267,10 @@ class SettingsMixin:
                     self.settings_page.message.configure(text='Sanitized template exported with blank folders and default preferences. Actual paths and credentials are not included.')
                 elif kind=='preferences':
                     self.saved_settings=event.payload
+                self.flush_help_preferences()
                 if self.close_pending and not self.worker.busy and not self.settings_worker.busy:
                     self._close()
                     return True
-                self.flush_help_preferences()
         except Empty:
             pass
         return False

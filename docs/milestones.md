@@ -1,5 +1,13 @@
 # Milestone status
 
+## Approval UX / identity readiness
+
+Owner merged PR #15 into main a01ebb5. The new branch adds reporting-month
+persistence, employee review sections, guarded status explanations and a disabled
+reviewer-provider interface. Final approval and publishing stay disabled; existing
+request audit/stale behavior and financial calculations are unchanged. See
+approval_ux_identity_readiness.md for precise implementation and future IT gates.
+
 ## Approval / publishing foundation
 
 Owner merged integration PR #14 into main 36f8f20. The new branch implements

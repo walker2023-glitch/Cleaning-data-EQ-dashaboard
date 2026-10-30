@@ -181,3 +181,24 @@ entry('publication_history', 'Publication history', 'Published revision history 
     'The application cannot query previous published SharePoint snapshots. This does not mean none exist. Local candidate history remains available separately.',
     'No remote files are accessed.', 'Use the existing History view for local candidates.',
     'Rollback is a future authorized pointer change, never deletion or overwrite of history.')
+
+entry('review_month', 'Review reporting month', 'Uses the same reporting month as Process Reports; navigation does not change it.',
+    'Choose a month and four-digit year here or on Process Reports. After Settings has been saved, valid changes are remembered locally across restarts. Confirmation and previews are never restored. A new profile without a saved month starts at the calendar month; sample loading explicitly selects its sample month.',
+    'Local settings version 2 stores only the selected reporting period, not approval.',
+    'Refresh review evidence for the selected month and reconfirm before processing.',
+    'Invalid years are not saved. Unreadable settings are retained; the month stays session-only until valid Settings are saved.')
+entry('review_sections', 'Review evidence sections', 'Overview shows counts and reported costs. Issues explains warnings and missing data.',
+    'Use Overview for report counts and financial summaries, Issues for warnings and missing fields, Revisions for exact selected IDs/hashes, Review history for local request records, and Technical details for the original structured evidence. All sections refer to the displayed reporting month.',
+    'Read-only monthly evidence. No values or approval records are edited.',
+    'Resolve missing reports or stale evidence before recording a request.',
+    'Known individual totals can be partial. Not supplied is different from zero; source-reported costs remain separate from estimates.')
+entry('review_stages', 'Review and publication stages', 'A local review request is recorded here only; it has not been sent to an approval service.',
+    'Review Requested Locally is supported. Approval Pending would need a verified submission receipt; Approved would need an authoritative decision bound to exact revisions; Published would need verified immutable output and selection evidence. The latter stages are not achieved by this app.',
+    'Status labels are informational; existing business states and request records are unchanged.',
+    'Refresh history after corrections, then arrange review through the approved departmental process.',
+    'A typed role, successful reconciliation, mock grant, checkbox or local audit hash cannot prove approval or publication.')
+entry('review_identity', 'Reviewer identity readiness', 'Microsoft Entra reviewer sign-in and role verification are unavailable.',
+    'A future identity provider must authenticate the organizational tenant/subject and an independent authority must verify reviewer permission for the exact month, action and selection. Interface objects are not trusted approvals. No current provider opens a browser, acquires tokens or authorizes approval.',
+    'No credentials, tokens, Entra roles or authoritative decisions are stored in Settings.',
+    'IT and the data owner must agree registration, reviewer roles, consent, evidence, expiry/revocation and verification policy.',
+    'Sign-in, Approve and Publish remain disabled. Identity alone never establishes a business decision.')

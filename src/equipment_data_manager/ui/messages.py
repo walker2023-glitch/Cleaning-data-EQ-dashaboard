@@ -153,3 +153,8 @@ ERRORS.update({
     'review_candidate_provenance_rejected': 'Candidate provenance does not match the selected revision. Stop and ask your maintainer.',
     'review_candidate_contract_rejected': 'The selected candidate failed monthly review checks. Do not edit its files.',
 })
+
+ERRORS.update({
+    'review_identity_unavailable': 'Microsoft Entra reviewer sign-in is not configured. No sign-in was attempted.',
+    'review_authority_unavailable': 'Reviewer identity and permission verification are unavailable. Approval stays disabled.',
+})

@@ -43,9 +43,9 @@ jobs:
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/sharepoint_foundation_demo.py --preview-root data/ci-wheel-offline-graph-preview
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/request_candidate_review.py --candidate-folder data/ci-wheel-readiness/candidates --raw-folder data/ci-wheel-readiness/raw --month 2026-01 --note "Synthetic review evidence only"
       # Foundation pushes must build even when API access prevents PR creation.
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
         run: ./packaging/build.ps1
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
         shell: pwsh
         run: |
           $checkDir = Join-Path $PWD "data/packaged-smoke"
@@ -62,7 +62,7 @@ jobs:
             throw "Desktop smoke failed"
           }
           if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
         uses: actions/upload-artifact@v4
         with:
           name: EquipmentDataManager-v0.2.0-Windows-prototype
@@ -71,7 +71,7 @@ jobs:
             dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
             data/packaged-smoke/desktop-smoke.json
 
-      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation')
+      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness')
         uses: actions/upload-artifact@v4
         with:
           name: desktop-smoke-diagnostics

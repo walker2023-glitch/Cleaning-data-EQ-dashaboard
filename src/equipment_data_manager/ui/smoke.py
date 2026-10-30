@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -193,6 +193,7 @@ def run_smoke(directory: Path | None) -> int:
                 assert 'Settings saved' in app.status.get()
                 assert app.settings_store.path.exists()
                 assert app.saved_settings.preferences.candidate_local_confirmed
+                assert app.settings_store.load().preferences.reporting_period=='2026-01'
                 app.help_level.set('Brief')
                 app.help_preferences_changed()
             elif phase == 21:
@@ -228,6 +229,8 @@ def run_smoke(directory: Path | None) -> int:
             elif phase == 25:
                 page = app.business_review_page
                 assert page.captured is not None and not page.captured['evidence']['missing_reports']
+                assert page.tabs.get() == 'Overview' and 'REPORT COUNTS' in page.counts.get('1.0','end')
+                assert page.sign_in_button.cget('state') == 'disabled'
                 assert page.approve_button.cget('state') == page.publish_button.cget('state') == 'disabled'
                 page.note.insert(0, 'Synthetic packaged-smoke evidence only')
                 page.request_button.invoke()
@@ -279,10 +282,14 @@ def run_restore_smoke(settings_path, report_directory=None):
             return
         outcome['passed']=(not restored.settings_worker.busy and restored.workspace is not None
             and restored.page=='Process Reports' and not restored.guided.get()
-            and restored.explanation_level.get()=='Detailed')
+            and restored.explanation_level.get()=='Detailed'
+            and (not restored.saved_settings.preferences.reporting_period
+                or restored.period()==restored.saved_settings.preferences.reporting_period)
+            and not restored.month_confirmed.get())
         if report_directory is not None:
             report=dict(passed=outcome['passed'],page=restored.page,workspace_configured=restored.workspace is not None,
-                guided=restored.guided.get(),detail=restored.explanation_level.get(),settings_busy=restored.settings_worker.busy)
+                guided=restored.guided.get(),detail=restored.explanation_level.get(),settings_busy=restored.settings_worker.busy,
+                reporting_period=restored.period(),month_confirmed=restored.month_confirmed.get())
             (Path(report_directory)/'restore-smoke.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         restored._close()
     # CTk's Windows mainloop startup pumps events while setting the titlebar.

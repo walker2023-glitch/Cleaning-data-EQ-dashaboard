@@ -1,5 +1,24 @@
 # Departmental workflow roadmap and project review
 
+## Approval UX / identity readiness — 2026-10-29
+
+Owner merged PR #15 into main a01ebb5; c32d820 is already included. New branch:
+feature/approval-ux-identity-readiness. No stack commits were duplicated. Open PR
+metadata/hosted checks remain unavailable through the API (HTTP 403); Git merge
+history is not proof of CI/reviewer approval.
+
+Implemented: shared visible month/year selection, strict settings-v2 remembered
+period with v1 compatibility, startup/close preference ordering, read-only employee
+review tabs and exact technical evidence, clear local-versus-authoritative status
+cards, contextual help, and an unavailable-by-default reviewer identity interface.
+Local request persistence, duplicates/stale detection, cleaners/financial v2 and
+business states are unchanged. No production or live authentication operation.
+
+Next: exact-head Windows/Linux/packaged and managed-PC acceptance, then an explicitly
+authorized identity/role-service design and nonproduction pilot. Receipt/decision/
+publishing connectors are separate gates. See approval_ux_identity_readiness.md.
+Earlier milestones below retain their dated implementation/test evidence.
+
 ## Approval / publishing foundation — 2026-10-29
 
 Owner merged PR #14 into main at 36f8f20. New work starts from main on

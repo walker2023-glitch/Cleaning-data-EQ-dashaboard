@@ -1,5 +1,18 @@
 # Development (M2 offline desktop)
 
+## Current approval UX branch
+
+Use feature/approval-ux-identity-readiness, based on the owner's main merge a01ebb5.
+See approval_ux_identity_readiness.md for synthetic VS Code steps and the reporting
+month policy. Settings v2 adds a remembered period; v1/legacy workspace inputs still
+load. Preserve a private settings backup before rollback to a v1-only executable.
+No processing/review-request database or financial schema migration is introduced.
+
+New presentation module: ui/review_presenter.py. Identity readiness contracts:
+auth/reviewer_identity.py; only the unavailable provider is wired to the app.
+Local request and financial/cleaning services are unchanged. Both pages share the
+same month/year variables; confirmation/previews are intentionally not persisted.
+
 ## Approval foundation development
 
 Start from the owner's merged main 36f8f20, then use

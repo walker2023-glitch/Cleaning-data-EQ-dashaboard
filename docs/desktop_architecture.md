@@ -1,5 +1,21 @@
 # M2 local desktop architecture
 
+## Approval review and remembered period
+
+Both pages bind to the same Tk month/year variables. Settings v2 remembers only a
+valid YYYY-MM preference; v1 still loads. The existing serial preferences worker
+coalesces pending changes and finishes the latest save before ordinary close.
+Startup restoration yields to an explicit session choice. Month confirmation,
+previews and authority are never persisted as preferences.
+
+ReviewPage invalidates captured evidence/actions on month changes without changing
+selector entry state inside a Tk variable trace (CTk ComboBox temporarily unlocks
+its entry while setting text). Presentation is separated into review_presenter.py:
+readable tabs/status cards plus optional original technical evidence. Local request
+API/fingerprints remain unchanged. Renderer cards cannot derive remote approval or
+publication from local records. UnavailableReviewerIdentity is the only wired
+provider; the future protocol/object is not a grant. See approval_ux_identity_readiness.md.
+
 This user-directed M2 milestone is the **offline desktop prototype**. The original
 `design.md` M2 Graph integration is postponed; no Microsoft functionality is added.
 The cleaning modules, calculations, exclusions and M1 version identity remain unchanged.

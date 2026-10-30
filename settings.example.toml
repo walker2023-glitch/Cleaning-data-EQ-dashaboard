@@ -1,4 +1,4 @@
-version = 1
+version = 2
 
 [folders]
 raw_folder = ""
@@ -10,3 +10,4 @@ guided = true
 detail = "detailed"
 output_format = "powerbi"
 candidate_local_confirmed = false
+reporting_period = ""

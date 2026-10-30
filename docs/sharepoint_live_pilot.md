@@ -1,5 +1,15 @@
 # Future authorized SharePoint pilot and approval boundary
 
+## Reviewer identity readiness
+
+The desktop now exposes a ReviewerIdentityProvider contract and an unavailable
+default provider. This does not implement Entra sign-in or role lookup. Before any
+live provider, agree tenant/subject authentication, authoritative reviewer policy/
+resource checks, signed evidence and expiry/revocation, consent/cache/device rules,
+and a separately authorized nonproduction pilot. Sign-in is not business approval.
+Local status cards cannot infer remote pending/approved/published states. See
+approval_ux_identity_readiness.md; existing IT/production gates below remain.
+
 ## Approval foundation update
 
 Local review requests/evidence are now implemented; authoritative final approval,
