@@ -544,3 +544,28 @@ def test_invalid_pilot_month_is_rejected_before_any_auth_initialization(config,t
         '--report-type','service_orders','--item-id','item-1','--month','not-a-month'])==1
     assert json.loads(capsys.readouterr().out)['error']=='invalid_reporting_period'
     assert not config.cache_path.parent.exists()
+
+
+def test_concurrent_refresh_cannot_resurrect_cache_after_local_signout(config):
+    from concurrent.futures import ThreadPoolExecutor
+    current=session(config);token=current.sign_in();current.clock=lambda:token.expires_at+60
+    entered,release,signout_started,signout_done=Event(),Event(),Event(),Event()
+    def refresh(*args,**kwargs):
+        entered.set();assert release.wait(4)
+        current.cache.deserialize('{"AccessToken":{"synthetic":{"secret":"SYNTHETIC_REFRESHED"}}}')
+        current.cache.has_state_changed=True
+        return current.client.result
+    current.client.acquire_token_silent=refresh
+    def logout():
+        signout_started.set();current.sign_out();signout_done.set()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        refreshed=pool.submit(current.token)
+        assert entered.wait(3)
+        signed_out=pool.submit(logout)
+        try:
+            assert signout_started.wait(3) and not signout_done.wait(0.05)
+        finally:release.set()
+        assert refreshed.result(timeout=4).value=='SYNTHETIC_ACCESS_ONLY'
+        signed_out.result(timeout=4)
+    assert current.closed and json.loads(FakeProtector().unprotect(config.cache_path.read_bytes()))=={}
+    with pytest.raises(StorageError,match='auth_signed_out'):current.token()

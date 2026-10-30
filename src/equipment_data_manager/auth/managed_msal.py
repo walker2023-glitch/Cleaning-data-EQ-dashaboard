@@ -3,6 +3,8 @@ import base64
 import json
 from pathlib import Path
 import re
+from functools import wraps
+from threading import RLock
 from uuid import UUID, uuid4
 
 from equipment_data_manager.auth.msal_session import MsalSession
@@ -36,12 +38,24 @@ class CacheLease:
         except OSError:raise StorageError('auth_cache_cleanup_required') from None
 
 
+def serialized_session(operation):
+    @wraps(operation)
+    def guarded(self,*args,**kwargs):
+        with self._operation_lock:return operation(self,*args,**kwargs)
+    return guarded
+
+
 class ManagedMsalSession(MsalSession):
     def __init__(self,config,client,cache,persistence,lease,http,**kwargs):
         super().__init__(config,client,interactive_enabled=True,**kwargs)
         self.cache,self.persistence,self.lease,self.http=cache,persistence,lease,http
+        self._operation_lock=RLock()
         self._claims=None;self.closed=False
         self.connection_status='not_signed_in'
+
+    @serialized_session
+    def invalidate(self):
+        super().invalidate()
 
     def _accept(self,result,*,silent):
         if isinstance(result,dict) and result.get('error') in ('interaction_required','login_required','consent_required'):
@@ -57,12 +71,14 @@ class ManagedMsalSession(MsalSession):
         self.connection_status='signed_in_resources_not_verified'
         return token
 
+    @serialized_session
     def token(self):
         if self.closed:raise StorageError('auth_signed_out')
         if self._claims:raise StorageError('auth_interaction_required')
         try:return super().token()
         finally:self.persistence.save(self.cache)
 
+    @serialized_session
     def sign_in(self):
         if self.closed:raise StorageError('auth_signed_out')
         try:
@@ -81,6 +97,7 @@ class ManagedMsalSession(MsalSession):
             self.invalidate();raise StorageError('auth_failed') from None
         finally:self.persistence.save(self.cache)
 
+    @serialized_session
     def record_challenge(self,header):
         self.invalidate();self.connection_status='interaction_required'
         if not header:return
@@ -94,6 +111,7 @@ class ManagedMsalSession(MsalSession):
             self._claims=json.dumps(claims,separators=(',',':'))
         except (ValueError,TypeError,UnicodeError):raise StorageError('auth_claims_challenge_invalid') from None
 
+    @serialized_session
     def sign_out(self):
         """Local SDK/cache sign-out, not browser SSO logout or server token revocation."""
         self.invalidate();self.closed=True;self.connection_status='sign_out_incomplete'
@@ -111,6 +129,7 @@ class ManagedMsalSession(MsalSession):
             try:self.http.close()
             finally:self.lease.release()
 
+    @serialized_session
     def close(self):
         self.invalidate();self.closed=True;self.connection_status='closed_cache_retained'
         try:self.persistence.save(self.cache)
