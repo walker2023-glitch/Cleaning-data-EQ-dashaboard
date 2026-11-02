@@ -58,10 +58,28 @@ class MonthlySelection:
         return f"Month {self.period} | Missing reports: {missing}. " + " ".join(self.issues)
 
 
-def discover(workspace: Workspace, period: str) -> MonthlySelection:
+def discover(workspace: Workspace, period: str, *, folder_layout="standard") -> MonthlySelection:
     """Read ONLY direct files in raw/YYYY-MM/type; never recurse or guess type."""
     workspace.validate()
     validate_period(period)
+    if folder_layout != 'standard':
+        from equipment_data_manager.historical import describe_issue, discover_history
+        from equipment_data_manager.storage.local import LocalFolderStorage
+        provider = LocalFolderStorage(workspace.raw_folder)
+        inventory = discover_history(provider, period, period, folder_layout)
+        month = inventory.months[0]
+        found, issues = [], []
+        # Only unambiguous, stable, supported files can enter monthly preview.
+        # Strict filename/folder issues require investigation rather than guessing.
+        for report in month.reports:
+            if report.status == 'found' and not month.issues:
+                entry, = report.sources
+                path = provider._path(entry.item_id)
+                found.append((report.report_type, SourceFile(str(path), entry.name,
+                    expected_version=entry.version, expected_sha256=entry.sha256)))
+            issues.extend(describe_issue(i) for i in report.issues)
+        issues.extend(describe_issue(i) for i in month.issues)
+        return MonthlySelection(period, tuple(found), tuple(issues))
     found, issues = [], []
     for kind in ReportType:
         folder = workspace.raw_folder / period / kind.value
