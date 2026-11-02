@@ -158,3 +158,12 @@ ERRORS.update({
     'review_identity_unavailable': 'Microsoft Entra reviewer sign-in is not configured. No sign-in was attempted.',
     'review_authority_unavailable': 'Reviewer identity and permission verification are unavailable. Approval stays disabled.',
 })
+
+
+ERRORS.update({
+    'historical_export_exists': 'This discovery-report file already exists. Choose a new filename; the existing report was kept.',
+    'historical_export_requires_local_json': 'Choose a new JSON discovery-report file on trusted local storage, outside synchronization services.',
+    'historical_export_overlaps_raw': 'Save the discovery report outside the raw-report root. Originals must stay unchanged.',
+    'historical_invalid_range': 'Enter YYYY-MM start/end values, with end on or after start and at most 120 months.',
+    'historical_invalid_layout': 'Choose a supported folder layout in Settings and save before discovery.',
+})

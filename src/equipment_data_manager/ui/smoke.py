@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -241,6 +241,49 @@ def run_smoke(directory: Path | None) -> int:
                 assert page.service().status(records[0]) == 'ReviewRequestedLocallyNotSent'
                 assert page.approve_button.cget('state') == page.publish_button.cget('state') == 'disabled'
                 assert list((workspace / 'reserved-approved').iterdir()) == []
+                app.show_page('Historical Data')
+                app.historical_page.start.set('2026-01')
+                app.historical_page.end.set('2026-02')
+                app.historical_page.discover_button.invoke()
+            elif phase == 27:
+                page = app.historical_page
+                assert page.inventory.months[0].complete
+                assert not page.inventory.months[1].complete
+                assert len(page.table.get_children()) == 2
+                # Build a second SYNTHETIC raw tree, without moving any source.
+                folder = workspace / 'sharepoint-raw' / '2026' / '2026-01 (January)'
+                folder.mkdir(parents=True)
+                names = ['CompuClean Repair Report.csv', 'CompuClean Service Orders List.csv', 'Work Orders January 2026.xlsx']
+                for kind, name in zip(ReportType, names):
+                    sample = sample_path(kind)
+                    raw = sample.read_bytes()
+                    if sample.suffix == '.csv':
+                        raw = raw.replace(b'2026-09', b'2026-01')
+                    (folder / name).write_bytes(raw)
+                app.settings_page.path_vars['raw_folder'].set(str(workspace / 'sharepoint-raw'))
+                app.settings_page.folder_layout.set('SharePoint year/month layout')
+                app.settings_page.save_button.invoke()
+            elif phase == 28:
+                assert app.settings_store.load().preferences.folder_layout == 'sharepoint_year_month'
+                app.show_page('Historical Data')
+                assert app.historical_page.inventory is None
+                app.historical_page.discover_button.invoke()
+            elif phase == 29:
+                page = app.historical_page
+                assert page.inventory.months[0].complete and not page.inventory.months[1].complete
+                from tkinter import filedialog
+                original = filedialog.asksaveasfilename
+                try:
+                    filedialog.asksaveasfilename = lambda **kwargs: str(workspace / 'historical-inventory.json')
+                    page.export_button.invoke()
+                finally:
+                    filedialog.asksaveasfilename = original
+            elif phase == 30:
+                report = json.loads((workspace / 'historical-inventory.json').read_text(encoding='utf-8'))
+                assert report['inventory_only'] and report['processing_performed'] is False
+                assert report['approval'] == 'not_granted' and report['sync_verified'] is False
+                assert list((workspace / 'reserved-approved').iterdir()) == []
+                assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
                 app.show_page('Process Reports')
                 finish(True)
                 return
@@ -274,6 +317,9 @@ def run_smoke(directory: Path | None) -> int:
 def run_restore_smoke(settings_path, report_directory=None):
     """Fresh-process source/executable restart; reads only synthetic settings."""
     from equipment_data_manager.ui.app import EquipmentDataManager
+    from equipment_data_manager.settings import SettingsStore
+    from equipment_data_manager.historical import LAYOUT_LABELS
+    expected_layout=SettingsStore(settings_path).load().preferences.folder_layout
     restored=EquipmentDataManager(settings_path=settings_path)
     outcome={'passed':False,'started':monotonic()}
     def check():
@@ -285,11 +331,14 @@ def run_restore_smoke(settings_path, report_directory=None):
             and restored.explanation_level.get()=='Detailed'
             and (not restored.saved_settings.preferences.reporting_period
                 or restored.period()==restored.saved_settings.preferences.reporting_period)
+            and restored.saved_settings.preferences.folder_layout==expected_layout
+            and restored.settings_page.folder_layout.get()==LAYOUT_LABELS[expected_layout]
             and not restored.month_confirmed.get())
         if report_directory is not None:
             report=dict(passed=outcome['passed'],page=restored.page,workspace_configured=restored.workspace is not None,
                 guided=restored.guided.get(),detail=restored.explanation_level.get(),settings_busy=restored.settings_worker.busy,
-                reporting_period=restored.period(),month_confirmed=restored.month_confirmed.get())
+                reporting_period=restored.period(),month_confirmed=restored.month_confirmed.get(),
+                folder_layout=restored.saved_settings.preferences.folder_layout)
             (Path(report_directory)/'restore-smoke.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         restored._close()
     # CTk's Windows mainloop startup pumps events while setting the titlebar.

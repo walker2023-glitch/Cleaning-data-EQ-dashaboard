@@ -208,3 +208,11 @@ entry('m365_test_config', 'Check Microsoft 365 test configuration', 'Validates a
     'Only the selected local TOML is read. No tokens, roles or permission grants are created and no folders are listed remotely.',
     'IT must authorize the test resources and manual pilot before any real sign-in attempt.',
     'A valid configuration is not proof of IT permission, tenant access, MFA success, cloud synchronization or reviewer authority. No candidate is uploaded.')
+
+
+entry('historical_inventory', 'Historical folder discovery',
+    'Finds readable raw reports across a selected range. It does not clean or approve data.',
+    'Choose the raw root and explicit layout in Settings. Standard layout reads YYYY-MM/report-type folders; SharePoint layout reads year/YYYY-MM (month label) with three directly stored reports. Select start and end as YYYY-MM, then discover. Found means one stable readable file, not a supported source schema or verified financial total.',
+    'Original files are read through the local/synced provider. Discovery writes no candidate history or database. A private JSON inventory can be exported outside the raw/synced folders.',
+    'Inspect Problems & files. Resolve missing/ambiguous/unavailable inputs. For one complete month, use Process Reports, Discover month, confirm the month, and Preview Processing. Historical batch preview/process/snapshot controls are deferred.',
+    'Cloud synchronization is unverified. No Graph sign-in, automatic correction, approval or publishing occurs. Exported inventory is evidence only; it is never imported as processing authority.')

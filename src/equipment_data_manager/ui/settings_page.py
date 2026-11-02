@@ -2,11 +2,12 @@
 import customtkinter as ctk
 
 from equipment_data_manager.settings import FOLDER_KEYS, Preferences, UserSettings
+from equipment_data_manager.historical import LAYOUT_LABELS
 
 LABELS = {'raw_folder': 'Raw Data Folder', 'candidate_folder': 'Candidate Output Folder',
           'approved_folder': 'Approved Output Folder (reserved)'}
 DESCRIPTIONS = {
-    'raw_folder': 'Original local or downloaded SharePoint-synced reports, arranged by year-month and report type. Preview checks local readability; cloud sync is unverified.',
+    'raw_folder': 'Original local or downloaded SharePoint-synced reports. Choose the folder layout below. Preview checks local readability; cloud sync is unverified.',
     'candidate_folder': 'Cleaned candidates, history and review packets. Choose a trusted local disk outside sync services.',
     'approved_folder': 'Future approved exports only. Saving this setting does not publish or approve reports.'}
 
@@ -49,19 +50,26 @@ class SettingsPage(ctk.CTkFrame):
                     fg_color='#E4EDF4',text_color='#172B4D',width=235)
                 self.recommended_button.grid(row=4,column=0,columnspan=2,sticky='w',padx=12,pady=(0,8))
             variable.trace_add('write',lambda *args,k=key: self.indicators[k].configure(text='Not checked',text_color='#754C0B'))
+        self.folder_layout=ctk.StringVar(value=LAYOUT_LABELS['standard'])
+        layout_card=ctk.CTkFrame(self.content,fg_color='transparent')
+        layout_card.grid(row=5,column=0,sticky='ew',padx=22,pady=8)
+        ctk.CTkLabel(layout_card,text='Raw folder layout',text_color='#24354B').pack(side='left',padx=(0,12))
+        self.layout_picker=ctk.CTkComboBox(layout_card,variable=self.folder_layout,
+            values=list(LAYOUT_LABELS.values()),state='readonly',width=340)
+        self.layout_picker.pack(side='left')
         self.local_confirmed=ctk.BooleanVar(value=False)
         self.local_check=ctk.CTkCheckBox(self.content,text='I confirm candidate history is on this computer and is not synchronized or shared.',
             variable=self.local_confirmed,text_color='#24354B',fg_color='#087F8C')
-        self.local_check.grid(row=5,column=0,sticky='w',padx=24,pady=(12,8))
+        self.local_check.grid(row=6,column=0,sticky='w',padx=24,pady=(12,8))
         self.preferred_format=ctk.StringVar(value='Power BI CSV candidate')
-        preferences=ctk.CTkFrame(self.content,fg_color='transparent');preferences.grid(row=6,column=0,sticky='ew',padx=22,pady=8)
+        preferences=ctk.CTkFrame(self.content,fg_color='transparent');preferences.grid(row=7,column=0,sticky='ew',padx=22,pady=8)
         ctk.CTkLabel(preferences,text='Preferred output format',text_color='#24354B').pack(side='left',padx=(0,12))
         self.format_picker=ctk.CTkComboBox(preferences,variable=self.preferred_format,values=['Power BI CSV candidate','Legacy candidate'],state='readonly',width=210)
         self.format_picker.pack(side='left')
         ctk.CTkLabel(self.content,text='Guided Mode & Help: use the switch and Brief / Detailed choice in the left navigation. F1 opens help for a control.',
-            anchor='w',justify='left',wraplength=820,text_color='#52647A').grid(row=7,column=0,sticky='ew',padx=22,pady=8)
+            anchor='w',justify='left',wraplength=820,text_color='#52647A').grid(row=8,column=0,sticky='ew',padx=22,pady=8)
         self.connection_card=ctk.CTkFrame(self.content,fg_color='#F3F6FA')
-        self.connection_card.grid(row=8,column=0,sticky='ew',padx=22,pady=8)
+        self.connection_card.grid(row=9,column=0,sticky='ew',padx=22,pady=8)
         self.connection_card.grid_columnconfigure(0,weight=1)
         ctk.CTkLabel(self.connection_card,text='Storage connection',anchor='w',font=ctk.CTkFont(size=15,weight='bold'),text_color='#172B4D').grid(row=0,column=0,sticky='ew',padx=12,pady=(8,3))
         self.connection_status=ctk.CTkLabel(self.connection_card,
@@ -107,13 +115,15 @@ class SettingsPage(ctk.CTkFrame):
         for key in FOLDER_KEYS:
             self.path_vars[key].set(settings.folders[key])
         self.local_confirmed.set(settings.preferences.candidate_local_confirmed)
+        self.folder_layout.set(LAYOUT_LABELS[settings.preferences.folder_layout])
         self.preferred_format.set('Power BI CSV candidate' if settings.preferences.output_format=='powerbi' else 'Legacy candidate')
 
     def snapshot(self):
         return UserSettings({key: var.get() for key,var in self.path_vars.items()}, Preferences(
             self.app.guided.get(), self.app.explanation_level.get().lower(),
             'powerbi' if self.preferred_format.get()=='Power BI CSV candidate' else 'legacy', self.local_confirmed.get(),
-            self.app.selected_period_or_saved()))
+            self.app.selected_period_or_saved(),
+            next(key for key,label in LAYOUT_LABELS.items() if label==self.folder_layout.get())))
 
     def show_check(self, check):
         for key in FOLDER_KEYS:
@@ -126,4 +136,5 @@ class SettingsPage(ctk.CTkFrame):
     def busy(self, value):
         for widget in (*self.browse_buttons.values(),self.recommended_button,self.local_check,self.check_button,self.save_button,self.reset_button,self.import_button,self.export_button,self.m365_check_button):
             widget.configure(state='disabled' if value else 'normal')
+        self.layout_picker.configure(state='disabled' if value else 'readonly')
         self.format_picker.configure(state='disabled' if value else 'readonly')
