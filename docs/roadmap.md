@@ -1,5 +1,28 @@
 # Departmental workflow roadmap and project review
 
+## Historical backfill, PR 1 — 2026-11-02
+
+Main bd21499 now includes owner-merged Microsoft 365 PR #17 and approval UX #16.
+New branch: feature/historical-folder-discovery. Remote feature heads/ancestry were
+inspected; open PR metadata remains API-blocked (HTTP 403). No unrelated commits
+were replayed and no PR was merged here. Earlier dated status entries are historical.
+
+Implemented: explicit standard versus SharePoint year/labeled-month layouts,
+strict shared-folder filenames, read-only multi-year range inventory, stable local
+source hashes/versions, missing/ambiguous/unsupported/unavailable reports, desktop
+completeness/problems/technical views, private exclusive inventory export, persisted
+layout, and hash-bound single-month handoff to the unchanged engine. No Graph calls.
+
+This deliberately follows the request's dependent-PR option. Next PR 2: explicit
+historical month selection, batch preview diagnostics/financial summaries and
+controlled correction-aware processing/stop/recovery. PR 3: reuse existing v2
+four-table snapshot/reconciliation tools behind historical controls, with complete
+month policy and explicit revision selection. Neither later phase is claimed done.
+See historical_backfill.md for scope, instructions, naming and acceptance gates.
+
+All financial/cleaning rules, approval requests and disabled business/security
+controls remain. No production PBIX, SharePoint, authentication or publishing work.
+
 ## Microsoft 365 read-only foundation — 2026-10-30
 
 Main 6b7e861 contains owner-merged PR #16. The feature starts there without replaying

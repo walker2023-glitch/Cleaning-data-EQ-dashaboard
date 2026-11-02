@@ -254,3 +254,33 @@ Graph unavailable: organizational sign-in and site/library selection are not ena
 in this prototype. No candidate is uploaded or published. Finance reconciliation is
 not business approval. See sharepoint_foundation.md for developer tests and the
 separate IT-authorized live-pilot requirements.
+
+
+## Historical Data — read-only inventory
+
+In Settings, select and save **Raw folder layout**. Choose Standard for
+YYYY-MM/report-type folders or SharePoint year/month for 01_Raw_Data / year /
+YYYY-MM (Jan or full month name), with the three reports directly in each month.
+The choice restores after restart; no original is moved or renamed.
+
+Open **Historical Data**, enter start/end as YYYY-MM (up to 120 months), and
+**Discover Historical Reports**. Inspect Monthly completeness and Problems & files.
+Found means one readable filename/format match, not validated contents or finances.
+Missing, ambiguous, unavailable and unscanned months stay visible. Technical details
+show captured versions/hashes. **Export Discovery Report** saves a new private local
+JSON outside raw and synced folders; keep paths and file identities private.
+
+To clean one complete month, use Process Reports → select that month → Discover
+month → confirm → Preview Processing → review → Process Reports. Existing content
+validation and explicit correction review still apply. Historical batch preview,
+multi-month processing and snapshot buttons are a later milestone. Existing explicit
+candidate packets/snapshot tools remain; no file is automatically approved or sent
+to Power BI. Graph sign-in, business approval and publication remain disabled.
+
+If a folder label disagrees with its number/year, or several exports match, resolve
+it with the data owner; the app will not choose or reorganize sources. Legacy XLS
+needs a genuine supported XLSX export. For unavailable/cloud-only files, use the
+approved OneDrive/IT download procedure, wait for completion, then discover again.
+Local readability never proves cloud synchronization. Stop ends after the current
+read; later months remain Not scanned. See historical_backfill.md in the distribution
+for supported names, synthetic practice and troubleshooting.

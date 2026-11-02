@@ -1,5 +1,15 @@
 # Equipment Data Manager
 
+## Historical discovery preview
+
+The feature/historical-folder-discovery branch adds the department's
+01_Raw_Data/year/YYYY-MM (month-label) layout and a read-only Historical Data screen,
+alongside the existing standard layout. Configure the layout explicitly in Settings.
+[Scope, VS Code/Windows walkthrough and dependent backfill PR plan](docs/historical_backfill.md).
+Historical batch preview/processing and snapshot controls are not included in this
+first PR. Cleaning, financial schema v2, local candidate history and approval gates
+remain unchanged; no live Graph or publishing operation is enabled.
+
 ## Microsoft 365 read-only test-pilot components
 
 Owner merged approval UX PR #16 into main 6b7e861. New work is on

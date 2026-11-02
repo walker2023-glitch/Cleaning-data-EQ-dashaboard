@@ -1,5 +1,27 @@
 # M2 local desktop architecture
 
+## Historical inventory extension (PR 1)
+
+historical.py is a read-only application service, using LocalFolderStorage's new
+bounded direct directory/file inventory plus the existing stable byte reader. It
+does not depend on Tk, a cleaner, SQLite or Graph activation. Models retain source
+identities/hashes and explicit per-month/report issues, including unscanned months.
+
+ui/historical_page.py owns the employee inventory presentation and runs discovery/
+export on the existing serial processing worker. It has no batch process/snapshot
+button. Navigation retains results; range/folder/layout changes invalidate them.
+Settings v1/v2 accept the new optional validated folder_layout with standard as the
+absent-field default. New writes are additive v2. Reporting-month restoration and
+review-authority controls are unchanged. See historical_backfill.md for rollback
+compatibility with older strict readers.
+
+The existing single-month SharePoint-layout route captures SourceFile's optional
+expected_version/expected_sha256; LocalFileSource delegates those constraints to
+the existing reader. Manual/standard callers retain their defaults. No coordinator,
+cleaning adapter, financial v2, manifest or review schema changes are introduced.
+The standard scanner retains its earlier behavior; the historical inventory uses
+stricter ambiguity/extension checks. A folder match never establishes content month.
+
 ## Microsoft 365 read-only components
 
 The existing FileSource/ProcessingCoordinator seam now has a verified Graph source

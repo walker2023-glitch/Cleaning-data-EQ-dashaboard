@@ -1,5 +1,15 @@
 # Settings and first-run setup
 
+## Raw folder layout and historical inventory
+
+Save an explicit **Raw folder layout** with your folder choices. Standard means
+raw/YYYY-MM/report-type; SharePoint means raw/YYYY/YYYY-MM (English month label)
+with all three reports directly in that month folder. Select 01_Raw_Data as the
+latter root. No layout is auto-detected or silently switched. Existing settings
+and workspace imports default to Standard; month and help choices are preserved.
+Historical range selection is session-only. See historical_backfill.md for
+supported labels, filenames, older-build settings compatibility and walkthrough.
+
 ## Reporting-month preference (settings v2)
 
 After setup has been saved, valid month/year changes are remembered in the same

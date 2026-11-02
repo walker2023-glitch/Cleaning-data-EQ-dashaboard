@@ -1,5 +1,16 @@
 # Monthly local workflow
 
+## Flexible discovery follow-up
+
+Settings now offers an explicit persisted SharePoint year/month layout alongside
+this original Standard layout. In the SharePoint mode, Discover month uses strict
+filename/folder/availability checks and binds subsequent preview reads to the
+captured source identity/hash. Resolve ambiguity or malformed labels first.
+The Historical Data screen inventories a range read only; batch preview/process
+and snapshot controls are not implemented in that screen. Existing monthly
+confirmation, correction, candidate packet and explicit snapshot tools remain.
+See historical_backfill.md. Standard layout behavior described below is retained.
+
 This workflow produces **review candidates**, not approved production data. Power
 BI CSV candidate is the desktop's recommended/default format; Legacy candidate
 remains available. CLI and DesktopWorkflow API defaults stay legacy for backwards

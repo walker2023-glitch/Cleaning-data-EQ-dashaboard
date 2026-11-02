@@ -1,5 +1,16 @@
 # Milestone status
 
+## Historical backfill — first dependent PR (2026-11-02)
+
+Implemented: flexible local/synced folder discovery and read-only historical
+inventory, persistent layout, desktop completeness/problematics/export, and
+single-month SharePoint-layout preview/process handoff with captured source guards.
+No source modification, live sign-in, approval, publication or calculation change.
+Batch preview/processing and historical snapshot/reconciliation UX remain planned
+as dependent PRs. Existing explicit packet/snapshot/reconciliation tools remain.
+See historical_backfill.md; do not interpret a complete inventory as schema or
+financial validation, or this PR as the full historical-backfill definition of done.
+
 ## Microsoft 365 read-only test-pilot foundation
 
 Based on owner-merged main 6b7e861 / PR #16. Official MSAL/bootstrap, protected cache

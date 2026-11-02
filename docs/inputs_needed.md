@@ -1,5 +1,20 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## Historical backfill follow-up inputs
+
+The discovery PR supports the exact documented year/YYYY-MM (English label)
+structure and anchored filenames, plus the existing standard layout. Supply
+sanitized examples of any other historical folder labels, filenames or schemas
+before extending the matcher/cleaners. Do not upload private reports to GitHub.
+The user must initiate any actual historical test on the authorized Windows PC.
+
+Before dependent batch/snapshot work: agree missing versus zero-activity/month
+completeness policy, explicit partial-range inclusion policy, who resolves multiple
+current exports, retention and correction review procedure. Provide independent
+historical financial/count baselines and existing model/DAX/relationship/key
+inventories for comparison. Reconciliation arithmetic is not business approval.
+IT auth/role/production publishing decisions remain separate and unconfigured.
+
 ## Microsoft 365 pilot blockers — no secrets in chat
 
 Needed privately through IT: written test authorization/reference and tester/device;

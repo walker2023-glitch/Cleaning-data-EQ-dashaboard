@@ -1,5 +1,14 @@
 # Windows prototype packaging and distribution
 
+## Historical discovery package checks
+
+The existing PyInstaller configuration includes the imported historical service
+and page. build.ps1 also distributes historical_backfill.md. The actual executable
+smoke now exercises both layouts, private inventory export and restart restoration
+through phase 30; the branch push schedules the Windows build even without a PR.
+Run the complete build/smoke procedure below on Windows. Linux wheel/source smoke
+success is not evidence that a Windows executable has been built or accepted.
+
 ## Microsoft 365 dependency check
 
 The all-extras Windows build now includes the optional official MSAL/requests

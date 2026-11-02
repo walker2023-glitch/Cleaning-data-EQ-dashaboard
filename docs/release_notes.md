@@ -1,5 +1,18 @@
 # Power BI CSV candidate exports — schema v1
 
+## Flexible historical discovery — first scoped PR
+
+Based on merged main bd21499 / PR #17. Adds explicit persistent layouts, strict
+shared-month filename routing, read-only historical completeness inventory and
+private JSON export, employee explanations, and source-bound single-month handoff.
+No source files move; cleaning/financial v2/approval semantics remain unchanged.
+Historical batch preview/process and snapshot controls are deferred to dependent
+PRs. Existing manual four-table candidate snapshot tooling remains available.
+642 regression tests pass on Linux with no skips, failures or errors; wheel/sdist
+and installed-wheel CLI/desktop/restart checks pass. Actual Windows executable
+and hosted matrix outcomes remain unverified (GitHub API HTTP 403).
+See historical_backfill.md and testing.md for scope, validation and Windows gates.
+
 ## Microsoft 365 read-only foundation (not live verified)
 
 Adds an optional pinned official MSAL/requests integration, tenant-bound authorized-
