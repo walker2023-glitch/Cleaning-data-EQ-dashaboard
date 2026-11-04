@@ -45,10 +45,11 @@ jobs:
       - run: uv run --isolated --no-project --with './dist/equipment_data_manager-0.2.0-py3-none-any.whl[microsoft]' python -I -m equipment_data_manager.m365_components --output data/ci-wheel-m365-components.json
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I examples/create_historical_inventory.py --output data/ci-historical-preview
       - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager.historical --root data/ci-historical-preview/sharepoint --layout sharepoint_year_month --start 2025-12 --end 2026-03 --output data/ci-historical-inventory.json
+      - run: uv run --isolated --no-project --with ./dist/equipment_data_manager-0.2.0-py3-none-any.whl python -I -m equipment_data_manager process tests/fixtures/synthetic/legacy_tma/may_four_columns.xls --report-type tma_work_orders --period 2026-05 --output-dir data/ci-wheel-legacy-tma --output-format powerbi
       # Foundation pushes must build even when API access prevents PR creation.
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery' || github.ref == 'refs/heads/feature/legacy-tma-compatibility')
         run: ./packaging/build.ps1
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery' || github.ref == 'refs/heads/feature/legacy-tma-compatibility')
         shell: pwsh
         run: |
           $componentPath = Join-Path $PWD "data/packaged-m365/components.json"
@@ -71,7 +72,7 @@ jobs:
             throw "Desktop smoke failed"
           }
           if ($report.status -ne "passed") { throw "Desktop smoke did not pass" }
-      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery')
+      - if: runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery' || github.ref == 'refs/heads/feature/legacy-tma-compatibility')
         uses: actions/upload-artifact@v4
         with:
           name: EquipmentDataManager-v0.2.0-Windows-prototype
@@ -81,7 +82,7 @@ jobs:
             data/packaged-m365/components.json
             data/packaged-smoke/desktop-smoke.json
 
-      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery')
+      - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery' || github.ref == 'refs/heads/feature/legacy-tma-compatibility')
         uses: actions/upload-artifact@v4
         with:
           name: desktop-smoke-diagnostics

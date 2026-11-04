@@ -203,3 +203,28 @@ def test_previous_month_filename_cannot_override_title_or_request_dates(tmp_path
 def test_bundled_legacy_sample_is_only_the_synthetic_fixture():
     bundled=Path(__file__).resolve().parents[1]/'src/equipment_data_manager/resources/samples/tma_legacy_sample.xls'
     assert bundled.read_bytes()==raw()
+
+
+def test_xls_changes_after_preview_cannot_write_or_replace_candidates(tmp_path):
+    workspace=Workspace(tmp_path/'raw',tmp_path/'candidates',tmp_path/'approved')
+    folder=workspace.raw_folder/'2026/2026-05 (May)';folder.mkdir(parents=True)
+    source=folder/NAME;source.write_bytes(raw())
+    workflow=DesktopWorkflow(workspace.candidate_folder,output_format='powerbi')
+    selection=discover(workspace,'2026-05',folder_layout='sharepoint_year_month')
+    preview=workflow.preview_month(selection,lambda *a:None,Event())
+    source.write_bytes(raw('may_five_columns.xls'))
+    failed=workflow.process(preview,{},lambda *a:None,Event())[0].result
+    assert failed.status=='failure' and failed.code=='storage_source_changed'
+    assert not workspace.candidate_folder.exists()
+    selection=discover(workspace,'2026-05',folder_layout='sharepoint_year_month')
+    preview=workflow.preview_month(selection,lambda *a:None,Event())
+    first=workflow.process(preview,{},lambda *a:None,Event())[0].result.artifact
+    again=workflow.preview_month(selection,lambda *a:None,Event())
+    assert again[0].result.status=='skipped'
+    source.write_bytes(raw())
+    failed=workflow.process(again,{},lambda *a:None,Event())[0].result
+    assert failed.status=='failure' and failed.code=='storage_source_changed'
+    history=workflow.coordinator.store.history()
+    assert len(history)==1 and history[0].artifact.revision_id==first.revision_id
+    assert first.output_hash==sha256(first.output_path.read_bytes()).hexdigest()
+    assert not workspace.approved_folder.exists()

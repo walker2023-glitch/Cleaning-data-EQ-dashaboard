@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -284,6 +284,39 @@ def run_smoke(directory: Path | None) -> int:
                 assert report['approval'] == 'not_granted' and report['sync_verified'] is False
                 assert list((workspace / 'reserved-approved').iterdir()) == []
                 assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
+                # Exercise genuine bundled synthetic BIFF8 through the real picker route.
+                from importlib.resources import files
+                legacy = files('equipment_data_manager').joinpath('resources/samples/tma_legacy_sample.xls').read_bytes()
+                folder = workspace / 'sharepoint-raw/2026/2026-05 (May)'
+                folder.mkdir()
+                state['legacy_path'] = folder / 'CU_Repair_WO_History_-_Previous_Month_(HI-042b)1234567890.xls'
+                state['legacy_path'].write_bytes(legacy)
+                state['legacy_bytes'] = legacy
+                app.show_page('Process Reports')
+                app.month.set('May')
+                app.scan_button.invoke()
+            elif phase == 31:
+                assert len(app.sources) == 1 and app.sources[0].name.endswith('.xls')
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 32:
+                result = app.previews[0].result
+                assert result.status == Status.SUCCESS and result.output_rows == 2
+                assert 'tma_assigned_to_source_column_missing_retained:2' in result.warnings
+                app.process_button.invoke()
+            elif phase == 33:
+                from hashlib import sha256
+                result = app.results[0].result
+                assert result.status == Status.SUCCESS and result.output_rows == 2
+                assert result.artifact.source_hash == sha256(state['legacy_bytes']).hexdigest()
+                with result.output_location.open(newline='', encoding='utf-8') as stream:
+                    rows = list(csv.DictReader(stream))
+                assert all(row['AssignedTo'] == '' for row in rows)
+                assert rows[0]['WorkOrderId'] == '000123'
+                assert state['legacy_path'].read_bytes() == state['legacy_bytes']
+                assert list((workspace / 'reserved-approved').iterdir()) == []
+                assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
+                app.month.set('January')
                 app.show_page('Process Reports')
                 finish(True)
                 return

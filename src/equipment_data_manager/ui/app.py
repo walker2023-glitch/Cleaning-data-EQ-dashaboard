@@ -429,7 +429,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         is_tma = self.report.get() == ReportType.TMA_WORK_ORDERS.value
         paths = filedialog.askopenfilenames(
             parent=self, title="Select local raw reports",
-            filetypes=[("TMA XLSX reports", "*.xlsx"), ("Legacy XLS (unsupported)", "*.xls")] if is_tma else [("CSV reports", "*.csv")],
+            filetypes=[("TMA XLSX reports", "*.xlsx"), ("Legacy TMA XLS reports", "*.xls")] if is_tma else [("CSV reports", "*.csv")],
         )
         if paths:
             self.set_files(paths)

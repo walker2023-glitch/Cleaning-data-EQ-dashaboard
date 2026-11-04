@@ -91,12 +91,12 @@ entry('service_orders', 'CompuClean Service Orders Lists', 'Provides scheduled a
     'Supported CompuClean service CSV exports and their existing date/exclusion rules.',
     'Preview dates, statuses, exclusions and missing-price warnings.', 'Maintenance classification is a future design, not an implemented feature.')
 entry('tma_work_orders', 'TMA Work Orders', 'Provides supported TMA XLSX work orders supplied by Tim.',
-    'TMA Work Orders are currently supplied by Tim and may describe Facilities activities not captured in CompuClean equipment repair history. Only the supported XLSX title/header/footer layout is enabled.',
+    'TMA Work Orders are currently supplied by Tim and may describe Facilities activities not captured in CompuClean equipment repair history. Supported XLSX and genuine legacy BIFF8 XLS require the exact title/header/footer layout. Only Assigned To may be absent, with a missing-source warning. The real May report remains unverified.',
     'Work-order IDs, request dates, requestors, requests and assignments.',
-    'Choose the original supported XLSX export and its reporting month.', 'Legacy XLS is unsupported until verified. Do not rename an XLS extension to pretend it is XLSX.')
+    'Choose the original supported XLSX export and its reporting month.', 'Legacy XLS must be a genuine workbook with the supported four/five-column structure. Do not rename an extension to convert a file.')
 entry('select_files', 'Select Local Raw Files', 'Selects original files for one report type.',
     'Use the file picker for the selected report type, or Discover Month to find all three types through your saved folder settings.',
-    'Selected raw CSVs, or TMA XLSX files.', 'Confirm the report type/month and Preview Processing.')
+    'Selected raw CSVs, or supported TMA XLSX/legacy XLS files.', 'Confirm the report type/month and Preview Processing.')
 entry('sample', 'Load Synthetic Sample', 'Loads an invented example for practice.',
     'Bundled samples contain invented data. CompuClean samples use September 2026; TMA uses January 2026.',
     'Only synthetic samples and any candidates you choose to process.', 'Confirm the sample month and try preview before processing.')

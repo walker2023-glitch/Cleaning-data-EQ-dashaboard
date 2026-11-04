@@ -285,13 +285,13 @@ def test_tma_legacy_xls_filter_returns_useful_engine_error(app, tmp_path, monkey
     monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilenames', choose)
     app.report_buttons[2].invoke()
     app.select_button.invoke()
-    assert observed['filetypes'] == [('TMA XLSX reports', '*.xlsx'), ('Legacy XLS (unsupported)', '*.xls')]
+    assert observed['filetypes'] == [('TMA XLSX reports', '*.xlsx'), ('Legacy TMA XLS reports', '*.xls')]
     app.month_selector.set('January')
     app.year.set('2026')
     app.month_confirmed.set(True)
     app.preview_button.invoke()
     pump(app, lambda: not app.worker.busy)
-    assert app.previews[0].result.code == 'legacy_xls_awaiting_sample'
+    assert app.previews[0].result.code == 'invalid_xls_file'
     assert 'Do not rename' in app.detail.get('1.0', 'end')
     assert 'TmaXlsxCleaner' in app.runtime_info and 'January diagnostics v1' in app.runtime_info
     assert source.read_bytes().startswith(b'\xd0\xcf\x11\xe0')
@@ -1103,3 +1103,33 @@ def test_layout_restart_persistence_and_historical_invalid_range(tmp_path):
         assert not (Path(folders['candidate_folder']) / 'powerbi_candidates').exists()
     finally:
         window._close()
+
+
+def test_legacy_tma_discovery_gui_preview_missing_assignment_and_safe_process(app,tmp_path):
+    from equipment_data_manager.monthly import Workspace
+    from equipment_data_manager.ui.workflow import DesktopWorkflow
+    fixture=Path(__file__).parent/'fixtures/synthetic/legacy_tma/may_four_columns.xls'
+    root=tmp_path/'raw';folder=root/'2026/2026-05 (May)';folder.mkdir(parents=True)
+    name='CU_Repair_WO_History_-_Previous_Month_(HI-042b)1234567890.xls'
+    source=folder/name;original=fixture.read_bytes();source.write_bytes(original)
+    app.workspace=Workspace(root,tmp_path/'local-candidates',tmp_path/'reserved-approved')
+    app.workflow=DesktopWorkflow(app.workspace.candidate_folder,output_format='powerbi')
+    app.folder_layout='sharepoint_year_month'
+    app.month.set('May');app.year.set('2026')
+    app.scan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert len(app.sources)==1 and app.sources[0].name==name
+    app.month_confirmed.set(True);app.preview_button.invoke()
+    pump(app,lambda:not app.worker.busy)
+    assert app.previews[0].result.status=='success' and app.previews[0].result.output_rows==2
+    assert not app.workflow.output_root.exists()
+    app.table.selection_set('0');app.table.event_generate('<<TreeviewSelect>>');app.update()
+    detail=app.detail.get('1.0','end')
+    assert 'no Assigned To column' in detail and 'Retained work-order records with missing source assignments: 2' in detail
+    app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.results[0].result.status=='success' and app.results[0].result.output_rows==2
+    import csv
+    with app.results[0].result.output_location.open(newline='',encoding='utf-8') as stream:
+        rows=list(csv.DictReader(stream))
+    assert rows[0]['WorkOrderId']=='000123' and all(r['AssignedTo']=='' for r in rows)
+    assert source.read_bytes()==original and not app.workspace.approved_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
