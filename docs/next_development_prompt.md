@@ -1,5 +1,15 @@
 # Next checkpoint after Microsoft 365 read-only components
 
+## Legacy TMA dependency before historical backfill
+
+Review feature/legacy-tma-compatibility targeting historical-folder-discovery
+c425841; main was bd21499. Do not duplicate either branch or merge automatically.
+The XLS/four-column candidate contract is synthetic-tested, not proof of the actual
+May workbook. Follow legacy_tma_compatibility.md for owner-local acceptance and
+native Windows/CI gates. No unknown title/header/footer or financial meaning may
+be guessed to make a real file pass. Then resume the dependent historical
+batch-preview/controlled-processing and snapshot plan below.
+
 ## Historical backfill handoff — supersedes older next-step priorities
 
 First review/merge (owner action only) feature/historical-folder-discovery targeting

@@ -1,5 +1,15 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## May 2026 legacy TMA acceptance still needed
+
+No actual May workbook was supplied to this task. The reported four-column shape
+is only an owner observation, not verified equivalence. Check the actual title,
+headers, footer count, native date cells, ID formats and source/retained counts
+locally using legacy_tma_compatibility.md. Unknown layouts need a sanitized
+structural example before adapter changes; never commit private reports. Agree
+missing-assignment treatment in the backup model (empty CSV field versus true
+nullable-text view). Financial/approval/IT production gates remain separate.
+
 ## Historical backfill follow-up inputs
 
 The discovery PR supports the exact documented year/YYYY-MM (English label)

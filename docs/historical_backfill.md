@@ -1,5 +1,16 @@
 # Historical backfill — PR 1: flexible discovery and read-only inventory
 
+## Legacy TMA follow-up (2026-11-04)
+
+feature/legacy-tma-compatibility depends on this discovery branch at c425841;
+main bd21499 still does not contain it at inspection. Its separate scoped fix
+adds strict legacy filename discovery and genuine BIFF8 XLS candidate reading,
+with optional Assigned To, existing period validation, source guards and unchanged
+output schemas. See legacy_tma_compatibility.md for exact supported shape, null
+semantics, dependency/cleaner-version implications and private May acceptance.
+The actual May workbook was not attached or verified. Older PR-1 scope and test
+counts below are historical; batch backfill and snapshot controls remain deferred.
+
 This is the first scoped milestone from the historical-backfill request. It starts
 from owner-merged main **bd21499** (PR #17, Microsoft 365 foundation). Approval UX
 PR #16 and all previous foundations are already ancestors; no prerequisite changes
@@ -44,8 +55,8 @@ Settings → **Raw folder layout** offers:
 1. **Standard month/report-type layout**: root / `YYYY-MM` / `repairs`,
    `service_orders`, `tma_work_orders`. Historical inventory accepts an arbitrary
    basename inside its type folder, preserving previous routing flexibility;
-   CSV is required for CompuClean, XLSX for TMA. Existing standard **Discover month**
-   behavior stays compatible, including surfacing XLS to its existing rejection.
+   CSV is required for CompuClean; supported XLSX/BIFF8 XLS are routed to TMA
+   preview. Existing Standard Discover month routing remains compatible.
 2. **SharePoint year/month layout**: root / `YYYY` / `YYYY-MM (Label)` / three
    directly stored reports. Choose `01_Raw_Data` itself as the raw root.
    Numeric year/month and English label must agree. Known case-insensitive labels:
@@ -59,7 +70,8 @@ Shared-folder matches are anchored, case-insensitive stems:
 
 - `CompuClean Repair Report.csv`
 - `CompuClean Service Orders List.csv`
-- `Work Orders January 2026.xlsx` (any documented month label, matching folder period)
+- `Work Orders January 2026.xlsx` (or genuine `.xls`, documented month label matching folder period)
+- `CU_Repair_WO_History_-_Previous_Month_(HI-042b)<1–30 digits>.xls` (period must be verified from workbook contents)
 
 Spaces, underscores and hyphens between filename words are interchangeable.
 Copy/revision suffixes, arbitrary `.csv`/`.xlsx` names and unknown month labels
@@ -77,8 +89,9 @@ recursed. Do not configure a broad dashboard/library root instead of the raw roo
 
 Temporary/hidden/Office-lock and `.tmp`, `.part`, `.partial`, `.crdownload`,
 `.download` files are not ingested and are visible as issues. Unsupported matched
-formats block the report. XLS is explicitly unsupported: obtain a genuine XLSX
-export; changing the extension does not convert it. Links/junctions encountered
+formats block the report. Supported BIFF8 XLS now reaches the same strict TMA
+preview checks; malformed, encrypted or renamed files remain invalid. Changing
+an extension does not convert a workbook. Links/junctions encountered
 in direct directory inventories fail closed. Malformed year/month entries are
 reported for every inspected month in that year, so mislabeled history is visible;
 this conservative behavior may require resolving an unrelated bad folder label.
@@ -129,7 +142,7 @@ history. The generator refuses an existing destination; use a fresh name to repe
 4. In the synthetic tree only, copy a repair under the alternate recognized name
    `CompuClean_Repair_Report.csv`. Discover again: Repairs must be Ambiguous.
    Remove only the disposable synthetic duplicate to restore this test fixture.
-   Try a mismatched folder label, legacy XLS, missing report or partial download
+   Try a mismatched folder label, invalid/renamed XLS, missing report or partial download
    in a disposable copy. Inspect reasons; no source should be changed by the app.
 5. Return to Process Reports, select January 2026, Discover month, confirm the
    month and Preview. Supported bundled sample layouts should preview; no cleaned

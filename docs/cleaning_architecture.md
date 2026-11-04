@@ -1,5 +1,20 @@
 # Offline cleaning architecture (M1)
 
+## Legacy TMA workbook extension
+
+TmaXlsxCleaner keeps its public name but now reads strict XLSX and genuine BIFF8
+XLS candidates via pinned core xlrd. The original requests transform/writer is
+unchanged; it already supplies missing Assigned To. Only this header becomes
+optional, with source/retained affected counts and empty CSV fields. Extra sheets,
+unknown headers/title/footer and retained-period mismatch still reject. A numeric
+XLS ID's unambiguous zero-only display format is preserved; ambiguous formats fail.
+
+Coordinator extension routing now admits XLS, leaving candidate transactions,
+hash/correction/revision semantics unchanged. Cleaner identity is explicitly
+bumped, so existing candidates may require correction review instead of silent
+skip or overwrite. Financial v2 and TMA CSV schemas are unchanged. See
+legacy_tma_compatibility.md for the unverified real May gate and exact guarantees.
+
 Multi-month compatibility adds strict repair metadata and provisional TMA XLSX
 candidates; see `format_compatibility.md` for current gates and evidence limits.
 M2 adds a local desktop caller; see `desktop_architecture.md`. M1's calculations,

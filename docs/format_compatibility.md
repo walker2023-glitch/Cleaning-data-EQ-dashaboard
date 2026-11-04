@@ -11,7 +11,7 @@ February service CSV was checked in the preceding fix. No private file is commit
 | Repair source-derived subset (pre-existing) | Header-first UTF-8/BOM `.csv`; requires seven lookup headers | PersonnelId5, PersonnelId1, CompletedDate1, PersonnelId4, PersonnelId3, Textbox38, Details; additional columns warned | Same repair rules; old inference retained outside exact 14-column layout | Same repair schema/preamble | Missing lookup fields; summary reconciliation is only available for the exact observed layout |
 | CompuClean service, no-price summary export | UTF-8/BOM `.csv`; exact ten-header set below, order may vary | All ten headers; VendorName may be blank; ID text; no Cost required or invented | ScheduledDate must be nonblank; at least one parseable scheduled/completed date; either date must belong to confirmed month; original description/status exclusions and fallback | Original eight columns; blank Estimated Price; summary/count metrics and warnings | Extra/missing headers for this new layout, conflicting/repeated count metadata, separate summary-only rows |
 | Service, pre-existing priced flat export | UTF-8/BOM `.csv`; EquipmentId1, EquipmentName1, ScheduledDate, CompletedDate, Description, Cost, Textbox21 and exactly one Name/Location | Cost header required, values may be blank; extra source fields warned; conflicting EquipmentId/EquipmentName/StatusRaw aliases rejected | Same original service rules; pandas inference unchanged (bare numeric IDs can lose zeros here) | Same eight columns | Context-carrying legacy Equipment Details layout; Excel; missing Cost outside exact no-price layout |
-| TMA, observed title/header/body/footer | `.xlsx`, exactly one sheet; exact five headers on second row; first row title `CU Repair WO History — <Month YYYY>`; last row `Total: N records` alone | All five headers required; Assigned To may be blank; textual IDs preserved; numeric Excel IDs cannot recover zeros already absent from stored values | Original vectorized requests date parsing, invalid dates / blank IDs / IDs starting `total` excluded; retained dates must match confirmed month | Existing requests writer: title row, five columns, MM/DD/YYYY dates, quoted CSV; explicitly provisional | `.csv`, `.xls`, alternate titles/preamble positions, multiple sheets, footer mismatch, missing/extra/duplicate headers |
+| TMA, strict title/header/body/footer candidate | `.xlsx` or genuine BIFF8 `.xls`, exactly one sheet; exact four/five headers on second row; first row title `CU Repair WO History — <Month YYYY>`; last row `Total: N records` alone | First four headers required; Assigned To may be absent/blank with warnings/counts; text IDs preserved, XLS numeric zero-only display formats restored; missing zeros never guessed | Original vectorized requests date parsing, invalid dates / blank IDs / IDs starting `total` excluded; retained dates must match confirmed month | Existing requests writer: title row, five columns, MM/DD/YYYY dates, quoted CSV; explicitly provisional | `.csv`, mislabeled/encrypted/corrupt workbooks, alternate titles/preamble positions, multiple sheets, footer mismatch, other missing/extra/duplicate headers |
 
 Repair headers:
 
@@ -52,8 +52,11 @@ existing requests writer. The source footer is validated/excluded before cleanin
 so input_rows counts work orders, not title/header/footer rows. This source shape
 establishes compatibility with `requests_row_clean.py`; it does not prove the
 candidate CSV matches an approved Power BI loader or expected cleaned result.
-Legacy XLS needs a real sample and schema review. `xlrd` remains installed only
-through the discovery extra; XLS is never decoded as CSV or inferred from XLSX.
+The actual May XLS still needs owner schema/baseline acceptance. Pinned xlrd 2.0.2
+is now a core BIFF8 reader; the legacy extra name remains compatible. The only
+optional source header is Assigned To. The shared original transform/writer is
+unchanged; see legacy_tma_compatibility.md for security, ID and null details.
+XLS is never decoded as CSV or inferred by renaming XLSX.
 
 ## Reconciliation and the repair blocker
 

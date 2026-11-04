@@ -1,5 +1,14 @@
 # Equipment Data Manager
 
+## Legacy TMA compatibility preview
+
+feature/legacy-tma-compatibility targets the unmerged historical-folder-discovery
+branch (c425841); main was bd21499 at inspection. Adds strict legacy filename
+recognition, scoped BIFF8 XLS reading, missing-assignment warnings/counts and the
+unchanged five-column/header-first candidate outputs. No original is modified.
+[Compatibility and manual May/VS Code acceptance](docs/legacy_tma_compatibility.md).
+Actual May schema/accuracy is unverified; no workbook was supplied in this task.
+
 ## Historical discovery preview
 
 The feature/historical-folder-discovery branch adds the department's

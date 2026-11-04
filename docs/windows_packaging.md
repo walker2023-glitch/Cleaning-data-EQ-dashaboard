@@ -1,5 +1,16 @@
 # Windows prototype packaging and distribution
 
+## Legacy XLS package follow-up
+
+Core dependencies now include scoped xlrd 2.0.2. PyInstaller explicitly includes
+xlrd and resources/samples/tma_legacy_sample.xls (invented BIFF8 only). The real
+source/executable smoke now reaches phase 33 and checks legacy discovery/preview/
+process, missing assignments, IDs, source hash and fresh-process restart. This
+feature branch schedules the native Windows build even if PR creation is blocked.
+legacy_tma_compatibility.md and the optional backup-PBIX null view are distributed.
+Linux wheel checks are not evidence of a Windows executable; require native CI
+and authorized-PC acceptance before distribution. No real May file is bundled.
+
 ## Historical discovery package checks
 
 The existing PyInstaller configuration includes the imported historical service

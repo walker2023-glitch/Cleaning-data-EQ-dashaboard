@@ -1,5 +1,16 @@
 # Power BI CSV candidate exports — schema v1
 
+## Legacy TMA compatibility candidate
+
+Adds strict legacy filename recognition and BIFF8 XLS reading through pinned
+xlrd 2.0.2; only Assigned To may be absent, with blank CSV/null representation,
+source/retained affected counts and unchanged original cleaning rules. Actual May
+was not supplied and remains unverified. 684 Linux regression cases pass with
+no skips/failures/errors. Native Windows/hosted CI remains an external gate.
+Cleaner identity is bumped; old candidates remain and explicit correction may
+be required. TMA output schemas and repair financial v2 are unchanged. This PR
+depends on unmerged discovery c425841. See legacy_tma_compatibility.md.
+
 ## Flexible historical discovery — first scoped PR
 
 Based on merged main bd21499 / PR #17. Adds explicit persistent layouts, strict

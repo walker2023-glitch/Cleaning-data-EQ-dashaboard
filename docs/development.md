@@ -134,8 +134,9 @@ no global pandas installation is needed. CI bootstraps uv with the hosted Python
 3.12, then uses `uv python install 3.12.14` for the pinned project runtime;
 setup-python lacks that exact Windows build.
 
-The engine requires pinned pandas and openpyxl for the observed TMA XLSX.
-The optional `legacy` extra supplies xlrd for discovery; XLS remains blocked.
+The engine requires pinned pandas/openpyxl and scoped xlrd 2.0.2 for supported
+TMA XLSX/BIFF8 XLS candidates. The legacy extra remains command-compatible.
+Actual May schema equivalence is unverified; see legacy_tma_compatibility.md.
 The `desktop` extra pins CustomTkinter/Pillow and `packaging` pins PyInstaller.
 The lockfile pins dependencies and artifact hashes. Update `uv.lock` only with
 reviewed dependency changes and rerun all tests. Build tooling is pinned in

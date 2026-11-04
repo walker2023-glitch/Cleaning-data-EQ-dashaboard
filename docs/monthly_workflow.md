@@ -37,7 +37,7 @@ raw_folder/
   2026-01/
     repairs/             one current raw CSV
     service_orders/      one current raw CSV
-    tma_work_orders/     one current raw XLSX
+    tma_work_orders/     one current supported raw XLSX/BIFF8 XLS
   2026-02/...
 candidate_folder/        trusted LOCAL disk, single operator
   powerbi_candidates/   SQLite + immutable candidate versions
@@ -45,10 +45,11 @@ candidate_folder/        trusted LOCAL disk, single operator
 approved_folder/        reserved; no report outputs are written here
 ```
 
-Only direct CSV/XLSX files in the selected month/type folders are discovered.
+Only direct CSV/XLSX/XLS files in the selected month/type folders are discovered.
 Nested history, other months, temporary files and linked files are not ingested.
-TMA `.xls` files are included only to show the specific unsupported-format error;
-renaming XLS to XLSX does not convert it. Type/month folders are routing hints:
+TMA genuine BIFF8 `.xls` files now reach the strict workbook preview, with only
+Assigned To optional. Renaming extensions does not convert workbooks. Unknown,
+corrupt/encrypted or mismatched-period layouts still fail. See legacy_tma_compatibility.md. Type/month folders are routing hints:
 the real adapters still validate file contents and reporting periods. All three
 report types are required for a complete review packet in this prototype; an
 intentionally absent/zero-activity report needs a future approved completeness

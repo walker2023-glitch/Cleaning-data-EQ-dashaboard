@@ -1,5 +1,27 @@
 # Test instructions and evidence limits
 
+## Legacy TMA candidate compatibility — 2026-11-04
+
+Final full Linux regression: **684 passed, 0 failures, 0 errors, 0 skips**.
+All previous cases remain. Intentional XLS-disabled assertions were updated to
+require real invalid-workbook rejection/no writes after enabling the format;
+no unsafe inputs were made valid. Adds 41 synthetic backend cases and one real
+widget integration, covering strict filename families, BIFF8 four/five columns,
+missing/blank assignment, leading-zero/text/formatted IDs, native dates, invalid/
+FILEPASS/corrupt/ambiguous sources, period and required-column failures, duplicate
+XLS/XLSX, both layouts, source changes, original exclusions, immutable corrections,
+GUI and normalized output/provenance. Fixtures have no departmental records.
+
+The source/executable smoke now continues through phase **33**, including bundled
+synthetic legacy XLS discovery, preview/process, assignment counts, IDs, source
+hash and restart. xlrd/resource packaging and installed-wheel XLS processing are
+configured in Windows/Linux CI, including this branch's pushes. Native Windows
+and hosted outcomes remain unverified while GitHub API access returns HTTP 403.
+Wheel/sdist build, default installed-wheel XLS processing, and source/installed-wheel
+phase-33 desktop plus fresh-process restart checks passed. These are Linux results;
+actual May acceptance and Power Query evaluation remain owner-manual. See
+legacy_tma_compatibility.md and the final feature report for distribution outcomes.
+
 ## Historical discovery regression — 2026-11-02
 
 Run the full suite with the existing isolated-GUI runner; no tests are skipped,

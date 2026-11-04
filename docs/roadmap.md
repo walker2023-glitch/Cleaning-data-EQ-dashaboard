@@ -1,5 +1,22 @@
 # Departmental workflow roadmap and project review
 
+## Legacy TMA compatibility — 2026-11-04
+
+New branch feature/legacy-tma-compatibility depends on historical-folder-discovery
+c425841 (still not merged into main bd21499 at inspection). No prerequisite was
+replayed; PR targets that feature branch. GitHub open PR/check API remains blocked.
+
+Implemented: strict legacy basename family, xlrd BIFF8 stored-value reader, optional
+Assigned To through original cleaner, affected counts/warnings, source/period/
+identifier guards, unchanged legacy/normalized schema, GUI/packaging regressions.
+Actual May workbook/title/layout/counts and owner acceptance remain unverified.
+Financial schema v2, approval, production and Graph boundaries stay unchanged.
+
+Next: managed-Windows private May acceptance and native executable CI, then owner
+review of discovery and this dependent fix. Historical batch preview/controlled
+processing and candidate snapshot UX remain separate follow-up PRs; do not claim
+them completed here. See legacy_tma_compatibility.md.
+
 ## Historical backfill, PR 1 — 2026-11-02
 
 Main bd21499 now includes owner-merged Microsoft 365 PR #17 and approval UX #16.

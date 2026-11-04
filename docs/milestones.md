@@ -1,5 +1,14 @@
 # Milestone status
 
+## Legacy TMA compatibility candidate — 2026-11-04
+
+Dependent on unmerged historical-discovery c425841. Strict legacy names and BIFF8
+XLS now reach the same title/header/footer/period checks; only Assigned To may be
+absent, reusing the preserved cleaner with blank CSV fields and affected counts.
+684 local Linux regressions pass; actual May workbook and native Windows acceptance
+remain unverified. TMA output schemas and financial schema v2 are unchanged.
+See legacy_tma_compatibility.md. No approval, publishing, Graph or production action.
+
 ## Historical backfill — first dependent PR (2026-11-02)
 
 Implemented: flexible local/synced folder discovery and read-only historical
