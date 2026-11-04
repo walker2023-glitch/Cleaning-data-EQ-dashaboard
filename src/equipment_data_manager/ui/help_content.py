@@ -91,7 +91,7 @@ entry('service_orders', 'CompuClean Service Orders Lists', 'Provides scheduled a
     'Supported CompuClean service CSV exports and their existing date/exclusion rules.',
     'Preview dates, statuses, exclusions and missing-price warnings.', 'Maintenance classification is a future design, not an implemented feature.')
 entry('tma_work_orders', 'TMA Work Orders', 'Provides supported TMA XLSX work orders supplied by Tim.',
-    'TMA Work Orders are currently supplied by Tim and may describe Facilities activities not captured in CompuClean equipment repair history. Supported XLSX and genuine legacy BIFF8 XLS require the exact title/header/footer layout. Only Assigned To may be absent, with a missing-source warning. The real May report remains unverified.',
+    'TMA Work Orders are currently supplied by Tim and may describe Facilities activities not captured in CompuClean equipment repair history. Supported XLSX and genuine legacy BIFF8 XLS require the exact title/header/footer layout. Only Assigned To may be absent, with a missing-source warning. The owner-described timestamped HI-042b layout is also supported only as genuine BIFF8: numeric generation serial, exact sheet/title/separator/four headers and no footer. Its prior calendar month must agree with the selected month; actual May output still needs local acceptance.',
     'Work-order IDs, request dates, requestors, requests and assignments.',
     'Choose the original supported XLSX export and its reporting month.', 'Legacy XLS must be a genuine workbook with the supported four/five-column structure. Do not rename an extension to convert a file.')
 entry('select_files', 'Select Local Raw Files', 'Selects original files for one report type.',
