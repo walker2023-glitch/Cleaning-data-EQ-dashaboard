@@ -1,5 +1,20 @@
 # Departmental workflow roadmap and project review
 
+## Actual timestamped TMA shape — follow-up
+
+feature/tma-timestamped-layout starts at legacy-tma-compatibility 32d36b6, itself
+dependent on discovery c425841. Main remains bd21499 at inspection; open PR/check
+API is unavailable. The PR targets legacy-tma-compatibility, without replaying or
+merging either prerequisite. Owner structural evidence identifies a second BIFF8
+layout: generation serial + title + blank row + four headers + body, no footer.
+
+Implemented: exact sheet/structure/numeric serial gates using workbook datemode,
+prior-calendar-month agreement, retained-date checks, all body rows including last
+ID formatting, counts/warnings and unchanged original cleaner/output contracts.
+Actual May/June application acceptance, native Windows package checks and hosted
+CI results remain separate gates. Financial v2 and approval/publishing stay unchanged.
+See tma_timestamped_layout.md. Then resume the dependent historical batch plan.
+
 ## Legacy TMA compatibility — 2026-11-04
 
 New branch feature/legacy-tma-compatibility depends on historical-folder-discovery

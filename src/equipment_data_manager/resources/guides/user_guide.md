@@ -306,3 +306,23 @@ SharePoint originals. Any May real-data acceptance is owner-initiated, against t
 original workbook, in a separate private local candidate directory. The actual May
 file has not been verified by these synthetic tests. Old TMA candidates may require
 explicit correction review after the cleaner-version change; old revisions remain.
+
+
+## Timestamped Previous Month TMA export
+
+The owner-described HI-042b XLS layout is supported separately from the earlier
+footer format: one exact CU_Repair_WO_History_-_Previous sheet, numeric generation
+serial in row 1, exact report title row 2, blank row 3, four headings row 4, and
+records from row 5 through the final row with no footer. The calendar month before
+the numeric generation timestamp must match your selected month, and retained
+request dates must also match. Text timestamps and other layouts need review;
+no date or assignment is guessed and no original file is edited.
+
+For May's owner-inspected file, preview should show 85 physical rows, 81 source
+records and 81 parseable May dates, subject to the unchanged record exclusions.
+Missing Assigned To is warned and counted, with blank CSV fields. Review the
+actual IDs, date range, counts, warnings and source hash before processing into a
+separate private local test candidate folder. June requires a July generation
+timestamp and June request dates; do not assume May's count applies. Follow
+tma_timestamped_layout.md in the distribution for the full May/June checklist.
+Candidates remain unapproved; Graph, approval and publishing controls stay disabled.

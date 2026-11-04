@@ -1,5 +1,14 @@
 # Windows prototype packaging and distribution
 
+## Timestamped TMA package follow-up
+
+The bundled tma_timestamped_sample.xls is an invented three-record June report,
+read through the actual engine by source/executable smoke phases 34–36. It is
+included by the existing *.xls resource rule. Installed-wheel CI processes both
+synthetic May/June timestamped fixtures, and this branch's pushes schedule the
+native Windows build. Require actual Windows phase-36/restart outcomes and owner
+May/June acceptance; Linux results do not establish native executable readiness.
+
 ## Legacy XLS package follow-up
 
 Core dependencies now include scoped xlrd 2.0.2. PyInstaller explicitly includes

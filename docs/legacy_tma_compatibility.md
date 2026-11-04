@@ -1,5 +1,15 @@
 # Legacy TMA compatibility — candidate support, May still unverified
 
+## Timestamped-layout follow-up
+
+The owner has now locally verified May's different numeric-generation/title/blank/
+header/no-footer structure. The follow-up feature/tma-timestamped-layout adds a
+separate strict BIFF8 adapter for it, based on this branch at 32d36b6. See
+tma_timestamped_layout.md for the numeric-only timestamp contract and May/June
+acceptance. The classic footer-based contract described below remains supported.
+The private May workbook has not been run in this environment; owner application
+acceptance remains separate from the newly supplied structural evidence.
+
 ## Baseline and exact cause
 
 This focused branch, feature/legacy-tma-compatibility, depends on
@@ -16,11 +26,12 @@ coordinator rejected XLS before the XLSX-only, five-column adapter could run.
 The preserved requests cleaner already supplies a missing Assigned To column as
 blank. That behavior is now reused; no second cleaning transform is introduced.
 
-**The actual May workbook is not attached/inspected in this task.** The owner
-reports four columns. Tests establish candidate support for a strict synthetic
-four-column BIFF8 workbook, not equivalence to the actual May export. Its exact
-title, header/footer, sheet structure, IDs, dates and totals must still be checked.
-Unknown structure fails closed; no mappings, missing dates or period are invented.
+**The private May workbook has not been read in this environment.** The owner has
+now supplied its verified timestamped/no-footer structure and numeric generation
+cell, which differs from the classic contract below. The separate follow-up
+adapter and May/June acceptance are documented in tma_timestamped_layout.md.
+Actual cleaned-output comparison remains an owner-local gate; unknown structures
+still fail closed without invented mappings, dates or assignments.
 
 ## Discovery and processing contract
 

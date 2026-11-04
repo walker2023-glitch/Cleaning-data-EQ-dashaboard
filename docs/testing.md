@@ -1,5 +1,22 @@
 # Test instructions and evidence limits
 
+## Timestamped TMA layout follow-up
+
+Synthetic tests cover the owner-described BIFF8 structure, native numeric serial
+conversion (1900/1904 date systems), text/missing/invalid/ambiguous serial rejection,
+following-month and year rollover, strict sheet/title/separator/four headers,
+no-footer body, last-row identifier formatting, preserved exclusions and repeated
+records, outside-month rejection, existing XLSX footer behavior, source/provenance
+and correction integrity. A real widget test checks May's synthetic 85/81 counts.
+Source/executable smoke now reaches phase 36 with a separate June raw file; neither
+the earlier classic sample nor original inputs are overwritten. Final Linux regression: **731 passed, 0 failures, 0 errors, 0 skips**.
+All 684 previous cases remain; 46 backend cases and one real-widget case were added.
+Wheel/sdist build, installed-wheel May/June processing and source/installed-wheel
+phase-36 desktop/restart checks passed. Native Windows/hosted outcomes remain
+unverified until executed/read. The ignored execution log is
+data/tma-timestamped-tests.log; synthetic smoke reports are under
+data/tma-timestamped-source-smoke and data/tma-timestamped-wheel-smoke. See tma_timestamped_layout.md for manual May and June acceptance.
+
 ## Legacy TMA candidate compatibility — 2026-11-04
 
 Final full Linux regression: **684 passed, 0 failures, 0 errors, 0 skips**.

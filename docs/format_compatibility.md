@@ -1,5 +1,15 @@
 # Report-format compatibility
 
+## Additional timestamped HI-042b BIFF8 contract
+
+Alongside the classic layouts in the table below, the owner-described
+CU_Repair_WO_History_-_Previous sheet now accepts a numeric generation serial,
+exact Previous Month (HI-042b) title, blank separator, four row-4 headers and
+rows 5 onward without a footer. The prior calendar month from the Excel serial
+must agree with the selected month; retained request dates must also agree.
+Text timestamps are unsupported. See tma_timestamped_layout.md for exact gates
+and manual May/June acceptance; no private workbook was inspected here.
+
 This matrix describes candidate processing, not approved production contracts.
 All supplied attachments were **raw inputs**, not trusted cleaned outputs. The
 January repair/service CSVs and January TMA XLSX were inspected locally; the earlier
