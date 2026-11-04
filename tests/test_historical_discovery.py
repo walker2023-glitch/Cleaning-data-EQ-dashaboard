@@ -124,14 +124,25 @@ def test_duplicate_supported_names_never_selected_even_identical_content(tmp_pat
     assert any(i.code == 'historical_duplicate_reports' for i in report.issues)
 
 
-@pytest.mark.parametrize('name,code', [('Work Orders Jan 2026.xls','historical_legacy_xls_unsupported'),
+@pytest.mark.parametrize('name,code', [('Work Orders Jan 2026.xls','invalid_xls_file'),
     ('Work Orders Jan 2026.csv','historical_unsupported_extension'),
     ('Work Orders Feb 2026.xlsx','historical_filename_month_mismatch')])
 def test_unsupported_or_wrong_month_reports_blocked(tmp_path, name, code):
     folder = populate(tmp_path)
     (folder / 'Work Orders Jan 2026.xlsx').rename(folder / name)
     report = scan(tmp_path).months[0].reports[2]
-    assert report.status == 'blocked' and any(i.code == code for i in report.issues)
+    if code == 'invalid_xls_file':
+        # Extension recognition is now supported; the deliberately invalid bytes
+        # still must fail in the real preview rather than being treated as XLSX.
+        from equipment_data_manager.processing.coordinator import ProcessingCoordinator
+        from equipment_data_manager.processing.models import ProcessingRequest
+        assert report.status == 'found' and report.sources[0].sha256
+        result = ProcessingCoordinator(tmp_path/'local-output').preview(ProcessingRequest(
+            'tma_work_orders','2026-01',input_path=folder/name))
+        assert result.status == 'failure' and result.code == code
+        assert not (tmp_path/'local-output').exists()
+    else:
+        assert report.status == 'blocked' and any(i.code == code for i in report.issues)
 
 
 def test_temporary_unknown_and_history_sources_not_ingested(tmp_path):

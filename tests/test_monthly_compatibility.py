@@ -120,7 +120,7 @@ def test_tma_rejects_unconfirmed_layouts_and_periods(change, code):
 
 @pytest.mark.parametrize('raw,extension,code', [
     (b'', 'xlsx', 'empty_input'), (b'not an Excel file', 'xlsx', 'invalid_xlsx_file'),
-    (b'Work Order #,Request Date', 'xls', 'legacy_xls_awaiting_sample'),
+    (b'Work Order #,Request Date', 'xls', 'invalid_xls_file'),
     (b'Work Order #,Request Date', 'csv', 'unsupported_file_format'),
 ])
 def test_tma_extensions_are_not_guessed_and_failures_do_not_write(tmp_path, raw, extension, code):

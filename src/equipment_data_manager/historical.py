@@ -38,8 +38,7 @@ ISSUE_TEXT = {
     'historical_unrecognized_filename': 'Filename is unrecognized; it was not assigned a report type.',
     'historical_filename_month_mismatch': 'The Work Orders filename disagrees with the selected month.',
     'historical_temporary_file_ignored': 'Temporary or incomplete-download file ignored. Verify the export/download finished.',
-    'historical_unsupported_extension': 'Unsupported format. Repairs and Service Orders require CSV; TMA requires XLSX.',
-    'historical_legacy_xls_unsupported': 'Legacy XLS is unsupported. Obtain a genuine supported XLSX export; renaming is not conversion.',
+    'historical_unsupported_extension': 'Unsupported format. Repairs and Service Orders require CSV; TMA requires a supported XLSX or genuine legacy XLS workbook.',
     'storage_file_not_downloaded': 'File or folder is cloud-only/offline. Make it available using the approved sync-client procedure.',
     'storage_source_changed': 'Source changed during inventory. Wait for the export/download to finish, then discover again.',
     'storage_source_changed_or_partial': 'Source changed or was only partially read. Discover again after it is stable.',
@@ -80,6 +79,8 @@ def month_folder_period(name, year):
 
 def filename_match(name, period):
     """Return kind and a period issue. Only anchored, documented stems accepted."""
+    if re.fullmatch(r'CU_Repair_WO_History_-_Previous_Month_\(HI-042b\)[0-9]{1,30}\.xls', name, re.I):
+        return ReportType.TMA_WORK_ORDERS, ''
     stem = PurePath(name).stem
     normalized = re.sub(r'[ _-]+', ' ', stem).casefold()
     known = {'compuclean repair report': ReportType.REPAIRS,
@@ -197,9 +198,9 @@ def _reports(provider, period, folder, layout, cancelled):
             sources[kind].append(entry)
             if mismatch:
                 problems[kind].append(_issue(mismatch, entry.item_id, kind))
-            allowed = '.xlsx' if kind == ReportType.TMA_WORK_ORDERS else '.csv'
-            if PurePath(entry.name).suffix.casefold() != allowed:
-                code = 'historical_legacy_xls_unsupported' if PurePath(entry.name).suffix.casefold() == '.xls' else 'historical_unsupported_extension'
+            allowed = ('.xlsx', '.xls') if kind == ReportType.TMA_WORK_ORDERS else ('.csv',)
+            if PurePath(entry.name).suffix.casefold() not in allowed:
+                code = 'historical_unsupported_extension'
                 problems[kind].append(_issue(code, entry.item_id, kind))
                 continue
             if entry.size_bytes > MAX_FILE_BYTES:
