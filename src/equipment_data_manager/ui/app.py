@@ -236,6 +236,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.runtime_info = (f"January diagnostics v1 | Python {platform.python_version()} | pandas {pd.__version__}\n"
                              f"Engine: {engine_module.__file__}\n"
                              f"TMA adapter: {type(adapter).__name__ if adapter else 'Unavailable'}")
+        from equipment_data_manager.processing import work_orders as tma_module
+        self.runtime_info += f'\nTMA module: {tma_module.__file__}\nTMA structure diagnostics: {tma_module.STRUCTURE_DIAGNOSTIC_VERSION}'
         self.settings_page.advanced_info.configure(text=self.runtime_info + '\nLocal settings: ' + str(self.settings_store.path))
         self.help_page.grid_columnconfigure(0,weight=1)
         self.help_page.grid_rowconfigure(2,weight=1)
