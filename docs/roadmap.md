@@ -1,5 +1,17 @@
 # Departmental workflow roadmap and project review
 
+## TMA structure rejection investigation
+
+feature/tma-structure-diagnostics starts at timestamped-layout 3b00a95. Main is
+bd21499 at inspection; dependent features remain unmerged and API metadata blocked.
+Reproduced: default xlrd sees 85×4, formatting-aware reader sees an extra blank
+style column and rejects. BIFF 80 and native date type 3 are correct and unchanged.
+Implemented only trailing style-edge normalization for timestamped content bounds,
+strict typed-data rejection, exact predicate messages, safe local structure and
+runtime diagnostics, Windows stale-build verification and packaged regression.
+No private file was read; owner must confirm the actual cause and preview May.
+See tma_structure_debug.md. Financial/calculation/approval/month gates remain.
+
 ## Actual timestamped TMA shape — follow-up
 
 feature/tma-timestamped-layout starts at legacy-tma-compatibility 32d36b6, itself

@@ -326,3 +326,19 @@ separate private local test candidate folder. June requires a July generation
 timestamp and June request dates; do not assume May's count applies. Follow
 tma_timestamped_layout.md in the distribution for the full May/June checklist.
 Candidates remain unapproved; Graph, approval and publishing controls stay disabled.
+
+
+## If a verified May workbook is still rejected
+
+Use tma_structure_debug.md for exact Windows commands to identify the active Git
+commit, loaded TMA module and running executable. Settings → Advanced Settings
+shows the TMA module path and diagnostic build marker. The new private read-only
+inspector reports counts and failed conditions without employee cells or actual
+source names/paths. A downloaded executable is not updated by switching Git branches.
+
+The reader must retain Excel formatting for leading-zero IDs, but blank formatting
+outside the report can inflate worksheet dimensions. Only trailing formatting-only
+EMPTY/BLANK cells are excluded from timestamped content bounds. A real fifth data
+column still fails; no record, date or unknown field is removed to force acceptance.
+The original workbook stays unchanged. After a passing diagnostic, repeat private
+May preview/count/hash acceptance; no candidate is approved or published.
