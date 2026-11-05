@@ -23,6 +23,26 @@ from equipment_data_manager.processing.interfaces import CleanResult, ColumnSche
 from equipment_data_manager.processing.models import ProcessingError
 
 
+STRUCTURE_DIAGNOSTIC_VERSION = 'tma-structure-v1-content-bounds'
+
+
+def content_dimensions(sheet):
+    """Exclude only trailing EMPTY/BLANK cell types, never data or internal rows.
+
+    formatting_info=True is required to preserve zero-format identifiers, but it
+    also exposes BIFF BLANK style records absent with xlrd's default settings.
+    Even whitespace, empty TEXT, numeric zero and booleans count as real cells.
+    """
+    import xlrd
+    rows = columns = 0
+    for row in range(sheet.nrows):
+        for column, kind in enumerate(sheet.row_types(row)):
+            if kind not in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
+                rows = row + 1
+                columns = max(columns, column + 1)
+    return rows, columns
+
+
 def read_workbook(raw_bytes, extension, *, include_metadata=False):
     """No Office automation, formula/macro evaluation or external-link refresh.
 
@@ -47,12 +67,16 @@ def read_workbook(raw_bytes, extension, *, include_metadata=False):
                 if workbook.book.biff_version != 80:
                     raise ProcessingError('unsupported_work_order_layout')
                 sheet = workbook.book.sheet_by_index(0)
-                if sheet.nrows > 100_003 or sheet.ncols not in (4, 5):
+                timestamped_hint = (sheet.name == TIMESTAMPED_SHEET or
+                    (sheet.nrows > 1 and sheet.cell_value(1, 0) == TIMESTAMPED_TITLE))
+                if sheet.nrows > 100_003 or (sheet.ncols not in (4, 5) and not timestamped_hint):
                     raise ProcessingError('unsupported_work_order_layout')
                 if any(sheet.cell_type(r, c) == xlrd.XL_CELL_ERROR
                        for r in range(sheet.nrows) for c in range(sheet.ncols)):
                     raise ProcessingError('invalid_xls_file')
-                metadata.update(physical_rows=sheet.nrows, physical_columns=sheet.ncols)
+                metadata.update(physical_rows=sheet.nrows, physical_columns=sheet.ncols,
+                                formatting_rows=sheet.nrows, formatting_columns=sheet.ncols,
+                                biff_version=workbook.book.biff_version, sheet_count=1)
                 if sheet.nrows:
                     first = sheet.cell(0, 0)
                     metadata['timestamp_kind'] = first.ctype
@@ -62,6 +86,12 @@ def read_workbook(raw_bytes, extension, *, include_metadata=False):
             if is_xls:
                 notes.append('tma_xls_cached_values_only')
                 timestamped = is_timestamped_layout(raw, metadata)
+                if timestamped:
+                    rows, columns = content_dimensions(sheet)
+                    metadata.update(physical_rows=rows, physical_columns=columns)
+                    raw = raw.iloc[:rows, :columns].copy()
+                    if (rows, columns) != (sheet.nrows, sheet.ncols):
+                        notes.append('tma_formatting_only_edges_ignored')
                 first_row, stop_row = (4, len(raw)) if timestamped else (2, len(raw) - 1)
                 for row in range(first_row, min(stop_row, sheet.nrows)):
                     cell = sheet.cell(row, 0)
@@ -120,12 +150,23 @@ def generation_timestamp(metadata):
         raise ProcessingError('tma_generation_timestamp_invalid') from None
 
 
+def timestamped_structure_checks(raw, metadata, extension):
+    """Fixed condition names and booleans only: no source cells/names in errors."""
+    return {
+        'tma_timestamped_extension_mismatch': extension == '.xls',
+        'tma_timestamped_sheet_mismatch': metadata.get('sheet_name') == TIMESTAMPED_SHEET,
+        'tma_timestamped_columns_mismatch': metadata.get('physical_columns') == 4,
+        'tma_timestamped_parsed_columns_mismatch': raw.shape[1] == 4,
+        'tma_timestamped_insufficient_rows': len(raw) >= 5,
+        'tma_timestamped_row_count_mismatch': metadata.get('physical_rows') == len(raw),
+    }
+
+
 def timestamped_body(raw, metadata, extension, period):
     """Owner-described HI-042b structure; no report-footer inference or slicing."""
-    if (extension != '.xls' or metadata.get('sheet_name') != TIMESTAMPED_SHEET
-            or metadata.get('physical_columns') != 4 or raw.shape[1] != 4
-            or len(raw) < 5 or metadata.get('physical_rows') != len(raw)):
-        raise ProcessingError('tma_timestamped_structure_invalid')
+    for code, passed in timestamped_structure_checks(raw, metadata, extension).items():
+        if not passed:
+            raise ProcessingError(code)
     if raw.iloc[0, 1:].ne('').any():
         raise ProcessingError('tma_generation_timestamp_invalid')
     generated = generation_timestamp(metadata)
@@ -155,7 +196,7 @@ class TmaXlsxCleaner:
         root = Path(__file__).parent / "_legacy"
         digest = sha256(b"".join((root / name).read_bytes() for name in
                                 ("requests_row_clean.py", "row_clean_common.py"))).hexdigest()
-        self.version = f"tma-workbook-v3:xlrd-2.0.2:pandas-{pd.__version__}:{digest}"
+        self.version = f"tma-workbook-v3.1:xlrd-2.0.2:pandas-{pd.__version__}:{digest}"
 
     def clean(self, raw_bytes: bytes, *, source_name: str, period: str) -> CleanResult:
         validate_period(period)
