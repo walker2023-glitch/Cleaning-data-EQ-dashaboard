@@ -1,5 +1,15 @@
 # Windows prototype packaging and distribution
 
+## Formatting-only TMA structure diagnostic build
+
+The existing phase-36 executable smoke now processes a June fixture with formatting-
+only edges and checks the diagnostic build marker, content counts and source hash.
+The *.xls resource rule already includes it. Installed-wheel CI exercises the new
+read-only diagnostic and 81-record formatting-column regression; this branch's
+push config runs native Windows packaging even if API-based PR creation is blocked.
+Actual Windows outcomes remain unverified until run/read; a Linux wheel/source
+smoke is not a native executable result. See tma_structure_debug.md.
+
 ## Timestamped TMA package follow-up
 
 The bundled tma_timestamped_sample.xls is an invented three-record June report,

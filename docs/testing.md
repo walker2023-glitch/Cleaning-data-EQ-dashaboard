@@ -1,5 +1,21 @@
 # Test instructions and evidence limits
 
+## TMA formatting-only structure regression
+
+New synthetic tests reproduce BIFF 80/native date type 3/default 85×4 dimensions
+with formatting-only row/column records under format_info=True. They verify 81
+records/zero-formatted IDs retained, genuine fifth-column whitespace/zero/False
+rejected, every structural condition's exact safe failure category, diagnostic
+privacy/read-only behavior and runtime module fingerprints. Existing generic
+wrong-sheet/column assertions now check specific rejection categories, not success.
+The bundled June executable-smoke sample now has style edges and must report the
+formatting-only warning; the matching-resource assertion is retained. Final Linux full regression: **754 passed, 0 failures, 0 errors, 0 skips**;
+all 731 previous cases remain. Wheel/sdist, installed-wheel safe diagnostics and
+81-record processing, plus source/installed-wheel phase-36 desktop/restart checks
+passed. Native Windows and hosted CI remain unverified while API access is blocked.
+The ignored regression log is data/tma-structure-tests.log. See
+tma_structure_debug.md for the Windows commit/module/process and private-file commands.
+
 ## Timestamped TMA layout follow-up
 
 Synthetic tests cover the owner-described BIFF8 structure, native numeric serial

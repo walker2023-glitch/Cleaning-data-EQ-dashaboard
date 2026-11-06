@@ -1,5 +1,14 @@
 # Equipment Data Manager
 
+## May structure rejection diagnostics
+
+feature/tma-structure-diagnostics adds a focused fix for formatting-only XLS edges,
+precise structural failures and a read-only local inspector. The owner-described
+85×4 native-date workbook passes existing content gates; a reproduced reader-mode
+mismatch can explain the same rejection but is not proof of the private file's cause.
+[Windows loaded-module/commit checks and May diagnostic](docs/tma_structure_debug.md).
+Depends on unmerged timestamped-layout 3b00a95; no production action is enabled.
+
 ## Timestamped TMA HI-042b follow-up
 
 feature/tma-timestamped-layout adds the owner-described numeric generation / exact

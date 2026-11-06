@@ -1,5 +1,17 @@
 # Power BI CSV candidate exports — schema v1
 
+## May structure rejection diagnostic fix
+
+Based on timestamped-layout 3b00a95. Reproduced a default-versus-formatting xlrd
+geometry mismatch: a blank styled fifth column caused the exact old rejection,
+while native BIFF 80/date type 3/default 85×4 passes. Trim only trailing EMPTY/
+BLANK style edges for timestamped content, preserving XF ID padding and rejecting
+all extra data. Add exact structural condition messages, a private read-only
+inspector and actual loaded-module/build identity. Cleaner v3.1; no schema,
+calculation, month, original-file or business-approval change. 754 Linux cases pass
+without failures/skips, plus wheel/desktop/restart checks. Actual May cause/output
+and native Windows/hosted CI remain owner/external gates. See tma_structure_debug.md.
+
 ## Timestamped HI-042b adapter follow-up
 
 Adds the owner's verified numeric generation/title/blank/header/no-footer BIFF8
