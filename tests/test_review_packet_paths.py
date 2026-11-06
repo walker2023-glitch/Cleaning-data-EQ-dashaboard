@@ -14,7 +14,7 @@ from equipment_data_manager.processing.models import ProcessingError
 from equipment_data_manager.processing.repair_financial import summary_name
 from test_monthly_workflow import populate, process
 
-VIRTUAL_ROOT=PureWindowsPath('C:/Users/synthetic11/AppData/Local/Temp/pytest-of-synthetic11/pytest-100/test_business_review_background0/synthetic-review/candidates')
+VIRTUAL_ROOT=PureWindowsPath('C:/Users/synthetic11/AppData/Local/Temp/pytest-of-synthetic11/pytest-100/test_business_review_handles_m0/synthetic-review/candidates')
 
 
 def units(path):
@@ -46,7 +46,7 @@ def test_parent_exists_but_old_summary_path_crosses_classic_windows_limit(prepar
                 raise FileNotFoundError(2,'Synthetic Win32 MAX_PATH failure',str(path))
         return real_open(path,*args,**kwargs)
     monkeypatch.setattr(Path,'open',bounded)
-    assert units(windows_target(workspace,old))>=260
+    assert units(windows_target(workspace,old))==260
     with pytest.raises(FileNotFoundError):old.write_bytes(b'Synthetic')
     assert observed[-1][0] is True  # Missing directory was NOT the cause.
     # Real exporter on the SAME emulated Windows root now succeeds, including reads.
@@ -61,7 +61,7 @@ def test_parent_exists_but_old_summary_path_crosses_classic_windows_limit(prepar
 
 def test_short_temp_root_also_avoids_old_path_failure_without_missing_parent(tmp_path):
     relative=PureWindowsPath('review_packets')/('.staging-'+'a'*32)/'repair_financial_summary'/summary_name('2026-01')
-    assert units(VIRTUAL_ROOT/relative)>=260
+    assert units(VIRTUAL_ROOT/relative)==260
     assert units(PureWindowsPath('C:/edm-temp/candidates')/relative)<260
     target=tmp_path/'.staging-synthetic'/'repair_financial_summary'/summary_name('2026-01')
     target.parent.mkdir(parents=True)
