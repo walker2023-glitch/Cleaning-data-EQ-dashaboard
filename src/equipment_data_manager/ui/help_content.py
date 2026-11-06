@@ -91,12 +91,12 @@ entry('service_orders', 'CompuClean Service Orders Lists', 'Provides scheduled a
     'Supported CompuClean service CSV exports and their existing date/exclusion rules.',
     'Preview dates, statuses, exclusions and missing-price warnings.', 'Maintenance classification is a future design, not an implemented feature.')
 entry('tma_work_orders', 'TMA Work Orders', 'Provides supported TMA XLSX work orders supplied by Tim.',
-    'TMA Work Orders are currently supplied by Tim and may describe Facilities activities not captured in CompuClean equipment repair history. Only the supported XLSX title/header/footer layout is enabled.',
+    'TMA Work Orders are currently supplied by Tim and may describe Facilities activities not captured in CompuClean equipment repair history. Supported XLSX and genuine legacy BIFF8 XLS require the exact title/header/footer layout. Only Assigned To may be absent, with a missing-source warning. The owner-described timestamped HI-042b layout is also supported only as genuine BIFF8: numeric generation serial, exact sheet/title/separator/four headers and no footer. Its prior calendar month must agree with the selected month; actual May output still needs local acceptance.',
     'Work-order IDs, request dates, requestors, requests and assignments.',
-    'Choose the original supported XLSX export and its reporting month.', 'Legacy XLS is unsupported until verified. Do not rename an XLS extension to pretend it is XLSX.')
+    'Choose the original supported XLSX export and its reporting month.', 'Legacy XLS must be a genuine workbook with the supported four/five-column structure. Do not rename an extension to convert a file.')
 entry('select_files', 'Select Local Raw Files', 'Selects original files for one report type.',
     'Use the file picker for the selected report type, or Discover Month to find all three types through your saved folder settings.',
-    'Selected raw CSVs, or TMA XLSX files.', 'Confirm the report type/month and Preview Processing.')
+    'Selected raw CSVs, or supported TMA XLSX/legacy XLS files.', 'Confirm the report type/month and Preview Processing.')
 entry('sample', 'Load Synthetic Sample', 'Loads an invented example for practice.',
     'Bundled samples contain invented data. CompuClean samples use September 2026; TMA uses January 2026.',
     'Only synthetic samples and any candidates you choose to process.', 'Confirm the sample month and try preview before processing.')
@@ -208,3 +208,11 @@ entry('m365_test_config', 'Check Microsoft 365 test configuration', 'Validates a
     'Only the selected local TOML is read. No tokens, roles or permission grants are created and no folders are listed remotely.',
     'IT must authorize the test resources and manual pilot before any real sign-in attempt.',
     'A valid configuration is not proof of IT permission, tenant access, MFA success, cloud synchronization or reviewer authority. No candidate is uploaded.')
+
+
+entry('historical_inventory', 'Historical folder discovery',
+    'Finds readable raw reports across a selected range. It does not clean or approve data.',
+    'Choose the raw root and explicit layout in Settings. Standard layout reads YYYY-MM/report-type folders; SharePoint layout reads year/YYYY-MM (month label) with three directly stored reports. Select start and end as YYYY-MM, then discover. Found means one stable readable file, not a supported source schema or verified financial total.',
+    'Original files are read through the local/synced provider. Discovery writes no candidate history or database. A private JSON inventory can be exported outside the raw/synced folders.',
+    'Inspect Problems & files. Resolve missing/ambiguous/unavailable inputs. For one complete month, use Process Reports, Discover month, confirm the month, and Preview Processing. Historical batch preview/process/snapshot controls are deferred.',
+    'Cloud synchronization is unverified. No Graph sign-in, automatic correction, approval or publishing occurs. Exported inventory is evidence only; it is never imported as processing authority.')

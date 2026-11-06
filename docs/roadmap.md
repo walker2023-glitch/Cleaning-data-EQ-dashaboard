@@ -1,5 +1,60 @@
 # Departmental workflow roadmap and project review
 
+## Actual timestamped TMA shape — follow-up
+
+feature/tma-timestamped-layout starts at legacy-tma-compatibility 32d36b6, itself
+dependent on discovery c425841. Main remains bd21499 at inspection; open PR/check
+API is unavailable. The PR targets legacy-tma-compatibility, without replaying or
+merging either prerequisite. Owner structural evidence identifies a second BIFF8
+layout: generation serial + title + blank row + four headers + body, no footer.
+
+Implemented: exact sheet/structure/numeric serial gates using workbook datemode,
+prior-calendar-month agreement, retained-date checks, all body rows including last
+ID formatting, counts/warnings and unchanged original cleaner/output contracts.
+Actual May/June application acceptance, native Windows package checks and hosted
+CI results remain separate gates. Financial v2 and approval/publishing stay unchanged.
+See tma_timestamped_layout.md. Then resume the dependent historical batch plan.
+
+## Legacy TMA compatibility — 2026-11-04
+
+New branch feature/legacy-tma-compatibility depends on historical-folder-discovery
+c425841 (still not merged into main bd21499 at inspection). No prerequisite was
+replayed; PR targets that feature branch. GitHub open PR/check API remains blocked.
+
+Implemented: strict legacy basename family, xlrd BIFF8 stored-value reader, optional
+Assigned To through original cleaner, affected counts/warnings, source/period/
+identifier guards, unchanged legacy/normalized schema, GUI/packaging regressions.
+Actual May workbook/title/layout/counts and owner acceptance remain unverified.
+Financial schema v2, approval, production and Graph boundaries stay unchanged.
+
+Next: managed-Windows private May acceptance and native executable CI, then owner
+review of discovery and this dependent fix. Historical batch preview/controlled
+processing and candidate snapshot UX remain separate follow-up PRs; do not claim
+them completed here. See legacy_tma_compatibility.md.
+
+## Historical backfill, PR 1 — 2026-11-02
+
+Main bd21499 now includes owner-merged Microsoft 365 PR #17 and approval UX #16.
+New branch: feature/historical-folder-discovery. Remote feature heads/ancestry were
+inspected; open PR metadata remains API-blocked (HTTP 403). No unrelated commits
+were replayed and no PR was merged here. Earlier dated status entries are historical.
+
+Implemented: explicit standard versus SharePoint year/labeled-month layouts,
+strict shared-folder filenames, read-only multi-year range inventory, stable local
+source hashes/versions, missing/ambiguous/unsupported/unavailable reports, desktop
+completeness/problems/technical views, private exclusive inventory export, persisted
+layout, and hash-bound single-month handoff to the unchanged engine. No Graph calls.
+
+This deliberately follows the request's dependent-PR option. Next PR 2: explicit
+historical month selection, batch preview diagnostics/financial summaries and
+controlled correction-aware processing/stop/recovery. PR 3: reuse existing v2
+four-table snapshot/reconciliation tools behind historical controls, with complete
+month policy and explicit revision selection. Neither later phase is claimed done.
+See historical_backfill.md for scope, instructions, naming and acceptance gates.
+
+All financial/cleaning rules, approval requests and disabled business/security
+controls remain. No production PBIX, SharePoint, authentication or publishing work.
+
 ## Microsoft 365 read-only foundation — 2026-10-30
 
 Main 6b7e861 contains owner-merged PR #16. The feature starts there without replaying

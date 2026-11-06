@@ -69,10 +69,8 @@ class ProcessingCoordinator:
             if not isinstance(raw, bytes):
                 raise ProcessingError("input_must_be_bytes")
         extension = Path(source_name).suffix.lower()
-        if report_type == ReportType.TMA_WORK_ORDERS and extension == ".xls":
-            raise ProcessingError("legacy_xls_awaiting_sample")
-        expected = ".xlsx" if report_type == ReportType.TMA_WORK_ORDERS else ".csv"
-        if extension != expected:
+        expected = (".xlsx", ".xls") if report_type == ReportType.TMA_WORK_ORDERS else (".csv",)
+        if extension not in expected:
             raise ProcessingError("unsupported_file_format")
         cleaner = self.cleaners[report_type]
         source_hash = sha256(raw).hexdigest()

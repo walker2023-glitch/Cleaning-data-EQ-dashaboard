@@ -23,6 +23,8 @@ SUPPORTED_REPORTS = {
 class SourceFile:
     reference: str
     name: str
+    expected_version: str | None = None
+    expected_sha256: str | None = None
 
 
 class FileSource(Protocol):
@@ -34,7 +36,8 @@ class FileSource(Protocol):
 class LocalFileSource:
     def read(self, source: SourceFile) -> bytes:
         from equipment_data_manager.storage.local import read_local_file
-        return read_local_file(Path(source.reference)).content
+        return read_local_file(Path(source.reference), expected_version=source.expected_version,
+                               expected_sha256=source.expected_sha256).content
 
 
 def selected_files(paths: Sequence[str]) -> tuple[SourceFile, ...]:

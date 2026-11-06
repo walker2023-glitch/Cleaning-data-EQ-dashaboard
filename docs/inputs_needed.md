@@ -1,5 +1,40 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## May/June timestamped TMA owner acceptance
+
+May's structure and numeric generation timestamp are now owner-verified facts.
+The adapter uses those exact facts; the private workbook itself was not supplied
+here. Complete the Windows acceptance in tma_timestamped_layout.md: independently
+compare 85/81 physical/source counts, 81 parseable May dates, May 1 05:01–May 29
+16:25, exclusions, IDs, assignments and source hash. Inspect June independently:
+July numeric generation timestamp, June body dates, same no-footer structure and
+its own verified counts. No hardcoded 81 or automatic approval is introduced.
+
+## May 2026 legacy TMA acceptance still needed
+
+No actual May workbook was supplied to this task. The reported four-column shape
+is only an owner observation, not verified equivalence. Check the actual title,
+headers, footer count, native date cells, ID formats and source/retained counts
+locally using legacy_tma_compatibility.md. Unknown layouts need a sanitized
+structural example before adapter changes; never commit private reports. Agree
+missing-assignment treatment in the backup model (empty CSV field versus true
+nullable-text view). Financial/approval/IT production gates remain separate.
+
+## Historical backfill follow-up inputs
+
+The discovery PR supports the exact documented year/YYYY-MM (English label)
+structure and anchored filenames, plus the existing standard layout. Supply
+sanitized examples of any other historical folder labels, filenames or schemas
+before extending the matcher/cleaners. Do not upload private reports to GitHub.
+The user must initiate any actual historical test on the authorized Windows PC.
+
+Before dependent batch/snapshot work: agree missing versus zero-activity/month
+completeness policy, explicit partial-range inclusion policy, who resolves multiple
+current exports, retention and correction review procedure. Provide independent
+historical financial/count baselines and existing model/DAX/relationship/key
+inventories for comparison. Reconciliation arithmetic is not business approval.
+IT auth/role/production publishing decisions remain separate and unconfigured.
+
 ## Microsoft 365 pilot blockers — no secrets in chat
 
 Needed privately through IT: written test authorization/reference and tester/device;

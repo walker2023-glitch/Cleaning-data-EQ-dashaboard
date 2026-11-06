@@ -2,6 +2,7 @@
 from hashlib import sha256
 from pathlib import Path
 import stat
+import os
 
 from equipment_data_manager.storage.contracts import FileRead, StorageError, StorageFile
 
@@ -72,6 +73,35 @@ class LocalFolderStorage:
             raise StorageError('storage_path_rejected')
         return path
 
+    def list_folders(self, folder_id):
+        """Bounded direct directory inventory; no recursion or placeholder hydration.
+
+        Folder identities are provider-relative, usable by list_files/list_folders.
+        Links/junctions are reported as an error rather than followed or selected.
+        """
+        folder = self._path(folder_id)
+        try:
+            info = folder.stat()
+            if getattr(info, 'st_file_attributes', 0) & UNAVAILABLE_ATTRIBUTES:
+                raise StorageError('storage_file_not_downloaded')
+            result = []
+            with os.scandir(folder) as entries:
+                for index, entry in enumerate(entries):
+                    if index >= 4096:
+                        raise StorageError('storage_directory_limit')
+                    path = Path(entry.path)
+                    if path.is_symlink() or path.is_junction():
+                        raise StorageError('storage_link_rejected')
+                    if entry.is_dir(follow_symlinks=False) and not entry.name.startswith(('.', '~')):
+                        result.append(str(path.relative_to(self.root)))
+            return tuple(sorted(result))
+        except FileNotFoundError:
+            raise StorageError('storage_folder_missing') from None
+        except PermissionError:
+            raise StorageError('storage_access_denied') from None
+        except OSError:
+            raise StorageError('storage_folder_unavailable') from None
+
     def list_files(self, folder_id):
         folder = self._path(folder_id)
         try:
@@ -94,6 +124,25 @@ class LocalFolderStorage:
             result.append(StorageFile(self.provider, str(self.root), str(Path(folder_id)),
                 str(path.relative_to(self.root)), path.name, info.st_size, _version(info)))
         return tuple(result)
+
+    def inventory_files(self, folder_id):
+        """Strict discovery listing includes temporary files for visible diagnostics."""
+        self.list_folders(folder_id)  # Availability, direct-entry cap and link guards.
+        folder = self._path(folder_id)
+        try:
+            files = []
+            for index, path in enumerate(folder.iterdir()):
+                if index >= 4096:
+                    raise StorageError('storage_directory_limit')
+                if path.is_symlink() or path.is_junction():
+                    raise StorageError('storage_link_rejected')
+                if path.is_file():
+                    info = path.stat()
+                    files.append(StorageFile(self.provider, str(self.root), str(Path(folder_id)),
+                        str(path.relative_to(self.root)), path.name, info.st_size, _version(info)))
+            return tuple(sorted(files, key=lambda source: source.name))
+        except OSError:
+            raise StorageError('storage_folder_changed_or_unavailable') from None
 
     def read(self, source, *, expected_sha256=None):
         if source.provider != self.provider or source.container != str(self.root):

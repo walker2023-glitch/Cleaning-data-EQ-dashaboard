@@ -12,6 +12,8 @@ import tomllib
 from equipment_data_manager.monthly import Workspace
 from equipment_data_manager.processing.models import ProcessingError
 
+FOLDER_LAYOUTS = ('standard', 'sharepoint_year_month')
+
 FOLDER_KEYS = ('raw_folder', 'candidate_folder', 'approved_folder')
 
 
@@ -32,6 +34,7 @@ class Preferences:
     output_format: str = 'powerbi'
     candidate_local_confirmed: bool = False
     reporting_period: str = ''
+    folder_layout: str = 'standard'
 
 
 @dataclass(frozen=True)
@@ -58,7 +61,9 @@ def parse_settings(text, *, base: Path):
             expected = {'guided', 'detail', 'output_format', 'candidate_local_confirmed'}
             if data['version'] == 2:
                 expected.add('reporting_period')
-            if set(p) != expected:
+            if set(p) not in (expected, expected | {'folder_layout'}):
+                raise ValueError
+            if p.get('folder_layout', 'standard') not in FOLDER_LAYOUTS:
                 raise ValueError
             period = p.get('reporting_period', '')
             if not isinstance(period, str):
@@ -91,7 +96,8 @@ def encode_settings(settings):
     body.extend(['', '[preferences]', f'guided = {str(p.guided).lower()}',
         f'detail = "{p.detail}"', f'output_format = "{p.output_format}"',
         f'candidate_local_confirmed = {str(p.candidate_local_confirmed).lower()}',
-        f'reporting_period = {json.dumps(p.reporting_period)}', ''])
+        f'reporting_period = {json.dumps(p.reporting_period)}',
+        f'folder_layout = {json.dumps(p.folder_layout)}', ''])
     text = '\n'.join(body)
     parse_settings(text, base=Path.cwd())  # Reject accidental extra/malformed state before writing.
     return text

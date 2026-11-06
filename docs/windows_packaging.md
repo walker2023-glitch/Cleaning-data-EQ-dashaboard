@@ -1,5 +1,34 @@
 # Windows prototype packaging and distribution
 
+## Timestamped TMA package follow-up
+
+The bundled tma_timestamped_sample.xls is an invented three-record June report,
+read through the actual engine by source/executable smoke phases 34–36. It is
+included by the existing *.xls resource rule. Installed-wheel CI processes both
+synthetic May/June timestamped fixtures, and this branch's pushes schedule the
+native Windows build. Require actual Windows phase-36/restart outcomes and owner
+May/June acceptance; Linux results do not establish native executable readiness.
+
+## Legacy XLS package follow-up
+
+Core dependencies now include scoped xlrd 2.0.2. PyInstaller explicitly includes
+xlrd and resources/samples/tma_legacy_sample.xls (invented BIFF8 only). The real
+source/executable smoke now reaches phase 33 and checks legacy discovery/preview/
+process, missing assignments, IDs, source hash and fresh-process restart. This
+feature branch schedules the native Windows build even if PR creation is blocked.
+legacy_tma_compatibility.md and the optional backup-PBIX null view are distributed.
+Linux wheel checks are not evidence of a Windows executable; require native CI
+and authorized-PC acceptance before distribution. No real May file is bundled.
+
+## Historical discovery package checks
+
+The existing PyInstaller configuration includes the imported historical service
+and page. build.ps1 also distributes historical_backfill.md. The actual executable
+smoke now exercises both layouts, private inventory export and restart restoration
+through phase 30; the branch push schedules the Windows build even without a PR.
+Run the complete build/smoke procedure below on Windows. Linux wheel/source smoke
+success is not evidence that a Windows executable has been built or accepted.
+
 ## Microsoft 365 dependency check
 
 The all-extras Windows build now includes the optional official MSAL/requests

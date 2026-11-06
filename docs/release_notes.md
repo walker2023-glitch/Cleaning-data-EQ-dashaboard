@@ -1,5 +1,42 @@
 # Power BI CSV candidate exports — schema v1
 
+## Timestamped HI-042b adapter follow-up
+
+Adds the owner's verified numeric generation/title/blank/header/no-footer BIFF8
+structure alongside existing standard formats. Generation serials use workbook
+datemode, never text parsing; their previous calendar month and retained request
+dates must agree with selection. Every body row, including last-record formatted
+IDs, reaches the original cleaner. Counts distinguish physical rows from records.
+731 Linux cases pass with no skips/failures/errors, plus installed-wheel May/June
+and phase-36 source/desktop/restart smoke. Actual owner May/June output acceptance
+and native Windows/hosted CI remain unverified. Cleaner identity is v3; schemas,
+financial v2, calculations, immutable revisions and business states are unchanged.
+Depends on legacy-tma-compatibility 32d36b6; see tma_timestamped_layout.md.
+
+## Legacy TMA compatibility candidate
+
+Adds strict legacy filename recognition and BIFF8 XLS reading through pinned
+xlrd 2.0.2; only Assigned To may be absent, with blank CSV/null representation,
+source/retained affected counts and unchanged original cleaning rules. Actual May
+was not supplied and remains unverified. 684 Linux regression cases pass with
+no skips/failures/errors. Native Windows/hosted CI remains an external gate.
+Cleaner identity is bumped; old candidates remain and explicit correction may
+be required. TMA output schemas and repair financial v2 are unchanged. This PR
+depends on unmerged discovery c425841. See legacy_tma_compatibility.md.
+
+## Flexible historical discovery — first scoped PR
+
+Based on merged main bd21499 / PR #17. Adds explicit persistent layouts, strict
+shared-month filename routing, read-only historical completeness inventory and
+private JSON export, employee explanations, and source-bound single-month handoff.
+No source files move; cleaning/financial v2/approval semantics remain unchanged.
+Historical batch preview/process and snapshot controls are deferred to dependent
+PRs. Existing manual four-table candidate snapshot tooling remains available.
+642 regression tests pass on Linux with no skips, failures or errors; wheel/sdist
+and installed-wheel CLI/desktop/restart checks pass. Actual Windows executable
+and hosted matrix outcomes remain unverified (GitHub API HTTP 403).
+See historical_backfill.md and testing.md for scope, validation and Windows gates.
+
 ## Microsoft 365 read-only foundation (not live verified)
 
 Adds an optional pinned official MSAL/requests integration, tenant-bound authorized-

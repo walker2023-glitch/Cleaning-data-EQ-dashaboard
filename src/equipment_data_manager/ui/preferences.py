@@ -168,6 +168,8 @@ class SettingsMixin:
 
     def apply_workspace(self, workspace, output_format='powerbi'):
         self.workspace=workspace
+        self.folder_layout=self.saved_settings.preferences.folder_layout
+        self.historical_page.invalidate()
         self.monthly_selection=None
         self.sources=self.previews=self.results=()
         self.approvals.clear()
@@ -261,6 +263,8 @@ class SettingsMixin:
                     self.preferences_writable=True
                     self.saved_settings=event.payload
                     self.workspace=self.monthly_selection=None
+                    self.folder_layout="standard"
+                    self.historical_page.invalidate()
                     self.sources=self.previews=self.results=()
                     self.approvals.clear()
                     self.workflow=DesktopWorkflow(self.initial_output_root,output_format='powerbi')

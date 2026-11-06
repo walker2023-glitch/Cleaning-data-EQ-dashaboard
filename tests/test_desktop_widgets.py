@@ -285,13 +285,13 @@ def test_tma_legacy_xls_filter_returns_useful_engine_error(app, tmp_path, monkey
     monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilenames', choose)
     app.report_buttons[2].invoke()
     app.select_button.invoke()
-    assert observed['filetypes'] == [('TMA XLSX reports', '*.xlsx'), ('Legacy XLS (unsupported)', '*.xls')]
+    assert observed['filetypes'] == [('TMA XLSX reports', '*.xlsx'), ('Legacy TMA XLS reports', '*.xls')]
     app.month_selector.set('January')
     app.year.set('2026')
     app.month_confirmed.set(True)
     app.preview_button.invoke()
     pump(app, lambda: not app.worker.busy)
-    assert app.previews[0].result.code == 'legacy_xls_awaiting_sample'
+    assert app.previews[0].result.code == 'invalid_xls_file'
     assert 'Do not rename' in app.detail.get('1.0', 'end')
     assert 'TmaXlsxCleaner' in app.runtime_info and 'January diagnostics v1' in app.runtime_info
     assert source.read_bytes().startswith(b'\xd0\xcf\x11\xe0')
@@ -1015,3 +1015,149 @@ def test_m365_configuration_check_is_offline_and_never_enables_identity_or_graph
     app.settings_page.m365_check_button.invoke();wait_settings(app)
     assert 'configuration is not ready' in app.status.get() and 'No connection was attempted' in app.status.get()
     assert app.settings_page.graph_button.cget('state')=='disabled'
+
+
+def test_historical_inventory_navigation_export_and_monthly_engine(app, tmp_path, monkeypatch):
+    from dataclasses import replace
+    from report_samples import repair_csv, service_csv, tma_xlsx
+    from equipment_data_manager.monthly import Workspace
+    from equipment_data_manager.settings import Preferences, UserSettings
+    raw = tmp_path / 'raw'
+    folder = raw / '2026/2026-01 (January)'
+    folder.mkdir(parents=True)
+    for name, data in [('CompuClean Repair Report.csv', repair_csv(1,2)),
+                       ('CompuClean Service Orders List.csv', service_csv(1,2)),
+                       ('Work Orders January 2026.xlsx', tma_xlsx(1,2))]:
+        (folder / name).write_bytes(data)
+    candidates, approved = tmp_path / 'local-candidates', tmp_path / 'reserved'
+    app.saved_settings = UserSettings(dict(raw_folder=str(raw), candidate_folder=str(candidates), approved_folder=str(approved)),
+                                     Preferences(candidate_local_confirmed=True, folder_layout='sharepoint_year_month'))
+    app.apply_workspace(Workspace(raw, candidates, approved))
+    page = app.historical_page
+    app.navigation['Historical Data'].invoke()
+    assert app.page == 'Historical Data' and 'SharePoint year/month' in page.caption.cget('text')
+    page.start.set('2026-01'); page.end.set('2026-02')
+    page.discover_button.invoke()
+    assert page.discover_button.cget('state') == 'disabled'
+    pump(app, lambda: not app.worker.busy)
+    assert page.inventory.months[0].complete and not page.inventory.months[1].complete
+    assert len(page.table.get_children()) == 2 and not candidates.exists()
+    assert 'No processing has run' in page.summary.cget('text')
+    assert 'SHA-256' in page.details.get('1.0','end')
+    assert app.business_review_page.approve_button.cget('state') == 'disabled'
+    assert app.business_review_page.publish_button.cget('state') == 'disabled'
+    target = tmp_path / 'inventory.json'
+    monkeypatch.setattr('equipment_data_manager.ui.historical_page.filedialog.asksaveasfilename',lambda **kwargs:str(target))
+    page.export_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    import json
+    assert json.loads(target.read_text())['processing_performed'] is False
+    app.show_page('Settings'); app.show_page('Historical Data')
+    assert len(page.table.get_children()) == 2
+    app.show_page('Process Reports')
+    app.month.set('January'); app.year.set('2026')
+    app.scan_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert len(app.sources) == 3 and not app.monthly_selection.missing
+    app.month_confirmed.set(True)
+    app.preview_button.invoke()
+    pump(app, lambda: not app.worker.busy)
+    assert all(p.result.status == 'success' for p in app.previews) and not candidates.exists()
+    page.start.set('2025-12')
+    assert page.inventory is None and page.export_button.cget('state') == 'disabled'
+    assert not approved.exists()
+    # A legacy session-only workspace must still route as Standard, even when a
+    # different layout was saved previously. Loading is not silently persisted.
+    config = tmp_path / 'legacy-workspace.toml'
+    config.write_text('raw_folder="legacy-raw"\ncandidate_folder="legacy-candidates"\napproved_folder="legacy-approved"\n')
+    monkeypatch.setattr('equipment_data_manager.ui.app.filedialog.askopenfilename',lambda **kwargs:str(config))
+    app.choose_workspace()
+    assert app.folder_layout == 'standard'
+    assert app.saved_settings.preferences.folder_layout == 'sharepoint_year_month'
+    assert app.settings_page.folder_layout.get() == 'Standard month/report-type layout'
+    assert page.inventory is None
+
+
+def test_layout_restart_persistence_and_historical_invalid_range(tmp_path):
+    from equipment_data_manager.settings import Preferences, SettingsStore, UserSettings
+    path = tmp_path / 'settings.toml'
+    folders = {k:str(tmp_path / k) for k in ('raw_folder','candidate_folder','approved_folder')}
+    for value in folders.values():
+        Path(value).mkdir()
+    settings = UserSettings(folders, Preferences(reporting_period='2026-01', candidate_local_confirmed=True,
+                                                 folder_layout='sharepoint_year_month'))
+    SettingsStore(path).save(settings)
+    window = EquipmentDataManager(settings_path=path)
+    try:
+        pump(window,lambda:not window.settings_worker.busy)
+        assert window.saved_settings.preferences.folder_layout == 'sharepoint_year_month'
+        assert window.settings_page.folder_layout.get() == 'SharePoint year/month layout'
+        assert window.month.get() == 'January' and window.year.get() == '2026'
+        window.show_page('Historical Data')
+        page = window.historical_page
+        page.start.set('2026-09'); page.end.set('2026-01')
+        page.discover_button.invoke()
+        assert not window.worker.busy and 'End must follow start' in page.summary.cget('text')
+        assert page.inventory is None
+        assert window.settings_page.graph_button.cget('state') == 'disabled'
+        assert not (Path(folders['candidate_folder']) / 'powerbi_candidates').exists()
+    finally:
+        window._close()
+
+
+def test_legacy_tma_discovery_gui_preview_missing_assignment_and_safe_process(app,tmp_path):
+    from equipment_data_manager.monthly import Workspace
+    from equipment_data_manager.ui.workflow import DesktopWorkflow
+    fixture=Path(__file__).parent/'fixtures/synthetic/legacy_tma/may_four_columns.xls'
+    root=tmp_path/'raw';folder=root/'2026/2026-05 (May)';folder.mkdir(parents=True)
+    name='CU_Repair_WO_History_-_Previous_Month_(HI-042b)1234567890.xls'
+    source=folder/name;original=fixture.read_bytes();source.write_bytes(original)
+    app.workspace=Workspace(root,tmp_path/'local-candidates',tmp_path/'reserved-approved')
+    app.workflow=DesktopWorkflow(app.workspace.candidate_folder,output_format='powerbi')
+    app.folder_layout='sharepoint_year_month'
+    app.month.set('May');app.year.set('2026')
+    app.scan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert len(app.sources)==1 and app.sources[0].name==name
+    app.month_confirmed.set(True);app.preview_button.invoke()
+    pump(app,lambda:not app.worker.busy)
+    assert app.previews[0].result.status=='success' and app.previews[0].result.output_rows==2
+    assert not app.workflow.output_root.exists()
+    app.table.selection_set('0');app.table.event_generate('<<TreeviewSelect>>');app.update()
+    detail=app.detail.get('1.0','end')
+    assert 'no Assigned To column' in detail and 'Retained work-order records with missing source assignments: 2' in detail
+    app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.results[0].result.status=='success' and app.results[0].result.output_rows==2
+    import csv
+    with app.results[0].result.output_location.open(newline='',encoding='utf-8') as stream:
+        rows=list(csv.DictReader(stream))
+    assert rows[0]['WorkOrderId']=='000123' and all(r['AssignedTo']=='' for r in rows)
+    assert source.read_bytes()==original and not app.workspace.approved_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+
+
+def test_timestamped_tma_gui_preview_counts_and_processing_remain_unapproved(app,tmp_path):
+    from equipment_data_manager.monthly import Workspace
+    from equipment_data_manager.ui.workflow import DesktopWorkflow
+    root=tmp_path/'raw';folder=root/'2026/2026-05 (May)';folder.mkdir(parents=True)
+    source=folder/'CU_Repair_WO_History_-_Previous_Month_(HI-042b)1234567890.xls'
+    fixture=Path(__file__).parent/'fixtures/synthetic/tma_timestamped/may_81.xls'
+    source.write_bytes(fixture.read_bytes())
+    app.workspace=Workspace(root,tmp_path/'candidates',tmp_path/'reserved')
+    app.workflow=DesktopWorkflow(app.workspace.candidate_folder,output_format='powerbi')
+    app.folder_layout='sharepoint_year_month'
+    app.month.set('May');app.year.set('2026')
+    app.scan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert len(app.sources)==1
+    app.month_confirmed.set(True);app.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    result=app.previews[0].result
+    assert result.status=='success' and result.input_rows==result.output_rows==81
+    assert not app.workspace.candidate_folder.exists()
+    app.table.selection_set('0');app.table.event_generate('<<TreeviewSelect>>');app.update()
+    detail=app.detail.get('1.0','end')
+    assert 'Physical worksheet rows, including four heading rows: 85' in detail
+    assert 'Parseable source request dates: 81' in detail
+    assert 'Retained work-order records with missing source assignments: 81' in detail
+    app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.results[0].result.status=='success' and app.results[0].result.output_rows==81
+    assert source.read_bytes()==fixture.read_bytes() and not app.workspace.approved_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'

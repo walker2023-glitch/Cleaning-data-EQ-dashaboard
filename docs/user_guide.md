@@ -70,7 +70,7 @@ as business approval. Cloud synchronization is unverified and Graph is unavailab
 For January/February reconciliation use the private real-data SOP with a separate
 PBIX; do not publish or refresh production. See integration_baseline.md.
 
-This prototype processes supported local CompuClean CSVs and TMA XLSX candidates. It does not connect to Microsoft
+This prototype processes supported local CompuClean CSVs and TMA XLSX/legacy XLS candidates. It does not connect to Microsoft
 or SharePoint. Cleaning accuracy against departmental data is **unverified**;
 outputs are candidates for review, not production-validated reports.
 
@@ -102,10 +102,10 @@ PR's Windows build artifact. This is a review build, not an approved employee re
 
 ## Process a local report
 
-Use **Select local raw files** for supported UTF-8 CompuClean CSV or TMA XLSX exports. Explicitly choose
+Use **Select local raw files** for supported UTF-8 CompuClean CSV or supported TMA XLSX/legacy XLS exports. Explicitly choose
 the correct report type and month, confirm the month, then preview. Filenames do
 not establish the reporting month. For TMA choose the reviewed title/header/footer
-XLSX layout; its output is provisional. Legacy XLS and unverified layouts remain
+XLSX or genuine BIFF8 XLS layout; its output is provisional. Unverified layouts remain
 unsupported. A repair financial-disagreement warning requires review of the source
 and candidate totals; it does not authorize changing calculations or using the output.
 
@@ -254,3 +254,75 @@ Graph unavailable: organizational sign-in and site/library selection are not ena
 in this prototype. No candidate is uploaded or published. Finance reconciliation is
 not business approval. See sharepoint_foundation.md for developer tests and the
 separate IT-authorized live-pilot requirements.
+
+
+## Historical Data — read-only inventory
+
+In Settings, select and save **Raw folder layout**. Choose Standard for
+YYYY-MM/report-type folders or SharePoint year/month for 01_Raw_Data / year /
+YYYY-MM (Jan or full month name), with the three reports directly in each month.
+The choice restores after restart; no original is moved or renamed.
+
+Open **Historical Data**, enter start/end as YYYY-MM (up to 120 months), and
+**Discover Historical Reports**. Inspect Monthly completeness and Problems & files.
+Found means one readable filename/format match, not validated contents or finances.
+Missing, ambiguous, unavailable and unscanned months stay visible. Technical details
+show captured versions/hashes. **Export Discovery Report** saves a new private local
+JSON outside raw and synced folders; keep paths and file identities private.
+
+To clean one complete month, use Process Reports → select that month → Discover
+month → confirm → Preview Processing → review → Process Reports. Existing content
+validation and explicit correction review still apply. Historical batch preview,
+multi-month processing and snapshot buttons are a later milestone. Existing explicit
+candidate packets/snapshot tools remain; no file is automatically approved or sent
+to Power BI. Graph sign-in, business approval and publication remain disabled.
+
+If a folder label disagrees with its number/year, or several exports match, resolve
+it with the data owner; the app will not choose or reorganize sources. Legacy XLS
+requires the supported workbook structure; renaming does not convert it. For unavailable/cloud-only files, use the
+approved OneDrive/IT download procedure, wait for completion, then discover again.
+Local readability never proves cloud synchronization. Stop ends after the current
+read; later months remain Not scanned. See historical_backfill.md in the distribution
+for supported names, synthetic practice and troubleshooting.
+
+
+## Legacy TMA reports and missing assignments
+
+The documented CU_Repair_WO_History_-_Previous_Month_(HI-042b)<digits>.xls family
+is now recognized in shared month folders. Genuine Excel 97–2003 BIFF8 files can
+be previewed without conversion or source modification. The workbook must still
+have the exact supported month title, four/five headers, records and count footer.
+Only Assigned To may be absent. The existing cleaner retains other valid records
+with empty assignment fields and shows missing-column/source/retained counts.
+CSV missing values are empty fields, not a fake employee or literal text null;
+the optional backup-PBIX nullable-assignment query is described in
+legacy_tma_compatibility.md. Existing text-blank pilot semantics remain unchanged.
+
+Previous_Month in a filename does not establish the reporting month. Review title,
+request dates, source/retained counts and exclusions before processing. XLS/XLSX
+duplicates are ambiguous; the app never prefers a format. Invalid, encrypted,
+corrupt or unknown layouts stop safely. Do not rename, convert in place or edit
+SharePoint originals. Any May real-data acceptance is owner-initiated, against the
+original workbook, in a separate private local candidate directory. The actual May
+file has not been verified by these synthetic tests. Old TMA candidates may require
+explicit correction review after the cleaner-version change; old revisions remain.
+
+
+## Timestamped Previous Month TMA export
+
+The owner-described HI-042b XLS layout is supported separately from the earlier
+footer format: one exact CU_Repair_WO_History_-_Previous sheet, numeric generation
+serial in row 1, exact report title row 2, blank row 3, four headings row 4, and
+records from row 5 through the final row with no footer. The calendar month before
+the numeric generation timestamp must match your selected month, and retained
+request dates must also match. Text timestamps and other layouts need review;
+no date or assignment is guessed and no original file is edited.
+
+For May's owner-inspected file, preview should show 85 physical rows, 81 source
+records and 81 parseable May dates, subject to the unchanged record exclusions.
+Missing Assigned To is warned and counted, with blank CSV fields. Review the
+actual IDs, date range, counts, warnings and source hash before processing into a
+separate private local test candidate folder. June requires a July generation
+timestamp and June request dates; do not assume May's count applies. Follow
+tma_timestamped_layout.md in the distribution for the full May/June checklist.
+Candidates remain unapproved; Graph, approval and publishing controls stay disabled.

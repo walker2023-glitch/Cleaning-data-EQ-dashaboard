@@ -1,5 +1,33 @@
 # Equipment Data Manager
 
+## Timestamped TMA HI-042b follow-up
+
+feature/tma-timestamped-layout adds the owner-described numeric generation / exact
+sheet-title-header / no-footer BIFF8 structure as a separate adapter. Its expected
+month is the generation timestamp's previous calendar month, never the filename.
+[May and June Windows/VS Code acceptance](docs/tma_timestamped_layout.md).
+This branch depends on unmerged legacy-tma-compatibility 32d36b6. Existing standard
+XLSX and classic XLS formats, financial v2 and approval gates remain unchanged.
+
+## Legacy TMA compatibility preview
+
+feature/legacy-tma-compatibility targets the unmerged historical-folder-discovery
+branch (c425841); main was bd21499 at inspection. Adds strict legacy filename
+recognition, scoped BIFF8 XLS reading, missing-assignment warnings/counts and the
+unchanged five-column/header-first candidate outputs. No original is modified.
+[Compatibility and manual May/VS Code acceptance](docs/legacy_tma_compatibility.md).
+Actual May schema/accuracy is unverified; no workbook was supplied in this task.
+
+## Historical discovery preview
+
+The feature/historical-folder-discovery branch adds the department's
+01_Raw_Data/year/YYYY-MM (month-label) layout and a read-only Historical Data screen,
+alongside the existing standard layout. Configure the layout explicitly in Settings.
+[Scope, VS Code/Windows walkthrough and dependent backfill PR plan](docs/historical_backfill.md).
+Historical batch preview/processing and snapshot controls are not included in this
+first PR. Cleaning, financial schema v2, local candidate history and approval gates
+remain unchanged; no live Graph or publishing operation is enabled.
+
 ## Microsoft 365 read-only test-pilot components
 
 Owner merged approval UX PR #16 into main 6b7e861. New work is on

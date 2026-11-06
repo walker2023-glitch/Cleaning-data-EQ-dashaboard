@@ -1,5 +1,35 @@
 # Offline cleaning architecture (M1)
 
+## Timestamped TMA layout adapter
+
+work_orders.read_workbook optionally exposes private in-memory sheet/cell metadata
+from the same bytes as the parsed frame. Numeric generation serials use xlrd's
+workbook datemode; text dates are never parsed for this layout. A separate strict
+HI-042b structure gate selects rows 5 onward with no footer slicing, validates the
+prior calendar month and feeds the same original requests transform/writer. ID
+normalization includes the last body row; classic formats retain their bounds.
+
+Standard XLSX/XLS headers and footer checks remain, including a standard workbook
+whose worksheet happens to have the new layout's name. Counts/diagnostics expose
+physical rows separately from source work orders. Cleaner identity is v3; schemas,
+financial v2, revision/correction authority and publication states are unchanged.
+See tma_timestamped_layout.md for the owner evidence, exact gates and acceptance.
+
+## Legacy TMA workbook extension
+
+TmaXlsxCleaner keeps its public name but now reads strict XLSX and genuine BIFF8
+XLS candidates via pinned core xlrd. The original requests transform/writer is
+unchanged; it already supplies missing Assigned To. Only this header becomes
+optional, with source/retained affected counts and empty CSV fields. Extra sheets,
+unknown headers/title/footer and retained-period mismatch still reject. A numeric
+XLS ID's unambiguous zero-only display format is preserved; ambiguous formats fail.
+
+Coordinator extension routing now admits XLS, leaving candidate transactions,
+hash/correction/revision semantics unchanged. Cleaner identity is explicitly
+bumped, so existing candidates may require correction review instead of silent
+skip or overwrite. Financial v2 and TMA CSV schemas are unchanged. See
+legacy_tma_compatibility.md for the unverified real May gate and exact guarantees.
+
 Multi-month compatibility adds strict repair metadata and provisional TMA XLSX
 candidates; see `format_compatibility.md` for current gates and evidence limits.
 M2 adds a local desktop caller; see `desktop_architecture.md`. M1's calculations,

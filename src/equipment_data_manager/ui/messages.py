@@ -101,6 +101,15 @@ def warning_message(code: str):
         "service_status_inferred": "Blank or unrecognized service statuses used the existing date-based fallback",
         "repair_source_totals_differ": "Reported repair totals differ from the existing calculated totals. Review the cost mapping and labor rules before use.",
         "repair_cost_mapping_unverified": "Repair source cost fields and calculated totals need a trusted expected result; existing calculations were preserved.",
+        "tma_assigned_to_source_column_missing": "The source has no Assigned To column. No assignment was invented; missing values remain blank/null in the candidate.",
+        "tma_assigned_to_source_column_missing_records": "Source work-order records without an assignment column",
+        "tma_assigned_to_source_column_missing_retained": "Retained work-order records with missing source assignments",
+        "tma_timestamped_previous_month_layout": "Matched the timestamped HI-042b layout. The numeric generation timestamp's previous calendar month agrees with the selected month; body dates still use the existing validation.",
+        "tma_physical_worksheet_rows": "Physical worksheet rows, including four heading rows",
+        "tma_parseable_source_request_dates": "Parseable source request dates",
+        "tma_xls_cached_values_only": "Legacy XLS was read as stored BIFF cell values. Macros, formulas and external links were not executed or refreshed.",
+        "tma_numeric_identifier_leading_zeros_not_inferable": "A numeric work-order identifier has no stored leading-zero format. Only the stored integer was retained; missing zeros were not guessed.",
+        "tma_cross_period_source_dates": "Parseable source request dates outside the selected month (including records subject to existing exclusions)",
         "tma_output_contract_provisional": "TMA uses the original requests cleaner's candidate schema and title. Departmental output approval is still required.",
         "estimated_price_unavailable": "This export has no cost field. Estimated Price is blank; no price has been inferred.",
     }
@@ -157,4 +166,32 @@ ERRORS.update({
 ERRORS.update({
     'review_identity_unavailable': 'Microsoft Entra reviewer sign-in is not configured. No sign-in was attempted.',
     'review_authority_unavailable': 'Reviewer identity and permission verification are unavailable. Approval stays disabled.',
+})
+
+
+ERRORS.update({
+    'historical_export_exists': 'This discovery-report file already exists. Choose a new filename; the existing report was kept.',
+    'historical_export_requires_local_json': 'Choose a new JSON discovery-report file on trusted local storage, outside synchronization services.',
+    'historical_export_overlaps_raw': 'Save the discovery report outside the raw-report root. Originals must stay unchanged.',
+    'historical_invalid_range': 'Enter YYYY-MM start/end values, with end on or after start and at most 120 months.',
+    'historical_invalid_layout': 'Choose a supported folder layout in Settings and save before discovery.',
+})
+
+
+ERRORS.update({
+    'invalid_xls_file': 'Legacy XLS could not be read safely. It may be corrupted, encrypted, mislabeled or unsupported. Obtain the original genuine XLS workbook. Do not rename an extension to convert it.',
+    'ambiguous_work_order_identifier': 'A numeric work-order identifier has an ambiguous or unsupported Excel display format. Request a text-ID export or a reviewed schema example; no identifier was guessed.',
+    'work_order_file_too_large': 'This TMA workbook exceeds the 64 MiB local processing limit. Contact the maintainer.',
+    'unsupported_work_order_layout': 'TMA requires one worksheet with the supported title, four or five exact headers, records and final summary. Only Assigned To may be absent. Other historical layouts need review.',
+})
+
+
+ERRORS.update({
+    'tma_generation_timestamp_invalid': 'Row 1 must contain a valid numeric Excel generation date/time in the workbook date system. Text dates, missing values and unsupported serials are rejected; no date was guessed.',
+    'tma_generation_period_mismatch': 'The month immediately before the generation timestamp does not match the selected reporting month. Check the source and month; no records were reassigned.',
+    'tma_timestamped_structure_invalid': 'This legacy layout requires one BIFF8 sheet named CU_Repair_WO_History_-_Previous, exactly four columns, the four documented heading rows and at least one body record.',
+    'tma_timestamped_title_invalid': 'Row 2 must contain exactly CU Repair WO History - Previous Month (HI-042b), with its other cells blank.',
+    'tma_timestamped_separator_invalid': 'Row 3 must be a blank separator. This workbook structure needs review.',
+    'tma_timestamped_headers_invalid': 'Row 4 must contain exactly Work Order #, Request Date, Requestor and Request, in that order.',
+    'tma_timestamped_unexpected_footer': 'The timestamped Previous Month layout has no footer. A summary/footer row was found; the source structure needs review.',
 })

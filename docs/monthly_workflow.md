@@ -1,5 +1,16 @@
 # Monthly local workflow
 
+## Flexible discovery follow-up
+
+Settings now offers an explicit persisted SharePoint year/month layout alongside
+this original Standard layout. In the SharePoint mode, Discover month uses strict
+filename/folder/availability checks and binds subsequent preview reads to the
+captured source identity/hash. Resolve ambiguity or malformed labels first.
+The Historical Data screen inventories a range read only; batch preview/process
+and snapshot controls are not implemented in that screen. Existing monthly
+confirmation, correction, candidate packet and explicit snapshot tools remain.
+See historical_backfill.md. Standard layout behavior described below is retained.
+
 This workflow produces **review candidates**, not approved production data. Power
 BI CSV candidate is the desktop's recommended/default format; Legacy candidate
 remains available. CLI and DesktopWorkflow API defaults stay legacy for backwards
@@ -26,7 +37,7 @@ raw_folder/
   2026-01/
     repairs/             one current raw CSV
     service_orders/      one current raw CSV
-    tma_work_orders/     one current raw XLSX
+    tma_work_orders/     one current supported raw XLSX/BIFF8 XLS
   2026-02/...
 candidate_folder/        trusted LOCAL disk, single operator
   powerbi_candidates/   SQLite + immutable candidate versions
@@ -34,10 +45,11 @@ candidate_folder/        trusted LOCAL disk, single operator
 approved_folder/        reserved; no report outputs are written here
 ```
 
-Only direct CSV/XLSX files in the selected month/type folders are discovered.
+Only direct CSV/XLSX/XLS files in the selected month/type folders are discovered.
 Nested history, other months, temporary files and linked files are not ingested.
-TMA `.xls` files are included only to show the specific unsupported-format error;
-renaming XLS to XLSX does not convert it. Type/month folders are routing hints:
+TMA genuine BIFF8 `.xls` files now reach the strict workbook preview, with only
+Assigned To optional. Renaming extensions does not convert workbooks. Unknown,
+corrupt/encrypted or mismatched-period layouts still fail. See legacy_tma_compatibility.md. Type/month folders are routing hints:
 the real adapters still validate file contents and reporting periods. All three
 report types are required for a complete review packet in this prototype; an
 intentionally absent/zero-activity report needs a future approved completeness

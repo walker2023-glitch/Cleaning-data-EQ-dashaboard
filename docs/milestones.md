@@ -1,5 +1,35 @@
 # Milestone status
 
+## Owner-described timestamped TMA follow-up
+
+New feature/tma-timestamped-layout depends on legacy-tma-compatibility 32d36b6.
+Adds strict numeric generation/sheet/title/separator/header/body/no-footer
+validation and prior-calendar-month agreement, preserving the original cleaner
+and classic formats. 731 Linux regression cases pass, no skips/failures/errors.
+Actual May/June application acceptance and Windows packaging/CI are separate gates.
+No financial schema, CompuClean calculation or approval-state change. See
+tma_timestamped_layout.md for exact evidence and acceptance instructions.
+
+## Legacy TMA compatibility candidate — 2026-11-04
+
+Dependent on unmerged historical-discovery c425841. Strict legacy names and BIFF8
+XLS now reach the same title/header/footer/period checks; only Assigned To may be
+absent, reusing the preserved cleaner with blank CSV fields and affected counts.
+684 local Linux regressions pass; actual May workbook and native Windows acceptance
+remain unverified. TMA output schemas and financial schema v2 are unchanged.
+See legacy_tma_compatibility.md. No approval, publishing, Graph or production action.
+
+## Historical backfill — first dependent PR (2026-11-02)
+
+Implemented: flexible local/synced folder discovery and read-only historical
+inventory, persistent layout, desktop completeness/problematics/export, and
+single-month SharePoint-layout preview/process handoff with captured source guards.
+No source modification, live sign-in, approval, publication or calculation change.
+Batch preview/processing and historical snapshot/reconciliation UX remain planned
+as dependent PRs. Existing explicit packet/snapshot/reconciliation tools remain.
+See historical_backfill.md; do not interpret a complete inventory as schema or
+financial validation, or this PR as the full historical-backfill definition of done.
+
 ## Microsoft 365 read-only test-pilot foundation
 
 Based on owner-merged main 6b7e861 / PR #16. Official MSAL/bootstrap, protected cache
