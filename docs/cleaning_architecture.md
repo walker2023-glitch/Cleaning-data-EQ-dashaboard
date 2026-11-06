@@ -1,5 +1,20 @@
 # Offline cleaning architecture (M1)
 
+## Timestamped TMA layout adapter
+
+work_orders.read_workbook optionally exposes private in-memory sheet/cell metadata
+from the same bytes as the parsed frame. Numeric generation serials use xlrd's
+workbook datemode; text dates are never parsed for this layout. A separate strict
+HI-042b structure gate selects rows 5 onward with no footer slicing, validates the
+prior calendar month and feeds the same original requests transform/writer. ID
+normalization includes the last body row; classic formats retain their bounds.
+
+Standard XLSX/XLS headers and footer checks remain, including a standard workbook
+whose worksheet happens to have the new layout's name. Counts/diagnostics expose
+physical rows separately from source work orders. Cleaner identity is v3; schemas,
+financial v2, revision/correction authority and publication states are unchanged.
+See tma_timestamped_layout.md for the owner evidence, exact gates and acceptance.
+
 ## Legacy TMA workbook extension
 
 TmaXlsxCleaner keeps its public name but now reads strict XLSX and genuine BIFF8

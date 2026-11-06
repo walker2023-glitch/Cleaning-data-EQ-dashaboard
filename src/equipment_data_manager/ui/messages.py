@@ -104,6 +104,9 @@ def warning_message(code: str):
         "tma_assigned_to_source_column_missing": "The source has no Assigned To column. No assignment was invented; missing values remain blank/null in the candidate.",
         "tma_assigned_to_source_column_missing_records": "Source work-order records without an assignment column",
         "tma_assigned_to_source_column_missing_retained": "Retained work-order records with missing source assignments",
+        "tma_timestamped_previous_month_layout": "Matched the timestamped HI-042b layout. The numeric generation timestamp's previous calendar month agrees with the selected month; body dates still use the existing validation.",
+        "tma_physical_worksheet_rows": "Physical worksheet rows, including four heading rows",
+        "tma_parseable_source_request_dates": "Parseable source request dates",
         "tma_xls_cached_values_only": "Legacy XLS was read as stored BIFF cell values. Macros, formulas and external links were not executed or refreshed.",
         "tma_numeric_identifier_leading_zeros_not_inferable": "A numeric work-order identifier has no stored leading-zero format. Only the stored integer was retained; missing zeros were not guessed.",
         "tma_cross_period_source_dates": "Parseable source request dates outside the selected month (including records subject to existing exclusions)",
@@ -180,4 +183,15 @@ ERRORS.update({
     'ambiguous_work_order_identifier': 'A numeric work-order identifier has an ambiguous or unsupported Excel display format. Request a text-ID export or a reviewed schema example; no identifier was guessed.',
     'work_order_file_too_large': 'This TMA workbook exceeds the 64 MiB local processing limit. Contact the maintainer.',
     'unsupported_work_order_layout': 'TMA requires one worksheet with the supported title, four or five exact headers, records and final summary. Only Assigned To may be absent. Other historical layouts need review.',
+})
+
+
+ERRORS.update({
+    'tma_generation_timestamp_invalid': 'Row 1 must contain a valid numeric Excel generation date/time in the workbook date system. Text dates, missing values and unsupported serials are rejected; no date was guessed.',
+    'tma_generation_period_mismatch': 'The month immediately before the generation timestamp does not match the selected reporting month. Check the source and month; no records were reassigned.',
+    'tma_timestamped_structure_invalid': 'This legacy layout requires one BIFF8 sheet named CU_Repair_WO_History_-_Previous, exactly four columns, the four documented heading rows and at least one body record.',
+    'tma_timestamped_title_invalid': 'Row 2 must contain exactly CU Repair WO History - Previous Month (HI-042b), with its other cells blank.',
+    'tma_timestamped_separator_invalid': 'Row 3 must be a blank separator. This workbook structure needs review.',
+    'tma_timestamped_headers_invalid': 'Row 4 must contain exactly Work Order #, Request Date, Requestor and Request, in that order.',
+    'tma_timestamped_unexpected_footer': 'The timestamped Previous Month layout has no footer. A summary/footer row was found; the source structure needs review.',
 })

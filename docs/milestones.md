@@ -1,5 +1,15 @@
 # Milestone status
 
+## Owner-described timestamped TMA follow-up
+
+New feature/tma-timestamped-layout depends on legacy-tma-compatibility 32d36b6.
+Adds strict numeric generation/sheet/title/separator/header/body/no-footer
+validation and prior-calendar-month agreement, preserving the original cleaner
+and classic formats. 731 Linux regression cases pass, no skips/failures/errors.
+Actual May/June application acceptance and Windows packaging/CI are separate gates.
+No financial schema, CompuClean calculation or approval-state change. See
+tma_timestamped_layout.md for exact evidence and acceptance instructions.
+
 ## Legacy TMA compatibility candidate — 2026-11-04
 
 Dependent on unmerged historical-discovery c425841. Strict legacy names and BIFF8

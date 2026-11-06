@@ -1,5 +1,18 @@
 # Power BI CSV candidate exports — schema v1
 
+## Timestamped HI-042b adapter follow-up
+
+Adds the owner's verified numeric generation/title/blank/header/no-footer BIFF8
+structure alongside existing standard formats. Generation serials use workbook
+datemode, never text parsing; their previous calendar month and retained request
+dates must agree with selection. Every body row, including last-record formatted
+IDs, reaches the original cleaner. Counts distinguish physical rows from records.
+731 Linux cases pass with no skips/failures/errors, plus installed-wheel May/June
+and phase-36 source/desktop/restart smoke. Actual owner May/June output acceptance
+and native Windows/hosted CI remain unverified. Cleaner identity is v3; schemas,
+financial v2, calculations, immutable revisions and business states are unchanged.
+Depends on legacy-tma-compatibility 32d36b6; see tma_timestamped_layout.md.
+
 ## Legacy TMA compatibility candidate
 
 Adds strict legacy filename recognition and BIFF8 XLS reading through pinned

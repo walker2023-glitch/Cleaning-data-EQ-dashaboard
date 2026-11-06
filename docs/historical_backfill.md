@@ -1,5 +1,15 @@
 # Historical backfill — PR 1: flexible discovery and read-only inventory
 
+## Timestamped HI-042b follow-up
+
+feature/tma-timestamped-layout depends on legacy-tma-compatibility 32d36b6. The
+existing strict filename matcher is unchanged. The owner-described numeric Excel
+generation timestamp / exact title / blank separator / four headers / no footer
+now has a separate adapter; only its generation timestamp's previous calendar
+month may agree with the selected month. See tma_timestamped_layout.md. Historical
+batch/snapshot UX remains outside this fix; source layout discovery never approves
+workbook contents. No production or original raw files are changed.
+
 ## Legacy TMA follow-up (2026-11-04)
 
 feature/legacy-tma-compatibility depends on this discovery branch at c425841;

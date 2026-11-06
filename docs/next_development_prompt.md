@@ -1,5 +1,15 @@
 # Next checkpoint after Microsoft 365 read-only components
 
+## Timestamped HI-042b dependency follow-up
+
+Review feature/tma-timestamped-layout targeting legacy-tma-compatibility 32d36b6,
+which itself depends on discovery c425841. Neither base feature was merged into
+main bd21499 at inspection. Do not replay or merge automatically. The owner has
+supplied verified May structural/timestamp facts; the new no-footer adapter uses
+them strictly, without text date parsing. Actual May/June output acceptance and
+native Windows/hosted checks remain separate. See tma_timestamped_layout.md, then
+resume the historical batch/snapshot plan only from the appropriate reviewed base.
+
 ## Legacy TMA dependency before historical backfill
 
 Review feature/legacy-tma-compatibility targeting historical-folder-discovery

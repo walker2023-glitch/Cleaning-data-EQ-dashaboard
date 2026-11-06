@@ -1,5 +1,14 @@
 # Equipment Data Manager
 
+## Timestamped TMA HI-042b follow-up
+
+feature/tma-timestamped-layout adds the owner-described numeric generation / exact
+sheet-title-header / no-footer BIFF8 structure as a separate adapter. Its expected
+month is the generation timestamp's previous calendar month, never the filename.
+[May and June Windows/VS Code acceptance](docs/tma_timestamped_layout.md).
+This branch depends on unmerged legacy-tma-compatibility 32d36b6. Existing standard
+XLSX and classic XLS formats, financial v2 and approval gates remain unchanged.
+
 ## Legacy TMA compatibility preview
 
 feature/legacy-tma-compatibility targets the unmerged historical-folder-discovery

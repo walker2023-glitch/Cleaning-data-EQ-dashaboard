@@ -1133,3 +1133,31 @@ def test_legacy_tma_discovery_gui_preview_missing_assignment_and_safe_process(ap
     assert rows[0]['WorkOrderId']=='000123' and all(r['AssignedTo']=='' for r in rows)
     assert source.read_bytes()==original and not app.workspace.approved_folder.exists()
     assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+
+
+def test_timestamped_tma_gui_preview_counts_and_processing_remain_unapproved(app,tmp_path):
+    from equipment_data_manager.monthly import Workspace
+    from equipment_data_manager.ui.workflow import DesktopWorkflow
+    root=tmp_path/'raw';folder=root/'2026/2026-05 (May)';folder.mkdir(parents=True)
+    source=folder/'CU_Repair_WO_History_-_Previous_Month_(HI-042b)1234567890.xls'
+    fixture=Path(__file__).parent/'fixtures/synthetic/tma_timestamped/may_81.xls'
+    source.write_bytes(fixture.read_bytes())
+    app.workspace=Workspace(root,tmp_path/'candidates',tmp_path/'reserved')
+    app.workflow=DesktopWorkflow(app.workspace.candidate_folder,output_format='powerbi')
+    app.folder_layout='sharepoint_year_month'
+    app.month.set('May');app.year.set('2026')
+    app.scan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert len(app.sources)==1
+    app.month_confirmed.set(True);app.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    result=app.previews[0].result
+    assert result.status=='success' and result.input_rows==result.output_rows==81
+    assert not app.workspace.candidate_folder.exists()
+    app.table.selection_set('0');app.table.event_generate('<<TreeviewSelect>>');app.update()
+    detail=app.detail.get('1.0','end')
+    assert 'Physical worksheet rows, including four heading rows: 85' in detail
+    assert 'Parseable source request dates: 81' in detail
+    assert 'Retained work-order records with missing source assignments: 81' in detail
+    app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.results[0].result.status=='success' and app.results[0].result.output_rows==81
+    assert source.read_bytes()==fixture.read_bytes() and not app.workspace.approved_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'

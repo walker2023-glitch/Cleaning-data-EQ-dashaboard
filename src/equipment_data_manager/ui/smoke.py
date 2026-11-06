@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -313,6 +313,38 @@ def run_smoke(directory: Path | None) -> int:
                     rows = list(csv.DictReader(stream))
                 assert all(row['AssignedTo'] == '' for row in rows)
                 assert rows[0]['WorkOrderId'] == '000123'
+                assert state['legacy_path'].read_bytes() == state['legacy_bytes']
+                assert list((workspace / 'reserved-approved').iterdir()) == []
+                assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
+                from importlib.resources import files
+                timestamped = files('equipment_data_manager').joinpath('resources/samples/tma_timestamped_sample.xls').read_bytes()
+                folder = workspace / 'sharepoint-raw/2026/2026-06 (June)'
+                folder.mkdir()
+                state['timestamped_path'] = folder / 'CU_Repair_WO_History_-_Previous_Month_(HI-042b)1234567891.xls'
+                state['timestamped_path'].write_bytes(timestamped)
+                state['timestamped_bytes'] = timestamped
+                app.show_page('Process Reports')
+                app.month.set('June')
+                app.scan_button.invoke()
+            elif phase == 34:
+                assert len(app.sources) == 1
+                app.month_confirmed.set(True)
+                app.preview_button.invoke()
+            elif phase == 35:
+                result = app.previews[0].result
+                assert result.status == Status.SUCCESS and result.input_rows == result.output_rows == 3
+                assert 'tma_timestamped_previous_month_layout' in result.warnings
+                assert 'tma_physical_worksheet_rows:7' in result.warnings
+                app.process_button.invoke()
+            elif phase == 36:
+                from hashlib import sha256
+                result = app.results[0].result
+                assert result.status == Status.SUCCESS and result.output_rows == 3
+                assert result.artifact.source_hash == sha256(state['timestamped_bytes']).hexdigest()
+                with result.output_location.open(newline='', encoding='utf-8') as stream:
+                    rows = list(csv.DictReader(stream))
+                assert all(r['AssignedTo'] == '' and r['RequestDate'].startswith('2026-06-') for r in rows)
+                assert state['timestamped_path'].read_bytes() == state['timestamped_bytes']
                 assert state['legacy_path'].read_bytes() == state['legacy_bytes']
                 assert list((workspace / 'reserved-approved').iterdir()) == []
                 assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'

@@ -1,5 +1,15 @@
 # Inputs needed for verified cleaning and desktop pilot (M0–M2)
 
+## May/June timestamped TMA owner acceptance
+
+May's structure and numeric generation timestamp are now owner-verified facts.
+The adapter uses those exact facts; the private workbook itself was not supplied
+here. Complete the Windows acceptance in tma_timestamped_layout.md: independently
+compare 85/81 physical/source counts, 81 parseable May dates, May 1 05:01–May 29
+16:25, exclusions, IDs, assignments and source hash. Inspect June independently:
+July numeric generation timestamp, June body dates, same no-footer structure and
+its own verified counts. No hardcoded 81 or automatic approval is introduced.
+
 ## May 2026 legacy TMA acceptance still needed
 
 No actual May workbook was supplied to this task. The reported four-column shape
