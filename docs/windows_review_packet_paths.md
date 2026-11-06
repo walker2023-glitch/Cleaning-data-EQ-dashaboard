@@ -158,6 +158,13 @@ python -m uv run --frozen --all-extras python -c "import equipment_data_manager.
 python -m uv run --frozen --all-extras python .github/run_tests.py
 python -m uv run --frozen --all-extras python -m equipment_data_manager.ui.app --smoke-test --smoke-dir data/packet-windows-smoke
 ./packaging/build.ps1
+if ($LASTEXITCODE -ne 0) { throw 'Windows build failed.' }
+$packaged = Start-Process -FilePath .\dist\EquipmentDataManager\EquipmentDataManager.exe -WorkingDirectory $PWD -ArgumentList @('--smoke-test','--smoke-dir','data/packet-packaged-smoke') -PassThru
+if (-not $packaged.WaitForExit(120000)) { $packaged.Kill(); throw 'Packaged smoke timed out.' }
+if ($packaged.ExitCode -ne 0) { throw 'Packaged smoke failed.' }
+$report = Get-Content data/packet-packaged-smoke/desktop-smoke.json | ConvertFrom-Json
+$restart = Get-Content data/packet-packaged-smoke/restore-smoke.json | ConvertFrom-Json
+if ($report.status -ne 'passed' -or $report.phase -ne 36 -or -not $restart.passed) { throw 'Packaged/restart evidence failed.' }
 ```
 
 Run the ordinary-root full suite first; short-root reruns are diagnostic evidence,
