@@ -1,5 +1,17 @@
 # Departmental workflow roadmap and project review
 
+## Windows packet-path maintenance follow-up
+
+feature/windows-review-packet-fix starts directly from the now-shared exact
+integration 1c63644 (parents main f416ce1 and diagnostics 3711aed). The owner's
+failing target measures 260 UTF-16 units; its parent is only 214. Exact baseline
+source reproduces the parent-existing error under classic Win32 emulation;
+shorter-root baseline and compact-path fix both succeed. No integration/main
+merge or push occurs. Full-UUID lowercase base32 packet names, shorter hidden
+staging, absolute Windows staging/final preflight and exclusive/fsynced summary
+writes preserve data/schema/revision/approval behavior. Native Windows and hosted
+results remain verification gates. See windows_review_packet_paths.md.
+
 ## TMA structure rejection investigation
 
 feature/tma-structure-diagnostics starts at timestamped-layout 3b00a95. Main is

@@ -1,5 +1,14 @@
 # Windows prototype packaging and distribution
 
+## Review-packet path maintenance checks
+
+The existing executable phase-36 smoke includes review-packet export and historical
+TMA processing. The packet writer now has shorter staging/final names with all UUID
+bits retained and final-path Windows preflight. Windows/Linux matrix/native build
+must pass at the fix head; do not claim a Windows executable from Linux wheel/source
+tests. See windows_review_packet_paths.md for exact integration 1c63644 ancestry, the
+measured 260-unit target, short-root comparison and failure/cleanup verification.
+
 ## Formatting-only TMA structure diagnostic build
 
 The existing phase-36 executable smoke now processes a June fixture with formatting-
