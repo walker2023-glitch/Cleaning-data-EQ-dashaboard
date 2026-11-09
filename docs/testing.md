@@ -1,5 +1,27 @@
 # Test instructions and evidence limits
 
+## Windows review-packet staging paths
+
+Exact integration **1c63644b9da1d0e21345db936fcd36b270af9a1e** is now fetched and
+verified (parents f416ce1 / 3711aed; tree e03c70d). The fix branch starts directly
+there. The reported path measures 260 UTF-16 units; the parent is 214. Baseline
+source, verified as the loaded module, reproduces FileNotFoundError with an existing
+parent under classic Win32 emulation; shorter-root baseline and patched export
+succeed. The four reported widget cases pass on unmodified 1c63644 under Linux.
+Native Windows and hosted checks are distinct remaining gates.
+
+New deterministic tests model parent-existing Win32 long-path failure, compare
+short roots, and verify compact UUID entropy, UTF-16 preflight of staging AND final
+paths, exclusive/fsynced summary copy, forced collisions and missing-parent/
+permission/fsync/rename cleanup without altering old packets/raws/revisions. Full Linux regression on the exact-integration-derived fix: **765 passed,
+0 failures, 0 errors, 0 skips**. All prior 754 cases remain; 11 new path/cleanup
+cases were added. Wheel/sdist, installed-wheel four-table financial-v2 snapshot checks, and serial
+source/installed-wheel phase-36 desktop/restart passed. One overlapping-display
+source smoke initially failed at F1; exclusive serial runs passed without changing
+any assertions. Native Windows outcomes are reported separately. Existing tests are
+not disabled, shortened or skipped. See windows_review_packet_paths.md for exact
+four-case Windows/default/short-root commands and the --basetemp safety warning.
+
 ## TMA formatting-only structure regression
 
 New synthetic tests reproduce BIFF 80/native date type 3/default 85×4 dimensions

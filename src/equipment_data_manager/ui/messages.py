@@ -206,3 +206,8 @@ ERRORS.update({
     'tma_timestamped_insufficient_rows': 'Row-count check failed. This layout requires four heading rows and at least one work-order record.',
     'tma_timestamped_row_count_mismatch': 'Content-row alignment check failed: the xlrd content row count differs from the parsed frame. Keep the original unchanged and collect the private structure diagnostic.',
 })
+
+
+ERRORS.update({
+    'review_packet_path_too_long': 'The complete review-packet path exceeds conservative Windows path limits. Choose a shorter trusted local Candidate Output folder, then export again. No packet was published; original reports and existing candidates were kept.',
+})
