@@ -1,5 +1,6 @@
 """Read-only inventory screen; processing stays in the existing monthly workflow."""
 import json
+import re
 from pathlib import Path
 from tkinter import filedialog, ttk
 
@@ -15,6 +16,8 @@ class HistoricalPage(ctk.CTkFrame):
     def __init__(self, parent, app):
         super().__init__(parent, fg_color='white')
         self.app, self.inventory = app, None
+        self.batch = None
+        self.preview_rows = {}
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
         self.caption = ctk.CTkLabel(self, text='Read-only historical inventory. No cleaning, approval or publishing.',
@@ -34,6 +37,10 @@ class HistoricalPage(ctk.CTkFrame):
         self.discover_button = ctk.CTkButton(form, text='Discover Historical Reports', command=self.discover, width=230, fg_color='#087F8C')
         self.discover_button.grid(row=1, column=2, padx=10, pady=6)
         self.export_button = ctk.CTkButton(form, text='Export Discovery Report', command=self.export, state='disabled', width=210, fg_color='#172B4D')
+        self.preview_button = ctk.CTkButton(form, text='Preview Selected Months', command=self.preview, state='disabled', width=230)
+        self.preview_button.grid(row=2, column=2, padx=10, pady=8)
+        self.preview_export_button = ctk.CTkButton(form, text='Export Preview Report', command=self.export_batch, state='disabled', width=210)
+        self.preview_export_button.grid(row=3, column=0, columnspan=2, padx=10, pady=8, sticky='w')
         self.export_button.grid(row=2, column=0, columnspan=2, padx=10, pady=8, sticky='w')
         self.summary = ctk.CTkLabel(self, text='Choose the root and layout in Settings, then select a range of up to 120 months.',
             anchor='w', wraplength=820, justify='left', text_color='#52647A')
@@ -46,9 +53,9 @@ class HistoricalPage(ctk.CTkFrame):
             tab.grid_rowconfigure(0, weight=1)
         columns = ('month', 'repairs', 'service', 'tma', 'status')
         self.table = ttk.Treeview(month_tab, columns=columns, show='headings', style='EDM.Treeview')
-        for key, label in zip(columns, ('Month', 'Repairs', 'Service Orders', 'TMA', 'Inventory status')):
+        for key, label in zip(columns, ('Month', 'Repairs', 'Service Orders', 'TMA', 'Inventory / preview status')):
             self.table.heading(key, text=label)
-            self.table.column(key, width=130, minwidth=85, stretch=True)
+            self.table.column(key, width=300 if key == 'status' else 100, minwidth=85, stretch=True)
         self.table.grid(row=0, column=0, sticky='nsew')
         scrollbar = ttk.Scrollbar(month_tab, orient='vertical', command=self.table.yview)
         scrollbar.grid(row=0, column=1, sticky='ns')
@@ -62,18 +69,22 @@ class HistoricalPage(ctk.CTkFrame):
 
     def invalidate(self):
         self.inventory = None
+        self.batch = None
+        self.preview_rows = {}
         if hasattr(self, 'table'):
             self.table.delete(*self.table.get_children())
             for box in (self.details, self.technical):
                 self._text(box, 'Discover the selected range to see an inventory. No processing has run.')
             self.export_button.configure(state='disabled')
+            self.preview_button.configure(state='disabled')
+            self.preview_export_button.configure(state='disabled')
             self.summary.configure(text='Selection changed. Discover again; previous results do not describe this selection.')
 
     def selection_caption(self):
         workspace = self.app.workspace
         root = str(workspace.raw_folder) if workspace else 'Configure Raw Data Folder in Settings'
         layout = LAYOUT_LABELS[self.app.folder_layout]
-        self.caption.configure(text=f'{layout}\nRaw root: {root}\nRead-only inventory — found does not mean schema-validated. Cloud sync is unverified.')
+        self.caption.configure(text=f'{layout}\nRaw root: {root}\nRead-only inventory and preview — no cleaned candidates, approval or publication. Cloud sync is unverified.')
 
     def discover(self):
         if self.app.worker.busy or self.app.settings_worker.busy:
@@ -98,6 +109,7 @@ class HistoricalPage(ctk.CTkFrame):
 
     def completed(self, inventory):
         self.inventory = inventory
+        self.table.delete(*self.table.get_children())
         for month in inventory.months:
             self.table.insert('', 'end', iid=month.period, values=(month.period,
                 *(r.status.replace('_', ' ').title() for r in month.reports),
@@ -107,6 +119,7 @@ class HistoricalPage(ctk.CTkFrame):
             + 'Schemas, row counts and financials have not been previewed. No processing has run.')
         self._text(self.technical, json.dumps(inventory.document(), indent=2))
         self.export_button.configure(state='normal')
+        self.busy(False)
         if inventory.months:
             self.table.selection_set(inventory.months[0].period)
             self.show_details()
@@ -121,6 +134,9 @@ class HistoricalPage(ctk.CTkFrame):
     def show_details(self, *_):
         if not self.inventory or not self.table.selection():
             return
+        if self.preview_rows:
+            self.show_preview_details(self.table.selection()[0])
+            return
         month = next(m for m in self.inventory.months if m.period == self.table.selection()[0])
         lines = [f'{month.period} — local inventory, synchronization unverified',
                  'No cleaning or business validation has run.', '']
@@ -131,8 +147,7 @@ class HistoricalPage(ctk.CTkFrame):
                 lines.append('Required report is missing; no zero-activity report was inferred.')
             lines.extend(describe_issue(i) for i in report.issues)
             for source in report.sources:
-                lines.extend([f'File: {source.item_id}', f'Size: {source.size_bytes} bytes',
-                              f'SHA-256: {source.sha256 or "Unavailable — stable bytes not captured"}'])
+                lines.extend([f'File: {source.name}', f'Size: {source.size_bytes} bytes'])
         self._text(self.details, '\n'.join(lines))
 
     def export(self):
@@ -149,3 +164,98 @@ class HistoricalPage(ctk.CTkFrame):
             field.configure(state='disabled' if value else 'normal')
         self.discover_button.configure(state='disabled' if value else 'normal')
         self.export_button.configure(state='normal' if self.inventory is not None and not value else 'disabled')
+        self.preview_button.configure(state='normal' if self.inventory is not None and not self.inventory.stopped and self.app.workspace is not None and not value else 'disabled')
+        self.preview_export_button.configure(state='normal' if self.batch is not None and not value else 'disabled')
+
+    def preview(self):
+        if self.inventory is None or self.inventory.stopped or self.app.worker.busy or self.app.settings_worker.busy:
+            return
+        from equipment_data_manager.historical_preview import preview_history
+        from equipment_data_manager.ui.worker import JobEvent
+        inventory = self.inventory
+        self.preview_rows = {}
+        self.batch = None
+        root = self.app.workflow.base_output_root
+        for month in inventory.months:
+            self.table.item(month.period, values=(month.period, '—', '—', '—', 'Not previewed'))
+        self.app._start('historical_preview', lambda progress, stop: preview_history(
+            LocalFolderStorage(Path(inventory.root)), inventory, root, progress=progress, cancelled=stop,
+            on_result=lambda result: self.app.worker.events.put(JobEvent('historical_preview_update', result)),
+            on_start=lambda period, kind: self.app.worker.events.put(JobEvent('historical_preview_active', (period, kind)))))
+        self.app.status.set('Preview only. No candidates or approval records will be written. Stop ends after the current report.')
+
+    def preview_update(self, result):
+        from equipment_data_manager.historical_preview import month_status
+        self.preview_rows[(result.month, result.report_type)] = result
+        reports = [self.preview_rows.get((result.month, kind)) for kind in SUPPORTED_REPORTS]
+        values = [str(r.retained_records) if r and r.retained_records is not None else '—' for r in reports]
+        present = [r for r in reports if r]
+        status = month_status(present) if len(present) == 3 else 'Preview in progress'
+        self.table.item(result.month, values=(result.month, *values, status))
+        self.summary.configure(text=f'{len(self.preview_rows)} report slots checked. Preview only; business accuracy not independently verified. Select a month, then open Problems & files.')
+        self.app.status.set(f'{result.month} • {SUPPORTED_REPORTS[result.report_type]} • {result.status.replace("_", " ")}')
+        if self.table.selection() == (result.month,):
+            self.show_preview_details(result.month)
+
+    def preview_completed(self, batch):
+        self.batch = batch
+        self.summary.configure(text=('Stopped safely. ' if batch.stopped else 'Batch preview complete. ')
+            + f'{len(batch.reports)} report slots shown. No candidates written. Business accuracy not independently verified. Cloud synchronization unverified.')
+        self._text(self.technical, json.dumps(batch.document(), indent=2))
+        self.busy(False)
+
+    def show_preview_details(self, period):
+        from equipment_data_manager.historical_preview import LABELS
+        from equipment_data_manager.ui.messages import error_message, warning_message, REASONS
+        def readable(key):
+            return REASONS.get(key, re.sub(r"(?<=[a-z])(?=[A-Z])", " ", key).replace("_", " ").replace(":", " — "))
+        lines = [f'{period} — read-only preview', 'Cleaning success is not independent verification of business accuracy.',
+                 'Missing financial values remain missing. Known sums may be incomplete.', '']
+        for kind, label in SUPPORTED_REPORTS.items():
+            result = self.preview_rows.get((period, kind))
+            lines += ['', label]
+            if result is None:
+                lines.append('Not previewed')
+                continue
+            lines += [LABELS[result.status], f'File: {result.source_filename or "No source selected"}',
+                      f'Source records: {result.source_records if result.source_records is not None else "Not assessed"}',
+                      f'Retained: {result.retained_records if result.retained_records is not None else "Not assessed"}',
+                      f'Excluded: {result.excluded_records if result.excluded_records is not None else "Not assessed"}',
+                      f'Source integrity: {result.integrity.replace("_", " ")}']
+            if result.status in ('failed', 'unsupported', 'stale', 'missing'):
+                lines += [error_message(result.code)]
+            financial = dict(result.financial)
+            def display_value(key, value):
+                if value is None:
+                    return 'Unavailable (incomplete)'
+                text = readable(str(value))
+                incomplete = (key == 'KnownRepairTotalCost' and
+                    (int(financial.get('UnavailableRepairCostCount') or '0') > 0 or result.source_records != result.retained_records))
+                if key.endswith('KnownSum'):
+                    incomplete = int(financial.get(key.removesuffix('KnownSum') + 'MissingCount') or '0') > 0
+                return text + (' (incomplete)' if incomplete else '')
+            for title, pairs in (('Exclusion reasons (existing rules)', result.exclusions),
+                                 ('Missing values in retained records', result.missing_values),
+                                 ('Date validation observations', result.date_observations),
+                                 ('Reported financial summary / separate estimated and legacy known sums', result.financial)):
+                if pairs:
+                    lines += [title] + [f'  {readable(key)}: {display_value(key, value)}' for key, value in pairs]
+            if result.report_type == 'tma_work_orders' and result.retained_records is not None:
+                lines.append('Retained request dates passed the existing selected-month validator. Timestamp checks apply only to the timestamped layout.')
+            lines += ['Warnings:'] + [f'  {warning_message(w).replace("A monthly financial summary is saved beside the repair CSV.", "The monthly summary is computed in memory; nothing is saved by preview.")}' for w in result.warnings]
+            if result.candidate_status == 'needs_review':
+                lines.append('Potential correction to an existing candidate. This preview does not select or replace a revision.')
+        self._text(self.details, '\n'.join(lines))
+        self._text(self.technical, json.dumps([r.document() for (month, _), r in self.preview_rows.items() if month == period], indent=2))
+
+    def export_batch(self):
+        if self.batch is None or self.app.worker.busy or self.app.settings_worker.busy:
+            return
+        from equipment_data_manager.historical_preview import export_preview
+        target = filedialog.asksaveasfilename(parent=self.app, title='Save nonproduction diagnostic preview outside all workspace folders',
+            initialfile='historical-preview.csv', defaultextension='.csv',
+            filetypes=[('Diagnostic CSV', '*.csv'), ('Technical diagnostic JSON', '*.json')])
+        if target:
+            batch, workspace = self.batch, self.app.workspace
+            roots = (workspace.raw_folder, workspace.candidate_folder, workspace.approved_folder)
+            self.app._start('historical_preview_export', lambda progress, stop: export_preview(batch, Path(target), protected_roots=roots))

@@ -183,6 +183,9 @@ def preview_history(provider, inventory, output_root, *, progress=None, on_resul
                     except Exception:
                         # Do not expose exception text or allow one adapter failure to hide other months.
                         item = ReportPreview(month.period, kind.value, source.name, 'failed', 'preview_failed')
+                    finally:
+                        # Do not carry a prior file's bytes into the next read.
+                        read = result = None
             results.append(item)
             if on_result:
                 on_result(item)
