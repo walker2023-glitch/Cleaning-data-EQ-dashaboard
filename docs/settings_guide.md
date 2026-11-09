@@ -127,3 +127,9 @@ For developers, explicit --output-dir or an injected workflow keeps isolated
 session behavior and stores preferences inside that output root only if changed.
 Use --settings-file with a fresh .toml under ignored data/ to test full automatic
 startup without touching your normal profile settings. See the source repository’s development.md section “Settings and Guided Mode preview.”
+
+
+Historical batch preview reuses the saved raw root, explicit layout and trusted
+local candidate root. It does not save settings or change the single reporting
+month. Its range/results survive navigation but reset on restart or root/layout/
+range changes. No new settings schema or production destination is introduced.

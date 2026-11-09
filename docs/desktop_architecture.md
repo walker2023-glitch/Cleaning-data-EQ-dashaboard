@@ -183,3 +183,27 @@ cloud sync and local candidate/SQLite storage. Graph stays disabled after busy/s
 reset; Guided Mode explains why. Settings schema/persistence is unchanged. The injected
 Graph/MSAL/cache components are developer foundation only; real transport/auth bootstrap
 and connected account/site/library UI are not supplied. No candidate publishing exists.
+
+
+## Historical batch preview boundary
+
+`historical_preview.preview_history` consumes the live session inventory and the
+same LocalFolderStorage provider. It rechecks captured identities/version/SHA,
+then calls the schema-v2 coordinator's `preview(include_details=True)` sequentially.
+No `process`, write transaction or revision selection is called. The optional flag
+only supplies fresh in-memory diagnostics for unchanged candidates, preserving the
+SKIPPED decision and default fast skip API. Normal correction tokens are unchanged.
+Summary parsing uses the existing normalized table and financial-summary contracts;
+financial arithmetic remains exclusively in existing cleaners.
+
+Only safe aggregate ReportPreview objects cross the worker queue. Partial result
+events are handled separately from done/error on Tk's main thread; numeric progress
+does not replace the active month/type caption. Cancellation is checked between
+report slots. Every expected slot remains visible, including missing, failed and
+not-previewed slots. Raw bytes and employee cell contents are not stored in results.
+Historical range is session-only and independent of persistent single-month state.
+
+Explicit exports use exclusive local files outside raw/candidate/approved roots,
+link/junction rejection, conservative Windows UTF-16 path preflight and fsync with
+owned-partial cleanup. Reports cannot be imported as processing authority.
+See historical_batch_preview.md for diagnostic scope and point-in-time guarantees.

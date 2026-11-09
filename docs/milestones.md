@@ -199,3 +199,12 @@ Native DPAPI Windows tests do not establish departmental cache/ACL/device approv
 Live sign-in/selection, approved publication and production use remain gated; see
 sharepoint_foundation.md and sharepoint_live_pilot.md. The owner reports successful
 Power BI imports/visual tests and a separate inventory matrix, not production approval.
+
+
+## Historical batch preview follow-up
+
+Based on merged stable main f49b297. Historical Data adds read-only range preview,
+existing-adapter counts/diagnostics, financial-v2 evidence, cancellable sequential
+work and private diagnostic export. See historical_batch_preview.md for scope,
+Windows acceptance and verification limits. No candidate batch processing,
+approval, publication or Power BI refresh is introduced.
