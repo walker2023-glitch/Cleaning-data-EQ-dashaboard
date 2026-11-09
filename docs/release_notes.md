@@ -1,5 +1,30 @@
 # Power BI CSV candidate exports — schema v1
 
+## Windows review-packet staging path fix
+
+Based directly on exact integration 1c63644, not main. The reported summary target
+is 260 UTF-16 units while its parent is 214. Exact baseline source reproduces a
+parent-existing FileNotFoundError under the matching classic Win32 limit model;
+a short root succeeds. Packet UUIDs retain all bits in shorter lowercase base32
+names; shorter staging, absolute staging/final preflight and exclusive/fsynced
+summary copies preserve contracts, atomic visibility, cleanup and old packets.
+765 Linux regressions pass with no failures/skips, plus wheel/financial-v2 snapshot
+and serial desktop/restart checks. Native Windows/hosted outcomes remain pending.
+No integration/main merge or main push, calculation, schema or approval change.
+See windows_review_packet_paths.md for exact evidence and native Windows steps.
+
+## May structure rejection diagnostic fix
+
+Based on timestamped-layout 3b00a95. Reproduced a default-versus-formatting xlrd
+geometry mismatch: a blank styled fifth column caused the exact old rejection,
+while native BIFF 80/date type 3/default 85×4 passes. Trim only trailing EMPTY/
+BLANK style edges for timestamped content, preserving XF ID padding and rejecting
+all extra data. Add exact structural condition messages, a private read-only
+inspector and actual loaded-module/build identity. Cleaner v3.1; no schema,
+calculation, month, original-file or business-approval change. 754 Linux cases pass
+without failures/skips, plus wheel/desktop/restart checks. Actual May cause/output
+and native Windows/hosted CI remain owner/external gates. See tma_structure_debug.md.
+
 ## Timestamped HI-042b adapter follow-up
 
 Adds the owner's verified numeric generation/title/blank/header/no-footer BIFF8

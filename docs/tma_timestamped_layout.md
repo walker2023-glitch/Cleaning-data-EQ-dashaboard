@@ -1,5 +1,16 @@
 # Timestamped TMA HI-042b layout — May and June local acceptance
 
+## Structure rejection diagnostic follow-up
+
+See tma_structure_debug.md for a reproduced formatting-only geometry defect and
+exact Windows loaded-module/commit checks. format_info=True can include blank
+style columns/rows absent from default xlrd inspection. The follow-up excludes only
+trailing EMPTY/BLANK cell types for timestamped content dimensions while retaining
+ID number formats and strict rejection of real extra data. It emits condition-
+specific structural failures and provides a private read-only diagnostic. The
+owner-described native type-3 85×4 shape itself already passes all old predicates;
+the private file's actual cause still needs that diagnostic, not an assumed fix.
+
 ## Evidence and dependency
 
 Branch feature/tma-timestamped-layout starts from legacy-tma-compatibility

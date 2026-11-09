@@ -335,6 +335,8 @@ def run_smoke(directory: Path | None) -> int:
                 assert result.status == Status.SUCCESS and result.input_rows == result.output_rows == 3
                 assert 'tma_timestamped_previous_month_layout' in result.warnings
                 assert 'tma_physical_worksheet_rows:7' in result.warnings
+                assert 'tma_formatting_only_edges_ignored' in result.warnings
+                assert 'tma-structure-v1-content-bounds' in app.runtime_info
                 app.process_button.invoke()
             elif phase == 36:
                 from hashlib import sha256

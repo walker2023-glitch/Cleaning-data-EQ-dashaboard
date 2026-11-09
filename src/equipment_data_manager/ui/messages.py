@@ -105,6 +105,7 @@ def warning_message(code: str):
         "tma_assigned_to_source_column_missing_records": "Source work-order records without an assignment column",
         "tma_assigned_to_source_column_missing_retained": "Retained work-order records with missing source assignments",
         "tma_timestamped_previous_month_layout": "Matched the timestamped HI-042b layout. The numeric generation timestamp's previous calendar month agrees with the selected month; body dates still use the existing validation.",
+        "tma_formatting_only_edges_ignored": "Trailing formatting-only blank cells were excluded from worksheet dimensions. No data-valued cells or internal rows were removed.",
         "tma_physical_worksheet_rows": "Physical worksheet rows, including four heading rows",
         "tma_parseable_source_request_dates": "Parseable source request dates",
         "tma_xls_cached_values_only": "Legacy XLS was read as stored BIFF cell values. Macros, formulas and external links were not executed or refreshed.",
@@ -194,4 +195,19 @@ ERRORS.update({
     'tma_timestamped_separator_invalid': 'Row 3 must be a blank separator. This workbook structure needs review.',
     'tma_timestamped_headers_invalid': 'Row 4 must contain exactly Work Order #, Request Date, Requestor and Request, in that order.',
     'tma_timestamped_unexpected_footer': 'The timestamped Previous Month layout has no footer. A summary/footer row was found; the source structure needs review.',
+})
+
+
+ERRORS.update({
+    'tma_timestamped_extension_mismatch': 'The timestamped HI-042b structure requires genuine BIFF8 XLS; this input extension does not match.',
+    'tma_timestamped_sheet_mismatch': 'Worksheet-name check failed. Expected exactly CU_Repair_WO_History_-_Previous; the actual source name is withheld from diagnostics.',
+    'tma_timestamped_columns_mismatch': 'Content-column check failed. This layout requires exactly four columns containing data; formatting-only blank columns are excluded.',
+    'tma_timestamped_parsed_columns_mismatch': 'Parsed-column check failed. The worksheet reader did not produce exactly four data columns; keep the source unchanged and contact the maintainer.',
+    'tma_timestamped_insufficient_rows': 'Row-count check failed. This layout requires four heading rows and at least one work-order record.',
+    'tma_timestamped_row_count_mismatch': 'Content-row alignment check failed: the xlrd content row count differs from the parsed frame. Keep the original unchanged and collect the private structure diagnostic.',
+})
+
+
+ERRORS.update({
+    'review_packet_path_too_long': 'The complete review-packet path exceeds conservative Windows path limits. Choose a shorter trusted local Candidate Output folder, then export again. No packet was published; original reports and existing candidates were kept.',
 })

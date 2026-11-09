@@ -1,11 +1,13 @@
 """Offline monthly discovery and immutable review packets, never publication."""
 
+from base64 import b32encode
 from dataclasses import dataclass
 from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import shutil
+import sys
 import tomllib
 from uuid import uuid4
 
@@ -107,6 +109,31 @@ def discover(workspace: Workspace, period: str, *, folder_layout="standard") -> 
     return MonthlySelection(period, tuple(found), tuple(issues))
 
 
+def _packet_identifier():
+    # 26 lowercase base32 characters retain every UUID bit on case-insensitive
+    # Windows filesystems. No truncation, case-sensitive alphabet or weaker nonce.
+    return b32encode(uuid4().bytes).decode('ascii').rstrip('=').lower()
+
+
+def _check_windows_packet_paths(staged, final, relatives):
+    """Conservative classic Win32 bounds, including UTF-16 and final read paths.
+
+    No registry/long-path-policy change; fail before creating packet directories.
+    The same logical contract/filenames are retained on every platform.
+    """
+    def units(path):
+        return len(str(path).encode('utf-16-le')) // 2
+    for root in (staged, final):
+        directories = {root}
+        for relative in relatives:
+            target = root / relative
+            if units(target) >= 260:  # MAX_PATH includes the terminating null.
+                raise ProcessingError('review_packet_path_too_long')
+            directories.add(target.parent)
+        if any(units(folder) >= 248 for folder in directories):
+            raise ProcessingError('review_packet_path_too_long')
+
+
 def export_review_packet(workspace: Workspace, coordinator, period: str) -> Path:
     """Copy one verified CURRENT normalized candidate/type into a new snapshot.
 
@@ -144,9 +171,16 @@ def export_review_packet(workspace: Workspace, coordinator, period: str) -> Path
     parent = workspace.candidate_folder / "review_packets"
     if not parent.resolve().is_relative_to(workspace.candidate_folder.resolve()):
         raise ProcessingError("unsafe_review_packet_folder")
+    identifier = _packet_identifier()
+    staged, final = parent / f".s-{identifier}", parent / f"{period}-{identifier}"
+    relatives = [f'{kind.value}/{name}' for kind,(name,_) in payloads.items()]
+    relatives += ['repair_financial_summary/' + name for name,_,_ in summaries]
+    relatives.append('packet.json')
+    if sys.platform == 'win32':
+        _check_windows_packet_paths(staged.absolute(), final.absolute(), relatives)
     parent.mkdir(parents=True, exist_ok=True)
-    identifier = uuid4().hex
-    staged, final = parent / f".staging-{identifier}", parent / f"{period}-{identifier}"
+    if final.exists():
+        raise FileExistsError('review_packet_destination_exists')
     staged.mkdir()
     try:
         for kind, (name, raw) in payloads.items():
@@ -157,7 +191,10 @@ def export_review_packet(workspace: Workspace, coordinator, period: str) -> Path
                 os.fsync(stream.fileno())
         for name, raw, _ in summaries:
             (staged / 'repair_financial_summary').mkdir(exist_ok=True)
-            (staged / 'repair_financial_summary' / name).write_bytes(raw)
+            with (staged / 'repair_financial_summary' / name).open('xb') as stream:
+                stream.write(raw)
+                stream.flush()
+                os.fsync(stream.fileno())
         (staged / "packet.json").write_text(json.dumps(dict(status="CandidateUnverified", period=period,
             production_ready=False, sync_verified=False, files=manifest,
             supplemental_files=[dict(file='repair_financial_summary/' + name, sha256=sha256(raw).hexdigest(),

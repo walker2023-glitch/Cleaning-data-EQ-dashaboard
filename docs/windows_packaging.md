@@ -1,5 +1,24 @@
 # Windows prototype packaging and distribution
 
+## Review-packet path maintenance checks
+
+The existing executable phase-36 smoke includes review-packet export and historical
+TMA processing. The packet writer now has shorter staging/final names with all UUID
+bits retained and final-path Windows preflight. Windows/Linux matrix/native build
+must pass at the fix head; do not claim a Windows executable from Linux wheel/source
+tests. See windows_review_packet_paths.md for exact integration 1c63644 ancestry, the
+measured 260-unit target, short-root comparison and failure/cleanup verification.
+
+## Formatting-only TMA structure diagnostic build
+
+The existing phase-36 executable smoke now processes a June fixture with formatting-
+only edges and checks the diagnostic build marker, content counts and source hash.
+The *.xls resource rule already includes it. Installed-wheel CI exercises the new
+read-only diagnostic and 81-record formatting-column regression; this branch's
+push config runs native Windows packaging even if API-based PR creation is blocked.
+Actual Windows outcomes remain unverified until run/read; a Linux wheel/source
+smoke is not a native executable result. See tma_structure_debug.md.
+
 ## Timestamped TMA package follow-up
 
 The bundled tma_timestamped_sample.xls is an invented three-record June report,

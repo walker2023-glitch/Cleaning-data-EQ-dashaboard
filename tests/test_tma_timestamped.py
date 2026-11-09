@@ -94,10 +94,10 @@ def test_generation_previous_month_must_agree_with_selected_month(period):
 
 
 @pytest.mark.parametrize('name,code', [('may_wrong_title.xls','tma_timestamped_title_invalid'),
-    ('may_wrong_sheet.xls','tma_timestamped_structure_invalid'),('may_extra_sheet.xls','unsupported_work_order_layout'),
+    ('may_wrong_sheet.xls','tma_timestamped_sheet_mismatch'),('may_extra_sheet.xls','unsupported_work_order_layout'),
     ('may_separator.xls','tma_timestamped_separator_invalid'),('may_headers.xls','tma_timestamped_headers_invalid'),
     ('may_missing_header.xls','tma_timestamped_headers_invalid'),('may_footer.xls','tma_timestamped_unexpected_footer'),
-    ('may_extra_column.xls','tma_timestamped_structure_invalid'),('may_extra_title_cell.xls','tma_timestamped_title_invalid'),
+    ('may_extra_column.xls','tma_timestamped_columns_mismatch'),('may_extra_title_cell.xls','tma_timestamped_title_invalid'),
     ('may_wrong_date.xls','output_period_mismatch')])
 def test_malformed_structures_or_cross_month_dates_fail_before_writes(tmp_path,name,code):
     result=ProcessingCoordinator(tmp_path/'out').preview(ProcessingRequest('tma_work_orders','2026-05',raw_bytes=raw(name),source_name=NAME))
@@ -180,4 +180,4 @@ def test_discovery_preview_process_source_changes_and_immutable_corrections(tmp_
 
 def test_bundled_timestamped_sample_is_synthetic_june_fixture():
     sample=Path(__file__).resolve().parents[1]/'src/equipment_data_manager/resources/samples/tma_timestamped_sample.xls'
-    assert sample.read_bytes()==raw('june.xls')
+    assert sample.read_bytes()==raw('formatting_june.xls')

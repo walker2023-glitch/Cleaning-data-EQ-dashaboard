@@ -1,5 +1,29 @@
 # Departmental workflow roadmap and project review
 
+## Windows packet-path maintenance follow-up
+
+feature/windows-review-packet-fix starts directly from the now-shared exact
+integration 1c63644 (parents main f416ce1 and diagnostics 3711aed). The owner's
+failing target measures 260 UTF-16 units; its parent is only 214. Exact baseline
+source reproduces the parent-existing error under classic Win32 emulation;
+shorter-root baseline and compact-path fix both succeed. No integration/main
+merge or push occurs. Full-UUID lowercase base32 packet names, shorter hidden
+staging, absolute Windows staging/final preflight and exclusive/fsynced summary
+writes preserve data/schema/revision/approval behavior. Native Windows and hosted
+results remain verification gates. See windows_review_packet_paths.md.
+
+## TMA structure rejection investigation
+
+feature/tma-structure-diagnostics starts at timestamped-layout 3b00a95. Main is
+bd21499 at inspection; dependent features remain unmerged and API metadata blocked.
+Reproduced: default xlrd sees 85×4, formatting-aware reader sees an extra blank
+style column and rejects. BIFF 80 and native date type 3 are correct and unchanged.
+Implemented only trailing style-edge normalization for timestamped content bounds,
+strict typed-data rejection, exact predicate messages, safe local structure and
+runtime diagnostics, Windows stale-build verification and packaged regression.
+No private file was read; owner must confirm the actual cause and preview May.
+See tma_structure_debug.md. Financial/calculation/approval/month gates remain.
+
 ## Actual timestamped TMA shape — follow-up
 
 feature/tma-timestamped-layout starts at legacy-tma-compatibility 32d36b6, itself
