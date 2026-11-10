@@ -239,10 +239,12 @@ def export_preview(batch, target, *, protected_roots):
     Nothing in this report can authorize processing, approval or publication.
     """
     path = Path(target).absolute()
-    if path.suffix.lower() not in ('.csv', '.json') or candidate_location_error(path):
-        raise StorageError('historical_export_requires_local_csv_or_json')
+    # Deterministic precedence on every OS: links, extension, location policy.
+    # Windows' location policy also rejects links; run the specific guard first.
     if any(p.is_symlink() or p.is_junction() for p in (path, *path.parents)):
         raise StorageError('storage_path_rejected')
+    if path.suffix.lower() not in ('.csv', '.json') or candidate_location_error(path):
+        raise StorageError('historical_export_requires_local_csv_or_json')
     if any(path.resolve().is_relative_to(Path(root).resolve()) for root in protected_roots):
         raise StorageError('historical_export_overlaps_workspace')
     # Fail clearly on classic Windows path limits before creating anything.
