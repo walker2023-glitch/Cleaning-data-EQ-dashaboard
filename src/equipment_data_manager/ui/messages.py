@@ -3,6 +3,18 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    'batch_invalid_selection': 'Select at least one previewed month/report row, without duplicate selections.',
+    'batch_preview_required': 'This report has no successful current preview. Resolve its issue, discover and preview again.',
+    'batch_preview_changed': 'The source or cleaning proposal changed since preview. Discover and preview again, then review a new plan.',
+    'batch_candidate_selection_changed': 'Another operation changed the selected candidate after this plan. Review a fresh plan; no replacement was performed.',
+    'batch_configuration_changed': 'The raw root, layout or candidate destination changed. Discover, preview and review a new plan.',
+    'batch_confirmation_required': 'Review a complete processing plan and explicitly confirm local candidate creation.',
+    'batch_correction_required': 'This report needs individual correction review. Open the single-report workflow; no batch replacement was authorized.',
+    'batch_already_running': 'A batch is already active for this local candidate workspace. Wait for it to finish, then preview and review a new plan.',
+    'batch_untrusted_candidate_location': 'Use a trusted local candidate folder, outside linked, network and synchronized destinations.',
+    'batch_candidate_path_too_long': 'The complete candidate path exceeds classic Windows limits. Choose a shorter trusted local candidate folder and preview again.',
+    'batch_plan_stopped': 'Plan review was stopped. Review a fresh complete plan before processing.',
+
     "historical_selected_source_temporary": "The selected source itself has a temporary or incomplete-download filename. It was not read. Supply a finished original export and discover again; temporary files are never accepted as reports.",
     "historical_export_requires_local_csv_or_json": "Choose a new CSV or JSON file on trusted local storage. Synced and network destinations are not supported for this diagnostic export.",
     "historical_export_overlaps_workspace": "Save the diagnostic report outside the raw, candidate and approved workspace folders.",

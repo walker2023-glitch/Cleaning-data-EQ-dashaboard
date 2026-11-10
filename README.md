@@ -1,9 +1,10 @@
 # Equipment Data Manager
 
-Historical Data now supports **read-only multi-month preview** after discovery.
-See [the batch preview guide](docs/historical_batch_preview.md) for a synthetic
-January–June demonstration, source safeguards, diagnostic export and Windows
-acceptance. This feature does not process batches, approve data or publish.
+Historical Data supports **read-only preview** and a separate **confirmed historical
+batch processing** workflow creating local unapproved candidates. See the
+[processing plan and isolated Windows acceptance guide](docs/historical_batch_processing.md).
+Unchanged candidates skip; corrections remain individually reviewed. No business
+approval, publication, Graph write, Power BI refresh or combined snapshot is enabled.
 
 
 ## May structure rejection diagnostics

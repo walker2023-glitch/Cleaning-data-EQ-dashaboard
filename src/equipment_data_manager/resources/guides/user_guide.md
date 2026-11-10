@@ -370,3 +370,27 @@ it. Real reports still undergo their own integrity and cleaning checks. A missin
 ambiguous or changed source remains a real report problem. After updating this
 fix, Discover again before previewing January–June; old failures are not refreshed
 automatically. Never treat preview success as approval.
+
+
+## Process historical months into local candidates
+
+Discover and preview a range first. In Historical Data → Batch processing, select
+report rows/months and report types, then Review Processing Plan. Inspect existing
+candidates, proposed actions, counts and warnings. Check the processing-intent
+statement and confirm Process Selected Reports. Scroll the panel if the controls
+are below the viewport. This always uses Power BI CSV candidates with repair v2;
+the single-report Legacy preference stays separate.
+
+Unchanged candidates skip. Corrections remain blocked here; select one and open
+the single-report correction workflow for its own month/preview/confirmation. The
+batch checkbox does not approve data or authorize replacements. Stop After Current
+Report finishes an active commit and leaves later rows Not started. Results show
+created/skipped/correction/blocked/failed counts, warnings and output locations;
+select rows for details. Open candidate folder points to normalized local history.
+
+Restart never runs an old plan. Fresh discovery/preview/plan/confirmation consults
+durable history and skips completed equivalent files. Never recursively ingest
+versions or orphan directories into Power BI. Optional processing-summary CSV/JSON
+is a private nonproduction diagnostic outside raw/candidate/approved/synced folders.
+No original is modified and no review request, approval, upload, snapshot or Power BI
+refresh is automatic. Test this first using a separate local candidate workspace.

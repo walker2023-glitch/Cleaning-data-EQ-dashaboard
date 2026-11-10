@@ -1,5 +1,18 @@
 # Historical backfill — PR 1: flexible discovery and read-only inventory
 
+## Historical Batch Processing — current feature
+
+Based on merged main fe5df23 (PR #22). Historical Data adds a reviewed, explicitly
+confirmed plan and sequential creation of **local unapproved normalized candidates**.
+Unchanged reports skip; corrections stay blocked with a route to existing individual
+confirmation. Current revision/proposal/source guards prevent stale replacement.
+Cancellation/restart recovery uses committed history and fresh intent, without
+resuming old plans. Read-only preview remains unchanged. No approval, publishing,
+Graph writes, Power BI refresh or historical snapshot assembly is enabled.
+See [workflow, architecture and isolated Windows acceptance](historical_batch_processing.md).
+Older sections below describe earlier scope and are superseded by this feature note.
+
+
 ## Historical batch preview — current milestone
 
 `feature/historical-batch-preview` starts from merged main **f49b297** (PR #21).
