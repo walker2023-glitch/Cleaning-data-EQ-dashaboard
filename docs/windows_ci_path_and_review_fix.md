@@ -10,10 +10,13 @@ Reported run: https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/a
 
 The public run page exposes the two export annotations, including actual
 `WindowsPath(.../preview.csv)` inputs and historical_preview.py line 243. GitHub
-API access is denied by the environment policy. The public annotations fetched
-here do not include the reported parallel review traceback; the full job log
-endpoint is unavailable without further access. Do not infer its exact failing
-ancestor or guard from the generic review_store_unsafe code.
+API access is denied by the environment policy. The shared run exposes only the two export traces. The earlier run
+https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/42826266998
+also exposes the parallel review traceback: it reaches review.py **line 42**, the
+SQLite-file/parent containment guard. The ancestor/location-policy guard on line
+39 passed. No rejected ancestor or cloud/reparse attribute is shown in that trace.
+Full step-log download remains unavailable, but public annotations establish the
+failed guard. The actual resolved path strings are not included.
 
 **Exports (confirmed):** the extension is valid `.csv`; there is no Windows suffix
 parsing defect. The tests mark an ancestor as a link. Windows' trusted-location
@@ -28,13 +31,16 @@ preflight, then exclusive write. Links win even with an invalid extension. Other
 invalid extensions and untrusted destinations still fail. Tests verify no target
 is opened/created, not only the error category.
 
-**Review storage (reproduced race class; original native predicate pending):** the
+**Review storage (native failed guard identified, alias details simulated):** the
 old guard compares `database.resolve()` with a later `root.resolve()` while two
 requests can create/open that store. Independently resolving a missing/appearing
 child and parent can compare different canonical aliases of a Windows path. A
 controlled Windows short/long-alias simulation reproduces review_store_unsafe at
-that second guard. This is simulated evidence, not proof that this was the exact
-predicate in the owner's original run. The ordinary parallel test passes locally.
+that second guard. The native trace confirms that guard failed during parallel creation of an
+ordinary SQLite file; it does not show the canonical strings. Short/long-name
+alias expansion is a controlled reproduction of this class of inconsistency,
+not an observed literal alias in the native log. The ordinary parallel test
+also passes locally.
 
 There are also two directly observable coordination problems: store validation
 and directory creation are not serialized between local service instances; and
@@ -65,8 +71,8 @@ outside the insert transaction. These are corrected without allowing unsafe path
 - A remaining unsafe-path failure retains that error code and adds a privacy-safe
   exception note with reason, ancestor depth, attribute mask and WinError number
   when available. No filesystem path, employee data or raw exception text is added.
-  The full original traceback or these new notes are needed to establish any
-  remaining native predicate precisely.
+  The original resolved strings, or these new notes on any recurrence, are needed
+  to establish the specific Win32 alias/metadata detail beyond the identified guard.
 
 Checks are conservative preflight within trusted local storage, not a guarantee
 against a malicious local administrator changing the filesystem between syscalls.
@@ -111,3 +117,18 @@ source, wheel and packaged GUI smoke runs sequential on a shared display. The
 review-packet MAX_PATH regression cases remain intact; that packet writer is not
 modified. Check hosted Windows packaging results before merging. No automatic
 merge or production changes are part of this fix.
+
+
+## Verified locally before push
+
+All three originally failing test IDs pass individually on Linux. Full regression:
+842 passed, zero failures/errors/skips, with all 62 GUI cases isolated and no
+retries. The 22 added cases cover Windows policy precedence, no destination open,
+canonical-alias disagreement, separate concurrent service instances, real local
+redirection (junction on Windows, symlink on Linux), ordinary versus unsafe native
+attribute flags, denied metadata, rechecks after creation, deterministic connection
+closure and atomic schema rollback/recovery. All packet MAX_PATH cases remain.
+Wheel/sdist builds and source desktop/restart smoke pass; installed-wheel and
+hosted run outcomes are recorded in the final handoff once complete. The hosted
+Linux regression step has independently passed at implementation commit 14938d2.
+Native Windows is not inferred from Linux or the simulations.
