@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 from threading import Event
 
-from equipment_data_manager.historical import periods_between, verify_inventory_source
+from equipment_data_manager.historical import is_temporary_filename, periods_between, verify_inventory_source
 from equipment_data_manager.powerquery_contract import read_table
 from equipment_data_manager.processing.models import ProcessingError, ProcessingRequest, ReportType
 from equipment_data_manager.processing.repair_financial import powerbi_coordinator, read_summary
@@ -49,9 +49,22 @@ class ReportPreview:
     source_version: str = ''
     cleaner_version: str = ''
     candidate_status: str = 'not_assessed'
+    failure_scope: str = ''
 
     def document(self):
         return asdict(self)
+
+
+# Only this known ignored-extra notice is nonblocking. New/unknown issues fail closed.
+IGNORED_EXTRA_NOTICE = 'historical_temporary_file_ignored'
+
+
+@dataclass(frozen=True)
+class InventoryNotice:
+    month: str
+    code: str
+    count: int
+    scope: str = 'ignored_extra_files'
 
 
 @dataclass(frozen=True)
@@ -62,6 +75,7 @@ class BatchPreview:
     created_at: str
     reports: tuple[ReportPreview, ...]
     stopped: bool
+    inventory_notices: tuple[InventoryNotice, ...] = ()
 
     def document(self):
         return dict(version=1, purpose='NonproductionDiagnosticPreview',
@@ -127,7 +141,8 @@ def _summarize(result, period, kind, source, integrity):
     return ReportPreview(period, kind.value, source.name, status, result.code,
         source_count, retained, source_count - retained if source_count is not None and retained is not None else None,
         exclusions, missing, dates, financial, result.warnings, integrity, source.sha256 or '', source.version,
-        cleaned.cleaner_version if cleaned else '', result.status.value)
+        cleaned.cleaner_version if cleaned else '', result.status.value,
+        failure_scope='report_validation' if failure else '')
 
 
 def preview_history(provider, inventory, output_root, *, progress=None, on_result=None, on_start=None, cancelled=None):
@@ -147,9 +162,14 @@ def preview_history(provider, inventory, output_root, *, progress=None, on_resul
     coordinator = powerbi_coordinator(output_root)
     stop = cancelled if cancelled is not None else Event()
     results = []
+    notices = []
     for month in inventory.months:
         if tuple(r.report_type for r in month.reports) != tuple(ReportType):
             raise StorageError('historical_inventory_selection_changed')
+        ignored_count = sum(i.code == IGNORED_EXTRA_NOTICE for i in month.issues)
+        if ignored_count:
+            notices.append(InventoryNotice(month.period, IGNORED_EXTRA_NOTICE, ignored_count))
+        blocking_month = tuple(i for i in month.issues if i.code != IGNORED_EXTRA_NOTICE)
         for report in month.reports:
             kind = report.report_type
             item = ReportPreview(month.period, kind.value,
@@ -157,16 +177,19 @@ def preview_history(provider, inventory, output_root, *, progress=None, on_resul
             if not stop.is_set():
                 if on_start:
                     on_start(month.period, kind.value)
-                issues = tuple(i.code for i in (*month.issues, *report.issues))
-                if month.issues or report.status != 'found' or len(report.sources) != 1:
+                issues = tuple(i.code for i in (*report.issues, *blocking_month))
+                if blocking_month or report.status != 'found' or len(report.sources) != 1:
                     status = ('unsupported' if 'historical_unsupported_extension' in issues else
                               'missing' if report.status == 'missing' else
                               'not_previewed' if report.status == 'not_scanned' else 'failed')
                     item = ReportPreview(month.period, kind.value, item.source_filename, status,
-                                         issues[0] if issues else 'historical_report_' + report.status, warnings=issues)
+                                         issues[0] if issues else 'historical_report_' + report.status, warnings=issues,
+                        failure_scope='discovery_month' if blocking_month and not report.issues else 'discovery_report')
                 else:
                     source = report.sources[0]
                     try:
+                        if is_temporary_filename(source.name):
+                            raise StorageError('historical_selected_source_temporary')
                         read = verify_inventory_source(provider, source)
                         result = coordinator.preview(ProcessingRequest(kind, month.period,
                             raw_bytes=read.content, source_name=source.name), include_details=True)
@@ -176,13 +199,14 @@ def preview_history(provider, inventory, output_root, *, progress=None, on_resul
                         stale = code in ('storage_source_changed', 'storage_source_changed_or_partial',
                                          'storage_source_hash_mismatch', 'input_not_a_file')
                         item = ReportPreview(month.period, kind.value, source.name, 'stale' if stale else 'failed',
-                            code, integrity='changed_rediscovery_required' if stale else 'read_failed',
-                            source_sha256=source.sha256 or '', source_version=source.version)
+                            code, integrity=('not_read' if code == 'historical_selected_source_temporary' else
+                                       'changed_rediscovery_required' if stale else 'read_failed'),
+                            source_sha256=source.sha256 or '', source_version=source.version, failure_scope='selected_source')
                     except OSError:
-                        item = ReportPreview(month.period, kind.value, source.name, 'failed', 'storage_file_unavailable', integrity='read_failed')
+                        item = ReportPreview(month.period, kind.value, source.name, 'failed', 'storage_file_unavailable', integrity='read_failed', failure_scope='selected_source')
                     except Exception:
                         # Do not expose exception text or allow one adapter failure to hide other months.
-                        item = ReportPreview(month.period, kind.value, source.name, 'failed', 'preview_failed')
+                        item = ReportPreview(month.period, kind.value, source.name, 'failed', 'preview_failed', failure_scope='preview')
                     finally:
                         # Do not carry a prior file's bytes into the next read.
                         read = result = None
@@ -192,13 +216,14 @@ def preview_history(provider, inventory, output_root, *, progress=None, on_resul
             if progress:
                 progress(len(results), len(periods) * len(ReportType))
     return BatchPreview(inventory.start, inventory.end, inventory.layout,
-                        datetime.now(timezone.utc).isoformat(), tuple(results), stop.is_set())
+                        datetime.now(timezone.utc).isoformat(), tuple(results), stop.is_set(), tuple(notices))
 
 
 EXPORT_COLUMNS = ('Purpose', 'ReportingMonth', 'ReportType', 'SourceFilename', 'SourceRecordCount',
     'RetainedRecordCount', 'ExcludedRecordCount', 'ExclusionCounts', 'MissingRetainedValueCounts',
     'DateObservationCounts', 'FinancialStatus', 'ReportedLaborCost', 'ReportedPartsCost', 'ReportedTotalCost',
-    'MissingReportedCostCount', 'FinancialSummary', 'WarningCodes', 'PreviewStatus', 'ReasonCode', 'SourceIntegrity')
+    'MissingReportedCostCount', 'FinancialSummary', 'WarningCodes', 'PreviewStatus', 'ReasonCode', 'SourceIntegrity',
+    'FailureScope', 'IgnoredExtraFilesInMonth')
 
 
 def _check_export_path(path, *, windows=None):
@@ -240,7 +265,8 @@ def export_preview(batch, target, *, protected_roots):
                 json.dumps(dict(r.date_observations)), financial.get('ReconciliationStatus'),
                 financial.get('ReportedLaborCost'), financial.get('ReportedPartsCost'), financial.get('ReportedTotalCost'),
                 financial.get('UnavailableRepairCostCount'), json.dumps(financial),
-                '; '.join(r.warnings), LABELS[r.status], r.code, r.integrity))
+                '; '.join(r.warnings), LABELS[r.status], r.code, r.integrity, r.failure_scope,
+                sum(n.count for n in batch.inventory_notices if n.month == r.month)))
         raw = stream.getvalue()
     owned = False
     try:

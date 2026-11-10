@@ -166,6 +166,12 @@ def _month_folders(provider, period, layout):
     return tuple(folders), tuple(issues)
 
 
+def is_temporary_filename(name):
+    """Existing strict ignore rule, shared by discovery and selected-source checks."""
+    return name.startswith(('.', '~')) or name.casefold().endswith(
+        ('.tmp', '.part', '.partial', '.crdownload', '.download'))
+
+
 def _reports(provider, period, folder, layout, cancelled):
     sources = {kind: [] for kind in ReportType}
     problems = {kind: [] for kind in ReportType}
@@ -187,8 +193,7 @@ def _reports(provider, period, folder, layout, cancelled):
             if cancelled.is_set():
                 break
             # Never ingest Office lock files or partially downloaded/temporary names.
-            if entry.name.startswith(('.', '~')) or entry.name.casefold().endswith(
-                    ('.tmp', '.part', '.partial', '.crdownload', '.download')):
+            if is_temporary_filename(entry.name):
                 issues.append(_issue('historical_temporary_file_ignored', entry.item_id))
                 continue
             kind, mismatch = (kind_hint, '') if kind_hint else filename_match(entry.name, period)

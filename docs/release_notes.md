@@ -277,3 +277,13 @@ Historical batch preview verification: 808 local Linux tests passed without skip
 source and isolated installed-wheel desktop/restart smoke passed (phase 39), and
 wheel/sdist builds passed. Native Windows/hosted outcomes remain unverified here;
 see testing.md and historical_batch_preview.md for evidence and acceptance gates.
+
+## January historical preview correction — 2026-11-10
+
+An ignored temporary extra previously became a month-wide failure before source
+reads. Batch preview now reports that one known notice separately while real
+selected reports keep their own integrity/adapter checks. Other blockers remain.
+Diagnostics add failure scopes and monthly ignored-extra counts; the diagnostic
+CSV appends FailureScope and IgnoredExtraFilesInMonth, not a financial-v2 change.
+820 Linux tests and source/installed-wheel desktop/restart smoke pass. Native
+Windows and real January acceptance remain separate gates. See january_batch_preview_fix.md.

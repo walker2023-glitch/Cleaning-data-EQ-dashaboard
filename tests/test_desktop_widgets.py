@@ -1269,3 +1269,25 @@ def test_historical_batch_labels_incomplete_known_costs(app,tmp_path):
     assert 'Known Repair Total Cost: 10 (incomplete)' in text
     assert 'Unavailable Repair Cost Count: 2' in text
     assert 'not independent verification' in text
+
+
+
+def test_historical_batch_ignored_lock_is_separate_employee_notice(app,tmp_path):
+    page=configure_historical_batch(app,tmp_path)
+    lock=app.workspace.raw_folder/'2026/2026-01 (January)/~$Work Orders January 2026.xlsx'
+    lock.write_bytes(b'SYNTHETIC PRIVATE LOCK - NEVER READ')
+    from test_historical_discovery import snapshot
+    before=snapshot(tmp_path)
+    page.discover_button.invoke();pump(app,lambda:not app.worker.busy)
+    page.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert all(r.retained_records is not None for r in page.batch.reports[:6])
+    assert '1 temporary/extra files ignored separately' in page.summary.cget('text')
+    page.table.selection_set('2026-01');page.show_details()
+    details=page.details.get('1.0','end')
+    assert 'Ignored extra files: 1' in details and 'not deleted' in details
+    assert 'Preview failed' not in details and 'Failure scope' not in details
+    technical=page.technical.get('1.0','end')
+    assert 'inventory_notices' in technical and 'ignored_extra_files' in technical
+    assert 'PRIVATE LOCK' not in technical
+    assert snapshot(tmp_path)==before and not app.workspace.candidate_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'

@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -350,6 +350,7 @@ def run_smoke(directory: Path | None) -> int:
                 assert state['legacy_path'].read_bytes() == state['legacy_bytes']
                 assert list((workspace / 'reserved-approved').iterdir()) == []
                 assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
+                (workspace / 'sharepoint-raw/2026/2026-01 (January)/~$Work Orders January 2026.xlsx').write_bytes(b'SYNTHETIC OFFICE LOCK - NEVER READ')
                 state['batch_before'] = {str(p): sha256(p.read_bytes()).hexdigest()
                     for p in workspace.rglob('*') if p.is_file()}
                 app.show_page('Historical Data')
@@ -363,7 +364,10 @@ def run_smoke(directory: Path | None) -> int:
                 from hashlib import sha256
                 page = app.historical_page
                 assert page.batch is not None and len(page.batch.reports) == 18
-                assert page.batch.reports[2].retained_records is not None
+                assert all(r.retained_records is not None for r in page.batch.reports[:3])
+                notice, = page.batch.inventory_notices
+                assert notice.month == '2026-01' and notice.code == 'historical_temporary_file_ignored' and notice.count == 1
+                assert all(not r.source_filename.startswith('~$') for r in page.batch.reports)
                 june = next(r for r in page.batch.reports if r.month == '2026-06' and r.report_type == 'tma_work_orders')
                 assert june.retained_records == 3 and 'tma_timestamped_previous_month_layout' in june.warnings
                 after = {str(p): sha256(p.read_bytes()).hexdigest() for p in workspace.rglob('*') if p.is_file()}

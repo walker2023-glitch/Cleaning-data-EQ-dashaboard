@@ -200,6 +200,7 @@ class HistoricalPage(ctk.CTkFrame):
     def preview_completed(self, batch):
         self.batch = batch
         self.summary.configure(text=('Stopped safely. ' if batch.stopped else 'Batch preview complete. ')
+            + f'{sum(n.count for n in batch.inventory_notices)} temporary/extra files ignored separately. '
             + f'{len(batch.reports)} report slots shown. No candidates written. Business accuracy not independently verified. Cloud synchronization unverified.')
         self._text(self.technical, json.dumps(batch.document(), indent=2))
         self.busy(False)
@@ -211,6 +212,11 @@ class HistoricalPage(ctk.CTkFrame):
             return REASONS.get(key, re.sub(r"(?<=[a-z])(?=[A-Z])", " ", key).replace("_", " ").replace(":", " — "))
         lines = [f'{period} — read-only preview', 'Cleaning success is not independent verification of business accuracy.',
                  'Missing financial values remain missing. Known sums may be incomplete.', '']
+        month = next(m for m in self.inventory.months if m.period == period)
+        ignored_count = sum(i.code == 'historical_temporary_file_ignored' for i in month.issues)
+        if ignored_count:
+            lines += [f'Ignored extra files: {ignored_count} temporary or incomplete files were excluded during discovery.',
+                      'These were not selected reports, were not read and were not deleted. Real report checks remain required.', '']
         for kind, label in SUPPORTED_REPORTS.items():
             result = self.preview_rows.get((period, kind))
             lines += ['', label]
@@ -223,7 +229,7 @@ class HistoricalPage(ctk.CTkFrame):
                       f'Excluded: {result.excluded_records if result.excluded_records is not None else "Not assessed"}',
                       f'Source integrity: {result.integrity.replace("_", " ")}']
             if result.status in ('failed', 'unsupported', 'stale', 'missing'):
-                lines += [error_message(result.code)]
+                lines += [f'Failure scope: {result.failure_scope.replace("_", " ")}', error_message(result.code)]
             financial = dict(result.financial)
             def display_value(key, value):
                 if value is None:
@@ -246,7 +252,8 @@ class HistoricalPage(ctk.CTkFrame):
             if result.candidate_status == 'needs_review':
                 lines.append('Potential correction to an existing candidate. This preview does not select or replace a revision.')
         self._text(self.details, '\n'.join(lines))
-        self._text(self.technical, json.dumps([r.document() for (month, _), r in self.preview_rows.items() if month == period], indent=2))
+        self._text(self.technical, json.dumps(dict(reports=[r.document() for (month, _), r in self.preview_rows.items() if month == period],
+            inventory_notices=[dict(month=period, code='historical_temporary_file_ignored', count=ignored_count, scope='ignored_extra_files')] if ignored_count else []), indent=2))
 
     def export_batch(self):
         if self.batch is None or self.app.worker.busy or self.app.settings_worker.busy:

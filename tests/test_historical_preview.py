@@ -336,3 +336,116 @@ def test_export_rejects_linked_destination_ancestors(tmp_path,monkeypatch,method
     with pytest.raises(ProcessingError,match='storage_path_rejected'):
         export_preview(batch,tmp_path/'preview.csv',protected_roots=(root,))
     assert not (tmp_path/'preview.csv').exists()
+
+
+@pytest.mark.parametrize('layout', ['standard', 'sharepoint_year_month'])
+def test_january_lock_file_does_not_block_eighteen_real_report_slots(tmp_path, layout, monkeypatch):
+    root=tmp_path/'raw';setup(root,(1,2,3,4,5,6),layout)
+    folder=root/'2026-01/tma_work_orders' if layout=='standard' else root/'2026/2026-01 (January)'
+    baseline=run(root,tmp_path/'out',end='2026-06',layout=layout)
+    lock=folder/'~$Work Orders January 2026.xlsx'
+    lock.write_bytes(b'SYNTHETIC LOCK CONTENT MUST NEVER BE READ')
+    before=snapshot(tmp_path)
+    provider=LocalFolderStorage(root)
+    original=provider.read
+    reads=[]
+    def guarded(source, **kwargs):
+        assert not source.name.startswith('~$')
+        reads.append(source.name)
+        return original(source,**kwargs)
+    monkeypatch.setattr(provider,'read',guarded)
+    inventory=discover_history(provider,'2026-01','2026-06',layout)
+    assert all(r.status=='found' for r in inventory.months[0].reports)
+    batch=preview_history(provider,inventory,tmp_path/'out')
+    assert len(batch.reports)==18 and batch.reports==baseline.reports
+    assert all(r.retained_records is not None for r in batch.reports)
+    assert all(r.integrity=='local_bytes_read_stably_sync_unverified' for r in batch.reports)
+    assert len(reads)==36  # One discovery read + one verified preview read, per real source.
+    assert snapshot(tmp_path)==before
+
+
+def test_ignored_notice_is_separate_from_selected_report_failures_and_exports(tmp_path):
+    root=tmp_path/'raw';setup(root,(1,2))
+    folder=root/'2026/2026-01 (January)'
+    (folder/'~$PRIVATE_EXTRA_NAME.xlsx').write_bytes(b'SYNTHETIC PRIVATE LOCK CONTENT')
+    (folder/'CompuClean Service Orders List.csv').unlink()
+    repair=folder/'CompuClean Repair Report.csv'
+    repair.rename(repair.with_suffix('.xlsx'))
+    batch=run(root,tmp_path/'out',end='2026-02')
+    notice,=batch.inventory_notices
+    assert (notice.month,notice.code,notice.count,notice.scope)==('2026-01','historical_temporary_file_ignored',1,'ignored_extra_files')
+    repair,service,tma=batch.reports[:3]
+    assert repair.status=='unsupported' and repair.code=='historical_unsupported_extension'
+    assert repair.failure_scope=='discovery_report'
+    assert service.status=='missing' and service.code=='historical_report_missing'
+    assert tma.retained_records==2 and tma.failure_scope==''
+    assert all('historical_temporary_file_ignored' not in (r.code,*r.warnings) for r in batch.reports)
+    assert all(r.retained_records is not None for r in batch.reports[3:])
+    document=json.dumps(batch.document())
+    assert 'PRIVATE_EXTRA_NAME' not in document and 'PRIVATE LOCK CONTENT' not in document
+    csv_path=tmp_path/'preview.csv'
+    export_preview(batch,csv_path,protected_roots=(root,))
+    with csv_path.open(encoding='utf-8-sig',newline='') as stream:
+        rows=list(csv.DictReader(stream))
+    assert rows[0]['FailureScope']=='discovery_report' and rows[0]['IgnoredExtraFilesInMonth']=='1'
+    assert rows[2]['FailureScope']=='' and rows[3]['IgnoredExtraFilesInMonth']=='0'
+
+
+@pytest.mark.parametrize('name',['~$Work Orders January 2026.xlsx','.hidden.xlsx','download.xlsx.part'])
+def test_temporary_selected_source_is_never_read_even_with_forged_found_status(tmp_path,name,monkeypatch):
+    root=tmp_path/'raw';setup(root)
+    provider=LocalFolderStorage(root)
+    inventory=discover_history(provider,'2026-01','2026-01','sharepoint_year_month')
+    month=inventory.months[0];report=month.reports[2]
+    forged=replace(report.sources[0],name=name)
+    modified=replace(inventory,months=(replace(month,reports=(*month.reports[:2],replace(report,sources=(forged,)))),))
+    original=provider.read
+    def guarded(source,**kwargs):
+        assert source.name!=name
+        return original(source,**kwargs)
+    monkeypatch.setattr(provider,'read',guarded)
+    result=preview_history(provider,modified,tmp_path/'out').reports[2]
+    assert result.code=='historical_selected_source_temporary' and result.failure_scope=='selected_source'
+    assert result.integrity=='not_read' and result.retained_records is None
+
+
+@pytest.mark.parametrize('code',['historical_unrecognized_filename','historical_duplicate_month_folders','future_unknown_issue'])
+def test_only_known_ignored_extra_notice_is_nonblocking(tmp_path,code):
+    from equipment_data_manager.historical import InventoryIssue
+    root=tmp_path/'raw';setup(root)
+    provider=LocalFolderStorage(root)
+    inventory=discover_history(provider,'2026-01','2026-01','sharepoint_year_month')
+    month=inventory.months[0]
+    inventory=replace(inventory,months=(replace(month,issues=(InventoryIssue('historical_temporary_file_ignored'),InventoryIssue(code))),))
+    batch=preview_history(provider,inventory,tmp_path/'out')
+    assert all(r.status=='failed' and r.code==code and r.failure_scope=='discovery_month' for r in batch.reports)
+    assert all(r.integrity=='not_read' for r in batch.reports)
+    assert batch.inventory_notices[0].count==1
+
+
+def test_lock_notice_does_not_bypass_changed_source_hash_or_version(tmp_path):
+    root=tmp_path/'raw';setup(root)
+    folder=root/'2026/2026-01 (January)'
+    (folder/'~$Work Orders January 2026.xlsx').write_bytes(b'synthetic lock')
+    provider=LocalFolderStorage(root)
+    inventory=discover_history(provider,'2026-01','2026-01','sharepoint_year_month')
+    (folder/'CompuClean Repair Report.csv').write_bytes(raw_report(count=2))
+    batch=preview_history(provider,inventory,tmp_path/'out')
+    repair=batch.reports[0]
+    assert repair.status=='stale' and repair.failure_scope=='selected_source'
+    assert repair.code=='storage_source_changed' and repair.retained_records is None
+    assert all(r.retained_records is not None for r in batch.reports[1:])
+    assert batch.inventory_notices[0].count==1 and not (tmp_path/'out').exists()
+
+
+def test_selected_report_blocker_is_not_masked_by_other_month_issues(tmp_path):
+    from equipment_data_manager.historical import InventoryIssue
+    root=tmp_path/'raw';setup(root)
+    provider=LocalFolderStorage(root)
+    inventory=discover_history(provider,'2026-01','2026-01','sharepoint_year_month')
+    month=inventory.months[0]
+    report=replace(month.reports[0],status='blocked',issues=(InventoryIssue('historical_unsupported_extension'),))
+    month=replace(month,reports=(report,*month.reports[1:]),issues=(InventoryIssue('historical_temporary_file_ignored'),InventoryIssue('future_unknown_issue')))
+    batch=preview_history(provider,replace(inventory,months=(month,)),tmp_path/'out')
+    assert batch.reports[0].code=='historical_unsupported_extension' and batch.reports[0].failure_scope=='discovery_report'
+    assert all(r.code=='future_unknown_issue' and r.failure_scope=='discovery_month' for r in batch.reports[1:])

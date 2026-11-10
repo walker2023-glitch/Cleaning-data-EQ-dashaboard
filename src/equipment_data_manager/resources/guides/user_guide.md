@@ -362,3 +362,11 @@ Historical range/results are session-only; saved root/layout and the separate
 single reporting month retain their normal persistence. No batch processing,
 approval or publication is enabled. See the historical batch preview guide in the
 repository for synthetic and January–June Windows acceptance instructions.
+
+
+If a historical month contains an Office lock or incomplete-download file, batch
+preview ignores that extra and reports its count separately. It does not delete
+it. Real reports still undergo their own integrity and cleaning checks. A missing,
+ambiguous or changed source remains a real report problem. After updating this
+fix, Discover again before previewing January–June; old failures are not refreshed
+automatically. Never treat preview success as approval.

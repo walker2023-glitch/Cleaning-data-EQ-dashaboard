@@ -207,3 +207,10 @@ Explicit exports use exclusive local files outside raw/candidate/approved roots,
 link/junction rejection, conservative Windows UTF-16 path preflight and fsync with
 owned-partial cleanup. Reports cannot be imported as processing authority.
 See historical_batch_preview.md for diagnostic scope and point-in-time guarantees.
+
+January mapping correction: only the known ignored-temporary-extra month notice
+is nonblocking for historical preview. Unknown/other month issues still fail
+closed. The shared temporary-name predicate rejects an actual selected temporary
+source before any read. Batch inventory_notices holds aggregate extra-file counts,
+separate from report code/warnings/failure_scope. GUI renders these on the main
+thread and CSV/JSON export preserves the distinction. No cleaning/store API changes.

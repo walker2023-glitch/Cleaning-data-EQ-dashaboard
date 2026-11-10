@@ -43,3 +43,26 @@ Manual PR creation:
 https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/compare/main...feature/historical-batch-preview?expand=1
 
 Use this document as the PR body and the first line as the title; target `main`.
+
+
+## Focused follow-up: January ignored temporary extra
+
+Fixes a reproduced bug in which `month.issues` promoted one ignored extra-file
+notice into failures for all three valid report slots. Only that known notice is
+nonblocking; unrelated blockers still fail closed, selected temporary sources are
+rejected without reading, and version/hash checks remain. Ignored extras are
+separate monthly notices and actual report failures retain explicit scopes.
+
+Regression covers both layouts, all 18 slots, unchanged legitimate results,
+never-read/never-deleted lock files, stale inputs, selected temporary names, other
+blockers, diagnostics/exports and employee UI. Packaged smoke now includes a
+synthetic January lock file. See docs/january_batch_preview_fix.md for exact Windows
+acceptance; actual January remains owner-unverified until rerun. No auto merge.
+
+Follow-up validation (2026-11-10): full Linux suite **820 passed, no skips**, with
+62 GUI cases isolated without retries. Source and isolated installed-wheel phase-39
+smoke and separate-process restarts passed with a synthetic January lock file.
+Wheel/sdist builds passed. Native Windows/hosted checks and real January owner
+acceptance remain outstanding; API access remains blocked. Push updates this same
+feature branch and any existing PR automatically; use the follow-up section above
+to update its description rather than opening a duplicate PR.

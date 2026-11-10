@@ -3,6 +3,7 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    "historical_selected_source_temporary": "The selected source itself has a temporary or incomplete-download filename. It was not read. Supply a finished original export and discover again; temporary files are never accepted as reports.",
     "historical_export_requires_local_csv_or_json": "Choose a new CSV or JSON file on trusted local storage. Synced and network destinations are not supported for this diagnostic export.",
     "historical_export_overlaps_workspace": "Save the diagnostic report outside the raw, candidate and approved workspace folders.",
     "historical_export_path_too_long": "The export path exceeds classic Windows path limits. Choose a shorter local folder and filename.",

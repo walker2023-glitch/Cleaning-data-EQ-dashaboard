@@ -556,3 +556,14 @@ Local verification for this feature (2026-11-09, Linux/Python 3.12.14):
 
 The Linux host's preexisting read-only font-cache warning uses CustomTkinter's
 fallback renderer; all visible-widget, screenshot and desktop checks above passed.
+
+## January temporary-extra follow-up — 2026-11-10
+
+Full Linux suite: **820 passed, no failures/errors/skips**, including 62 fresh-process
+GUI cases. The 12 added cases reproduce/fix both layouts' January lock-file poisoning,
+compare all 18 legitimate results with the no-extra baseline, reject selected
+synthetic temporary names, preserve other blockers/stale-source rejection, check
+safe diagnostics/exports and verify employee notices without any candidate writes.
+Source and isolated installed-wheel desktop smoke (with January's synthetic lock
+file) pass phase 39 and separate-process restart. Wheel/sdist builds pass.
+Native Windows/hosted outcomes remain unverified; see january_batch_preview_fix.md.

@@ -147,7 +147,9 @@ One row per month/report slot. Stable columns are `Purpose`, `ReportingMonth`,
 `ExcludedRecordCount`, `ExclusionCounts`, `MissingRetainedValueCounts`,
 `DateObservationCounts`, `FinancialStatus`, `ReportedLaborCost`,
 `ReportedPartsCost`, `ReportedTotalCost`, `MissingReportedCostCount`,
-`FinancialSummary`, `WarningCodes`, `PreviewStatus`, `ReasonCode`, `SourceIntegrity`.
+`FinancialSummary`, `WarningCodes`, `PreviewStatus`, `ReasonCode`, `SourceIntegrity`, `FailureScope`,
+`IgnoredExtraFilesInMonth`. The last count repeats per report slot: count once
+per month, not once per report.
 Counts/maps use JSON within their quoted CSV cells. Missing counts/money remain
 blank, financial-detail nulls stay JSON null, and non-repair financial fields stay
 blank. Reported money columns are source monthly totals, not estimates. Known
@@ -177,3 +179,12 @@ Never run GUI suites and smoke simultaneously on one display. CI schedules the
 full Linux/Windows matrix and Windows package/component/desktop/restart checks on
 this feature branch's pushes. Configuration is not evidence of a passing hosted
 run. Native Windows execution cannot be inferred from Linux tests or wheel builds.
+
+
+## January temporary-file mapping correction
+
+Only `historical_temporary_file_ignored` is an ignored-extra notice rather than a
+month-wide batch failure. Valid reports still require their own stable read and
+adapter checks. JSON inventory_notices and employee details report ignored extras
+separately; actual report errors have their own failure_scope. All other blockers
+remain. See [cause and January–June acceptance](january_batch_preview_fix.md).
