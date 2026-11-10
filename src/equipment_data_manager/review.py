@@ -1,7 +1,12 @@
 """Local review requests only: no identity provider, approval or publication authority."""
+from contextlib import closing
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
+import os
+import stat
+from threading import Lock, RLock
+from weakref import WeakValueDictionary
 from pathlib import Path
 import sqlite3
 from uuid import uuid4
@@ -13,6 +18,44 @@ from equipment_data_manager.powerquery_contract import read_table
 from equipment_data_manager.powerbi_readiness import _same_provenance, _record_contract, _financial_check
 from equipment_data_manager.settings import candidate_location_error
 from equipment_data_manager.storage.local import read_local_file
+
+
+_STORE_LOCKS = WeakValueDictionary()
+_STORE_LOCKS_GUARD = Lock()
+
+
+def _store_lock(root):
+    # Store roots are already canonicalized by LocalOutputStore. Do not resolve
+    # a database filename while another request may be creating/opening it.
+    key = os.path.normcase(os.path.abspath(root))
+    with _STORE_LOCKS_GUARD:
+        lock = _STORE_LOCKS.get(key)
+        if lock is None:
+            lock = RLock()
+            _STORE_LOCKS[key] = lock
+        return lock
+
+
+def _unsafe(reason, *, depth=None, attributes=None, winerror=None):
+    error = ProcessingError('review_store_unsafe')
+    # Fixed stage/property names only. Never include a path, cell or raw exception.
+    detail = dict(reason=reason, ancestor_depth=depth, attributes=attributes, winerror=winerror)
+    error.add_note('Review store diagnostic: ' + json.dumps(detail, sort_keys=True))
+    return error
+
+
+def _check_node(path, *, directory, depth=0):
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return  # Missing nodes may be created only after their parents pass.
+    except OSError as exc:
+        raise _unsafe('metadata_unavailable', depth=depth, winerror=getattr(exc, 'winerror', None)) from None
+    attributes = getattr(info, 'st_file_attributes', 0)
+    if stat.S_ISLNK(info.st_mode) or path.is_symlink() or path.is_junction() or attributes & (0x400 | 0x40000 | 0x400000):
+        raise _unsafe('redirected_or_cloud_node', depth=depth, attributes=attributes)
+    if not (stat.S_ISDIR(info.st_mode) if directory else stat.S_ISREG(info.st_mode)):
+        raise _unsafe('unexpected_node_type', depth=depth, attributes=attributes)
 
 
 def encoded(value):
@@ -32,14 +75,18 @@ class ReviewService:
     def __init__(self, coordinator, *, raw_folder=None):
         self.coordinator = coordinator
         self.root = coordinator.store.root / 'review_requests'
+        self._lock = _store_lock(self.root)
         self.raw_folder = None if raw_folder is None else Path(raw_folder).resolve()
 
     def _path(self):
-        if candidate_location_error(self.root) or any(p.is_symlink() or p.is_junction() for p in (self.root, *self.root.parents)):
-            raise ProcessingError('review_store_unsafe')
+        for depth, node in enumerate((self.root, *self.root.parents)):
+            _check_node(node, directory=True, depth=depth)
+        if candidate_location_error(self.root):
+            raise _unsafe('local_location_policy')
+        # Fixed direct child + checked ancestors and non-following file metadata:
+        # do not compare two independently resolved aliases of a changing path.
         path = self.root / 'requests.sqlite3'
-        if path.is_symlink() or not path.resolve().is_relative_to(self.root.resolve()):
-            raise ProcessingError('review_store_unsafe')
+        _check_node(path, directory=False)
         return path
 
     def capture(self, period):
@@ -108,6 +155,10 @@ class ReviewService:
         return dict(evidence=evidence, fingerprint=digest(evidence))
 
     def request(self, period, expected_fingerprint, evidence_note):
+        with self._lock:
+            return self._request(period, expected_fingerprint, evidence_note)
+
+    def _request(self, period, expected_fingerprint, evidence_note):
         if not isinstance(evidence_note, str) or not evidence_note.strip() or len(evidence_note) > 4000:
             raise ProcessingError('review_evidence_required')
         captured = self.capture(period)
@@ -122,11 +173,12 @@ class ReviewService:
         key = digest(body)
         path = self._path()
         path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(path, timeout=5) as db:
+        path = self._path()  # Recheck created directories before opening the database.
+        with closing(sqlite3.connect(path, timeout=5)) as db, db:
+            db.execute('BEGIN IMMEDIATE')
             db.execute('CREATE TABLE IF NOT EXISTS requests (id TEXT PRIMARY KEY, dedup TEXT UNIQUE NOT NULL, body TEXT NOT NULL, hash TEXT NOT NULL)')
             db.execute("CREATE TRIGGER IF NOT EXISTS no_update BEFORE UPDATE ON requests BEGIN SELECT RAISE(ABORT, 'append only'); END")
             db.execute("CREATE TRIGGER IF NOT EXISTS no_delete BEFORE DELETE ON requests BEGIN SELECT RAISE(ABORT, 'append only'); END")
-            db.execute('BEGIN IMMEDIATE')
             existing = db.execute('SELECT id, body, hash FROM requests WHERE dedup=?', (key,)).fetchone()
             if existing:
                 return self._verified(existing)
@@ -148,10 +200,14 @@ class ReviewService:
             raise ProcessingError('review_audit_integrity_failed') from None
 
     def history(self):
+        with self._lock:
+            return self._history()
+
+    def _history(self):
         path = self._path()
         if not path.exists():
             return []
-        with sqlite3.connect(path.as_uri()+'?mode=ro', uri=True, timeout=5) as db:
+        with closing(sqlite3.connect(path.as_uri()+'?mode=ro', uri=True, timeout=5)) as db:
             return [self._verified(row) for row in db.execute('SELECT id,body,hash FROM requests ORDER BY rowid DESC')]
 
     def status(self, record):

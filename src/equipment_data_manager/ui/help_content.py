@@ -211,8 +211,8 @@ entry('m365_test_config', 'Check Microsoft 365 test configuration', 'Validates a
 
 
 entry('historical_inventory', 'Historical folder discovery',
-    'Finds readable raw reports across a selected range. It does not clean or approve data.',
+    'Discover then preview up to 120 historical months without writing candidates or granting approval.',
     'Choose the raw root and explicit layout in Settings. Standard layout reads YYYY-MM/report-type folders; SharePoint layout reads year/YYYY-MM (month label) with three directly stored reports. Select start and end as YYYY-MM, then discover. Found means one stable readable file, not a supported source schema or verified financial total.',
     'Original files are read through the local/synced provider. Discovery writes no candidate history or database. A private JSON inventory can be exported outside the raw/synced folders.',
-    'Inspect Problems & files. Resolve missing/ambiguous/unavailable inputs. For one complete month, use Process Reports, Discover month, confirm the month, and Preview Processing. Historical batch preview/process/snapshot controls are deferred.',
+    'Inspect Problems & files. Resolve missing/ambiguous/unavailable inputs. Click Preview Selected Months to run existing cleaners in memory. Select a month and open Problems & files for counts, date checks, missing values and financial warnings. Stop preserves completed previews and marks remaining reports Not previewed. Export Preview Report saves a local nonproduction diagnostic outside workspace folders. Changed sources require rediscovery. Batch processing and snapshots remain deferred.',
     'Cloud synchronization is unverified. No Graph sign-in, automatic correction, approval or publishing occurs. Exported inventory is evidence only; it is never imported as processing authority.')

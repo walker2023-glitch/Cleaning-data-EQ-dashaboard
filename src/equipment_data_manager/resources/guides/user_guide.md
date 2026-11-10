@@ -342,3 +342,31 @@ EMPTY/BLANK cells are excluded from timestamped content bounds. A real fifth dat
 column still fails; no record, date or unknown field is removed to force acceptance.
 The original workbook stays unchanged. After a passing diagnostic, repeat private
 May preview/count/hash acceptance; no candidate is approved or published.
+
+
+## Preview historical months together
+
+Open Historical Data after choosing the raw root/layout in Settings. Enter start
+and end as YYYY-MM, Discover, then **Preview Selected Months**. All three report
+types are checked for every month in that range, without creating candidates.
+Select a month and open Problems & files for counts, exclusions, missing values,
+date checks and financial warnings. Technical details retains hashes/provenance.
+Stop finishes the active file and leaves later reports Not previewed. Missing
+reports are never zero reports. Changed sources require rediscovery.
+
+Preview success is not independent business validation. Reported costs remain
+separate from estimates and legacy calculations; missing costs stay missing.
+Export Preview Report optionally writes a new local nonproduction diagnostic CSV
+or JSON outside workspace/synced/approved folders. Do not ingest it into Power BI.
+Historical range/results are session-only; saved root/layout and the separate
+single reporting month retain their normal persistence. No batch processing,
+approval or publication is enabled. See the historical batch preview guide in the
+repository for synthetic and January–June Windows acceptance instructions.
+
+
+If a historical month contains an Office lock or incomplete-download file, batch
+preview ignores that extra and reports its count separately. It does not delete
+it. Real reports still undergo their own integrity and cleaning checks. A missing,
+ambiguous or changed source remains a real report problem. After updating this
+fix, Discover again before previewing January–June; old failures are not refreshed
+automatically. Never treat preview success as approval.

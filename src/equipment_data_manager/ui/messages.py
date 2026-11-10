@@ -3,6 +3,18 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    "historical_selected_source_temporary": "The selected source itself has a temporary or incomplete-download filename. It was not read. Supply a finished original export and discover again; temporary files are never accepted as reports.",
+    "historical_export_requires_local_csv_or_json": "Choose a new CSV or JSON file on trusted local storage. Synced and network destinations are not supported for this diagnostic export.",
+    "historical_export_overlaps_workspace": "Save the diagnostic report outside the raw, candidate and approved workspace folders.",
+    "historical_export_path_too_long": "The export path exceeds classic Windows path limits. Choose a shorter local folder and filename.",
+    "historical_export_exists": "This diagnostic filename already exists. Choose a new name; existing reports are preserved.",
+    "historical_preview_requires_trusted_local_candidates": "Candidate history must stay on trusted local storage. Check the candidate folder in Settings.",
+    "historical_inventory_selection_changed": "The range or raw root changed. Discover again before previewing.",
+    "historical_duplicate_reports": "Several files match this report type. No file was chosen. Resolve the duplicates and discover again.",
+    "historical_report_ambiguous": "Several possible sources were found. Resolve the ambiguity and discover again.",
+    "historical_month_missing": "The selected month folder is missing. Check the root and folder layout in Settings.",
+    "historical_report_missing": "This required report is missing. Missing reports are not treated as zero-activity reports.",
+    "historical_unsupported_extension": "This source format is unsupported. CompuClean requires CSV; TMA requires a supported XLSX or genuine BIFF8 XLS export.",
     "storage_source_changed": "The file version changed since discovery. Select or discover it again, then preview before processing.",
     "storage_source_hash_mismatch": "The selected source does not match its expected content hash. Stop and review the intended file version.",
     "storage_file_not_downloaded": "This file is offline or needs downloading. Make it available on this device in OneDrive, wait for download to finish, then preview again. Cloud synchronization is unverified.",

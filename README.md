@@ -1,5 +1,11 @@
 # Equipment Data Manager
 
+Historical Data now supports **read-only multi-month preview** after discovery.
+See [the batch preview guide](docs/historical_batch_preview.md) for a synthetic
+January–June demonstration, source safeguards, diagnostic export and Windows
+acceptance. This feature does not process batches, approve data or publish.
+
+
 ## May structure rejection diagnostics
 
 feature/tma-structure-diagnostics adds a focused fix for formatting-only XLS edges,

@@ -1,5 +1,22 @@
 # Historical backfill — PR 1: flexible discovery and read-only inventory
 
+## Historical batch preview — current milestone
+
+`feature/historical-batch-preview` starts from merged main **f49b297** (PR #21).
+Read-only range previews, per-month counts/date/exclusion/missing-value evidence,
+schema-v2 financial warnings, cancellation with partial results and private local
+diagnostic exports are implemented. Existing cleaners and write/approval/publication
+semantics are unchanged. See [historical_batch_preview.md](historical_batch_preview.md)
+for architecture limits, synthetic demonstration and exact Windows January–June
+acceptance. Historical sections below retain the earlier branch history; their
+then-current deferred preview status is superseded by this section.
+
+Next: owner Windows range acceptance and independent financial baselines. Batch
+processing, historical snapshot publication, authoritative reviewer roles, live
+Graph authorization and production Power BI remain separate gates. No automatic
+merge, business approval or production migration is part of this milestone.
+
+
 ## Timestamped HI-042b follow-up
 
 feature/tma-timestamped-layout depends on legacy-tma-compatibility 32d36b6. The

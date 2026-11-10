@@ -31,13 +31,18 @@ class ProcessingCoordinator:
     def process(self, request: ProcessingRequest) -> ProcessingResult:
         return self._run(request, preview=False)
 
-    def preview(self, request: ProcessingRequest) -> ProcessingResult:
-        """Use the same decisions/transformations without writing any outputs."""
-        return self._run(request, preview=True)
+    def preview(self, request: ProcessingRequest, *, include_details: bool = False) -> ProcessingResult:
+        """Use the same decisions/transformations without writing any outputs.
 
-    def _run(self, request: ProcessingRequest, *, preview: bool) -> ProcessingResult:
+        include_details reruns the same cleaner for unchanged sources, retaining
+        SKIPPED status while supplying in-memory diagnostics. Default fast skips
+        and all processing/correction decisions remain unchanged.
+        """
+        return self._run(request, preview=True, include_details=include_details)
+
+    def _run(self, request: ProcessingRequest, *, preview: bool, include_details: bool = False) -> ProcessingResult:
         try:
-            return self._process(request, preview=preview)
+            return self._process(request, preview=preview, include_details=include_details)
         except ProcessingError as exc:
             return ProcessingResult(ProcessingStatus.FAILURE, str(exc), rejection_diagnostics=exc.diagnostics)
         except OSError:
@@ -49,7 +54,7 @@ class ProcessingCoordinator:
             # category; never log raw exceptions or cell contents to the GUI.
             return ProcessingResult(ProcessingStatus.FAILURE, "processing_failed")
 
-    def _process(self, request: ProcessingRequest, *, preview: bool = False) -> ProcessingResult:
+    def _process(self, request: ProcessingRequest, *, preview: bool = False, include_details: bool = False) -> ProcessingResult:
         try:
             report_type = ReportType(request.report_type)
         except ValueError:
@@ -78,7 +83,8 @@ class ProcessingCoordinator:
         transaction = self.store.read_transaction if preview else self.store.transaction
         with transaction() as connection:
             current, prior_warnings = self.store.current(connection, report_type, request.period)
-            if current and current.source_hash == source_hash and current.cleaner_version == cleaner.version:
+            unchanged = bool(current and current.source_hash == source_hash and current.cleaner_version == cleaner.version)
+            if unchanged and not (preview and include_details):
                 return ProcessingResult(
                     ProcessingStatus.SKIPPED, "already_processed", prior_warnings, artifact=current,
                 )
@@ -87,6 +93,9 @@ class ProcessingCoordinator:
                 raise ProcessingError("cleaner_contract_mismatch")
             if not cleaned.output_bytes or cleaned.output_rows <= 0:
                 raise ProcessingError("no_output_rows")
+            if unchanged:
+                return ProcessingResult(ProcessingStatus.SKIPPED, "already_processed",
+                    cleaned.warnings, cleaned=cleaned, artifact=current)
             if current:
                 proposed_hash = sha256(cleaned.output_bytes).hexdigest()
                 token = sha256(

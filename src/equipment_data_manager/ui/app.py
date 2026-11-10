@@ -529,7 +529,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         if self.settings_blocking():
             self.status.set('Finish checking or saving settings before processing reports.')
             return
-        if kind in ('preview','process','packet','history','business_review'):
+        if kind in ('preview','process','packet','history','business_review','historical_preview'):
             problem=candidate_location_error(self.workflow.base_output_root)
             if problem:
                 self.status.set(problem)
@@ -571,7 +571,13 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                 if event.kind == "progress":
                     done, total = event.payload
                     self.progress.set(done / total if total else 1)
-                    self.status.set(f"{done} of {total} months inspected. Please wait..." if self.job == "historical_discover" else f"{done} of {total} files checked. Please wait...")
+                    if self.job != "historical_preview":
+                        self.status.set(f"{done} of {total} months inspected. Please wait..." if self.job == "historical_discover" else f"{done} of {total} files checked. Please wait...")
+                elif event.kind == "historical_preview_active":
+                    period, kind = event.payload
+                    self.status.set(f"Previewing {period} • {SUPPORTED_REPORTS[kind]}. No candidates will be written.")
+                elif event.kind == "historical_preview_update":
+                    self.historical_page.preview_update(event.payload)
                 else:
                     self.worker.busy = False
                     self._busy_controls(False)
@@ -584,6 +590,11 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                     elif self.job == "historical_discover":
                         self.historical_page.completed(event.payload)
                         self.status.set(("Historical inventory stopped; inspect unscanned months. " if event.payload.stopped else "Historical inventory complete. ") + "No cleaning or synchronization verification was performed.")
+                    elif self.job == "historical_preview":
+                        self.historical_page.preview_completed(event.payload)
+                        self.status.set("Historical preview stopped safely; partial results retained." if event.payload.stopped else "Historical preview complete. No candidates written; business accuracy unverified.")
+                    elif self.job == "historical_preview_export":
+                        self.status.set(f"Nonproduction diagnostic preview saved: {event.payload}. Not a Power BI dataset.")
                     elif self.job == "historical_export":
                         self.status.set(f"Private inventory saved: {event.payload}. Not a processed or approved dataset.")
                     elif self.job == "business_review":
@@ -624,7 +635,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
     def stop_work(self):
         self.worker.stop()
         self.stop_button.configure(state="disabled")
-        self.status.set("Stopping after the current file. Completed files remain saved.")
+        self.status.set("Stopping after the current report. Preview results remain visible; no candidates written." if self.job == "historical_preview" else "Stopping after the current file. Completed files remain saved.")
 
     def show_page(self, name):
         if hasattr(self, "guidance"):
@@ -876,6 +887,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.guidance.register(self.settings_page.format_picker,'powerbi')
         for widget in (self.settings_page.layout_picker, self.navigation['Historical Data'],
                        self.historical_page.discover_button, self.historical_page.export_button,
+                       self.historical_page.preview_button, self.historical_page.preview_export_button,
                        *self.historical_page.fields):
             self.guidance.register(widget,'historical_inventory')
 

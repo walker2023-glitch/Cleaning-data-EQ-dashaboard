@@ -515,3 +515,55 @@ Actual OneDrive hydration/sync/device behavior, MSAL construction/interactive si
 claims/redirect/cache ACL policy, Graph server conflict enforcement and publication
 are not proven by mocks. Follow sharepoint_live_pilot.md only after the separate
 IT/user authorization. Do not label a synthetic probe or reconciliation as approval.
+
+
+## Historical batch preview
+
+`tests/test_historical_preview.py` uses real adapters and invented CSV/XLSX/BIFF8
+fixtures for both layouts, six-month and year-boundary ranges, missing/duplicate/
+unsupported/stale inputs, invalid dates, missing/zero costs, reconciliation,
+classic/timestamped/style-only XLS, cancellation, independent failure recovery,
+unchanged/corrected candidates and safe local export cleanup/Windows UTF-16 limits.
+Real-widget tests cover incremental results, navigation, cancellation while busy,
+diagnostic export, invalidation, saved settings and disabled approval/publishing.
+The existing inventory widget assertion now checks hashes in Technical details and
+their absence from the employee details pane, preserving access to the evidence.
+The documented synthetic generator is itself exercised for both layouts.
+
+Source/installed-wheel/Windows packaged smoke adds batch discovery, preview and
+export, unchanged workspace hashes and guarded approval/publication (phases 37–39),
+then the existing separate-process restart. Use historical_batch_preview.md for
+exact commands. Hosted/native results must be checked separately; API access may
+prevent observing them. Do not claim that scheduled CI passed without its results.
+
+Local verification for this feature (2026-11-09, Linux/Python 3.12.14):
+
+- Full `.github/run_tests.py --isolate-gui`: **808 passed, 0 failures/errors/skips**,
+  including all 765 baseline cases and 43 new cases; 61 GUI cases run in fresh
+  processes, without retries. JUnit: `data/ci-test-results.xml` (local, ignored).
+- Wheel and sdist built successfully with `uv build`.
+- Source desktop smoke: passed, phase 39; separate-process restore passed.
+- Isolated installed-wheel desktop smoke (`python -I`, desktop/microsoft extras):
+  passed, phase 39; separate-process restore passed.
+- Synthetic 18-report screenshot: `docs/images/historical_batch_preview.png`.
+- Original cleaners, work-order adapters and financial-v2 module have no changes.
+  No private reports were read/committed and no production services were accessed.
+- Native Windows executable/packaged smoke and hosted Windows/Linux results are
+  **not verified here**. This execution environment is Linux; GitHub PR/check APIs
+  return Forbidden/403. The branch workflow includes the full matrix and native
+  Windows packaging/component/desktop/restart steps, with the new batch smoke.
+  Review actual Actions results and perform Windows acceptance before merging.
+
+The Linux host's preexisting read-only font-cache warning uses CustomTkinter's
+fallback renderer; all visible-widget, screenshot and desktop checks above passed.
+
+## January temporary-extra follow-up — 2026-11-10
+
+Full Linux suite: **820 passed, no failures/errors/skips**, including 62 fresh-process
+GUI cases. The 12 added cases reproduce/fix both layouts' January lock-file poisoning,
+compare all 18 legitimate results with the no-extra baseline, reject selected
+synthetic temporary names, preserve other blockers/stale-source rejection, check
+safe diagnostics/exports and verify employee notices without any candidate writes.
+Source and isolated installed-wheel desktop smoke (with January's synthetic lock
+file) pass phase 39 and separate-process restart. Wheel/sdist builds pass.
+Native Windows/hosted outcomes remain unverified; see january_batch_preview_fix.md.

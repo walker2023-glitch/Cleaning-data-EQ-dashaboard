@@ -1043,7 +1043,8 @@ def test_historical_inventory_navigation_export_and_monthly_engine(app, tmp_path
     assert page.inventory.months[0].complete and not page.inventory.months[1].complete
     assert len(page.table.get_children()) == 2 and not candidates.exists()
     assert 'No processing has run' in page.summary.cget('text')
-    assert 'SHA-256' in page.details.get('1.0','end')
+    assert 'sha256' in page.technical.get('1.0','end')
+    assert 'SHA-256' not in page.details.get('1.0','end')
     assert app.business_review_page.approve_button.cget('state') == 'disabled'
     assert app.business_review_page.publish_button.cget('state') == 'disabled'
     target = tmp_path / 'inventory.json'
@@ -1160,4 +1161,133 @@ def test_timestamped_tma_gui_preview_counts_and_processing_remain_unapproved(app
     app.process_button.invoke();pump(app,lambda:not app.worker.busy)
     assert app.results[0].result.status=='success' and app.results[0].result.output_rows==81
     assert source.read_bytes()==fixture.read_bytes() and not app.workspace.approved_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+
+
+def configure_historical_batch(app, tmp_path):
+    from test_historical_preview import setup
+    from equipment_data_manager.monthly import Workspace
+    from equipment_data_manager.settings import UserSettings, Preferences
+    raw, candidates, approved = (tmp_path / name for name in ('raw','candidates','approved'))
+    setup(raw,(1,2))
+    app.saved_settings = UserSettings(dict(raw_folder=str(raw), candidate_folder=str(candidates), approved_folder=str(approved)),
+        Preferences(candidate_local_confirmed=True, folder_layout='sharepoint_year_month'))
+    app.apply_workspace(Workspace(raw,candidates,approved))
+    app.show_page('Historical Data')
+    page=app.historical_page
+    page.start.set('2026-01');page.end.set('2026-03')
+    assert page.preview_button.cget('state')=='disabled'
+    page.discover_button.invoke()
+    pump(app,lambda:not app.worker.busy)
+    return page
+
+
+def test_historical_batch_real_engine_navigation_export_no_candidate_or_settings_writes(app,tmp_path,monkeypatch):
+    from test_historical_discovery import snapshot
+    import json
+    page=configure_historical_batch(app,tmp_path)
+    before=snapshot(tmp_path)
+    assert page.preview_button.cget('state')=='normal'
+    page.preview_button.invoke()
+    assert app.worker.busy and page.preview_button.cget('state')=='disabled'
+    pump(app,lambda:not app.worker.busy)
+    assert len(page.batch.reports)==9
+    assert page.batch.reports[0].retained_records==3
+    assert page.batch.reports[6].status=='missing'
+    assert page.table.item('2026-01','values')[1:4]==('3','2','2')
+    assert 'Missing reports' in page.table.item('2026-03','values')[-1]
+    page.table.selection_set('2026-01');page.show_details()
+    details=page.details.get('1.0','end')
+    assert 'Reported Total Cost' in details and '30.00' in details
+    assert 'not independent verification' in details and 'sha256' not in details
+    assert 'source_sha256' in page.technical.get('1.0','end')
+    app.show_page('Settings');app.show_page('Historical Data')
+    assert page.batch is not None and page.start.get()=='2026-01'
+    assert snapshot(tmp_path)==before
+    target=tmp_path/'diagnostic.csv'
+    monkeypatch.setattr('equipment_data_manager.ui.historical_page.filedialog.asksaveasfilename',lambda **_:str(target))
+    page.preview_export_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert 'NonproductionDiagnosticPreview' in target.read_text(encoding='utf-8-sig')
+    assert not app.workspace.candidate_folder.exists() and not app.workspace.approved_folder.exists()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+    page.end.set('bad')
+    assert page.batch is None and page.preview_button.cget('state')==page.preview_export_button.cget('state')=='disabled'
+
+
+def test_historical_batch_worker_responsive_cancel_and_partial_failure(app,tmp_path,monkeypatch):
+    from threading import Event
+    import equipment_data_manager.historical_preview as module
+    page=configure_historical_batch(app,tmp_path)
+    entered,release=Event(),Event()
+    original=module.verify_inventory_source
+    def slow(provider,source):
+        entered.set()
+        if not release.wait(8): raise AssertionError('test gate timeout')
+        return original(provider,source)
+    monkeypatch.setattr(module,'verify_inventory_source',slow)
+    page.preview_button.invoke()
+    pump(app,entered.is_set)
+    pump(app,lambda:"2026-01" in app.status.get())
+    assert "Repair Reports" in app.status.get()
+    heartbeat=[]
+    app.after(1,lambda:heartbeat.append(True));pump(app,lambda:bool(heartbeat))
+    assert app.worker.busy
+    app.stop_button.invoke();release.set()
+    pump(app,lambda:not app.worker.busy)
+    assert page.batch.stopped and page.batch.reports[0].retained_records==3
+    assert all(r.status=='not_previewed' for r in page.batch.reports[1:])
+    assert page.preview_export_button.cget('state')=='normal'
+    assert not app.workspace.candidate_folder.exists()
+
+
+def test_historical_batch_preserves_saved_settings_and_single_month_selection(app,tmp_path):
+    from equipment_data_manager.settings import SettingsStore
+    page=configure_historical_batch(app,tmp_path)
+    saved=app.saved_settings
+    store=SettingsStore(tmp_path/'persisted.toml')
+    store.save(saved)
+    before=store.path.read_bytes()
+    selected=app.period()
+    app.settings_store=store
+    page.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.period()==selected and store.path.read_bytes()==before
+    restored=store.load()
+    assert restored==saved and restored.preferences.folder_layout=='sharepoint_year_month'
+    # Historical range is session-only, not a request to switch the saved reporting month.
+    assert page.start.get()=='2026-01' and page.end.get()=='2026-03'
+
+
+def test_historical_batch_labels_incomplete_known_costs(app,tmp_path):
+    from test_repair_financial import raw_report
+    page=configure_historical_batch(app,tmp_path)
+    source=app.workspace.raw_folder/'2026/2026-01 (January)/CompuClean Repair Report.csv'
+    source.write_bytes(raw_report(costs=['$10','','']))
+    page.discover_button.invoke();pump(app,lambda:not app.worker.busy)
+    page.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    page.table.selection_set('2026-01');page.show_details()
+    text=page.details.get('1.0','end')
+    assert 'Known Repair Total Cost: 10 (incomplete)' in text
+    assert 'Unavailable Repair Cost Count: 2' in text
+    assert 'not independent verification' in text
+
+
+
+def test_historical_batch_ignored_lock_is_separate_employee_notice(app,tmp_path):
+    page=configure_historical_batch(app,tmp_path)
+    lock=app.workspace.raw_folder/'2026/2026-01 (January)/~$Work Orders January 2026.xlsx'
+    lock.write_bytes(b'SYNTHETIC PRIVATE LOCK - NEVER READ')
+    from test_historical_discovery import snapshot
+    before=snapshot(tmp_path)
+    page.discover_button.invoke();pump(app,lambda:not app.worker.busy)
+    page.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert all(r.retained_records is not None for r in page.batch.reports[:6])
+    assert '1 temporary/extra files ignored separately' in page.summary.cget('text')
+    page.table.selection_set('2026-01');page.show_details()
+    details=page.details.get('1.0','end')
+    assert 'Ignored extra files: 1' in details and 'not deleted' in details
+    assert 'Preview failed' not in details and 'Failure scope' not in details
+    technical=page.technical.get('1.0','end')
+    assert 'inventory_notices' in technical and 'ignored_extra_files' in technical
+    assert 'PRIVATE LOCK' not in technical
+    assert snapshot(tmp_path)==before and not app.workspace.candidate_folder.exists()
     assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'

@@ -1,5 +1,22 @@
 # Power BI CSV candidate exports — schema v1
 
+## Historical batch preview — current milestone
+
+`feature/historical-batch-preview` starts from merged main **f49b297** (PR #21).
+Read-only range previews, per-month counts/date/exclusion/missing-value evidence,
+schema-v2 financial warnings, cancellation with partial results and private local
+diagnostic exports are implemented. Existing cleaners and write/approval/publication
+semantics are unchanged. See [historical_batch_preview.md](historical_batch_preview.md)
+for architecture limits, synthetic demonstration and exact Windows January–June
+acceptance. Historical sections below retain the earlier branch history; their
+then-current deferred preview status is superseded by this section.
+
+Next: owner Windows range acceptance and independent financial baselines. Batch
+processing, historical snapshot publication, authoritative reviewer roles, live
+Graph authorization and production Power BI remain separate gates. No automatic
+merge, business approval or production migration is part of this milestone.
+
+
 ## Windows review-packet staging path fix
 
 Based directly on exact integration 1c63644, not main. The reported summary target
@@ -255,3 +272,18 @@ and Windows user-DPAPI encrypted-cache component. Settings/Guided Mode make unav
 Graph and unverified sync explicit. No SDK/HTTP bootstrap, real sign-in, arbitrary
 upload, approval-state change, production SharePoint/PBIX access or cleaner/schema/
 calculation change. See sharepoint_foundation.md for the tested versus deferred matrix.
+
+Historical batch preview verification: 808 local Linux tests passed without skips;
+source and isolated installed-wheel desktop/restart smoke passed (phase 39), and
+wheel/sdist builds passed. Native Windows/hosted outcomes remain unverified here;
+see testing.md and historical_batch_preview.md for evidence and acceptance gates.
+
+## January historical preview correction — 2026-11-10
+
+An ignored temporary extra previously became a month-wide failure before source
+reads. Batch preview now reports that one known notice separately while real
+selected reports keep their own integrity/adapter checks. Other blockers remain.
+Diagnostics add failure scopes and monthly ignored-extra counts; the diagnostic
+CSV appends FailureScope and IgnoredExtraFilesInMonth, not a financial-v2 change.
+820 Linux tests and source/installed-wheel desktop/restart smoke pass. Native
+Windows and real January acceptance remain separate gates. See january_batch_preview_fix.md.
