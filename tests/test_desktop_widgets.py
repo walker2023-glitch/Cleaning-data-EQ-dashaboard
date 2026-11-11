@@ -1302,6 +1302,10 @@ def prepare_historical_processing(app,tmp_path):
 
 
 def test_historical_processing_selection_plan_confirmation_and_results(app,tmp_path,monkeypatch):
+    # A small viewport reproduces hosted Windows/DPI constraints on every OS.
+    app.minsize(1000,650)
+    app.geometry('1100x700')
+    app.update()
     page,processing=prepare_historical_processing(app,tmp_path)
     assert processing.process_button.cget('state')=='disabled'
     processing.select_all()

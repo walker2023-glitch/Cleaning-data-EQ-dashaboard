@@ -45,3 +45,8 @@ isolated without retries. Wheel/sdist builds passed. Source and isolated
 installed-wheel phase-45 desktop/restart checks passed. Screenshots demonstrate
 real mapped/scrolled widgets using invented reports. Hosted Windows/Linux and
 native package outcomes must be checked on the pushed head before merge.
+
+Hosted Windows follow-up: the primary processing action was above other controls
+and could scroll outside a small viewport. It now ends the panel; the unchanged
+visibility assertion reproduces the original failure at 1100×700 on Linux and
+passes after the layout fix. No processing/security rules changed.

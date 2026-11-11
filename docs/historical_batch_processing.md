@@ -17,7 +17,9 @@ or blanket business approval of historical finances.
    and use the three report-type checkboxes to filter inclusion. Select all eligible
    reports selects successful previews, including unchanged candidates; it excludes
    known corrections. Clear selection resets the plan. The panel scrolls vertically
-   on smaller screens; scroll to the confirmation controls if needed.
+   on smaller screens; scroll to the end for the confirmation and processing controls.
+   The primary processing action stays at the scroll endpoint, including compact
+   Windows/DPI-scaled viewports.
 4. Click **Review Processing Plan**. This reads current history and rechecks each
    selected source. It writes no candidate files or database. Review each filename,
    month/type, existing candidate, proposed action, counts and warnings. Technical
