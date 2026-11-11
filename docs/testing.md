@@ -567,3 +567,25 @@ safe diagnostics/exports and verify employee notices without any candidate write
 Source and isolated installed-wheel desktop smoke (with January's synthetic lock
 file) pass phase 39 and separate-process restart. Wheel/sdist builds pass.
 Native Windows/hosted outcomes remain unverified; see january_batch_preview_fix.md.
+
+
+## Historical Batch Processing
+
+`test_historical_processing.py` exercises real normalized coordinator operations,
+both layouts, one/six months and year rollover, type subsets, unchanged/corrected
+candidates, atomic selection/proposal/version guards, original hashes, warnings,
+legacy/timestamped/styled XLS, cancellation, interruption/retry, orphan exclusion,
+concurrent attempts and Windows path/export safety. Real-widget tests exercise
+selection, no writes before intent/dialog, per-row results, correction routing,
+background responsiveness, stop, settings persistence and normalized output navigation.
+The existing tests remain intact. Source/installed/packaged smoke extends to phase
+45 with confirmed batch creation, correction preservation and safe unchanged retry,
+then a separate-process restart. See historical_batch_processing.md for commands.
+
+Local feature validation: **884 passed, zero failures/errors/skips**, including all
+842 baseline tests and 42 new cases; all 67 GUI cases isolated in fresh processes,
+no retries. The visual check found an initially unmounted panel; the corrected
+layout is now covered by mapped-widget and scroll-to-control visibility assertions.
+Source and isolated installed-wheel phase-45 desktop smoke and separate-process
+restart passed. Wheel/sdist builds passed. Native Windows and hosted outcomes
+require the feature's actual CI results; Linux success alone is not Windows proof.

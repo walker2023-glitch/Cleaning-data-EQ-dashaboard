@@ -1291,3 +1291,119 @@ def test_historical_batch_ignored_lock_is_separate_employee_notice(app,tmp_path)
     assert 'PRIVATE LOCK' not in technical
     assert snapshot(tmp_path)==before and not app.workspace.candidate_folder.exists()
     assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+
+
+def prepare_historical_processing(app,tmp_path):
+    page=configure_historical_batch(app,tmp_path)
+    page.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    page.tabs.set('Batch processing');app.update()
+    assert page.processing.winfo_ismapped()
+    return page,page.processing
+
+
+def test_historical_processing_selection_plan_confirmation_and_results(app,tmp_path,monkeypatch):
+    # A small viewport reproduces hosted Windows/DPI constraints on every OS.
+    app.minsize(1000,650)
+    app.geometry('1100x700')
+    app.update()
+    page,processing=prepare_historical_processing(app,tmp_path)
+    assert processing.process_button.cget('state')=='disabled'
+    processing.select_all()
+    assert len(processing.selected())==6
+    processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert processing.plan and not app.workspace.candidate_folder.exists()
+    processing._parent_canvas.yview_moveto(1);app.update()
+    canvas=processing._parent_canvas
+    assert processing.process_button.winfo_rooty()>=canvas.winfo_rooty()
+    assert processing.process_button.winfo_rooty()+processing.process_button.winfo_height()<=canvas.winfo_rooty()+canvas.winfo_height()
+    assert processing.process_button.cget('state')=='disabled'
+    processing.confirm.toggle()
+    assert processing.process_button.cget('state')=='normal'
+    monkeypatch.setattr('equipment_data_manager.ui.historical_processing.messagebox.askyesno',lambda *a,**kw:False)
+    processing.process_button.invoke()
+    assert not app.worker.busy and not app.workspace.candidate_folder.exists()
+    monkeypatch.setattr('equipment_data_manager.ui.historical_processing.messagebox.askyesno',lambda *a,**kw:True)
+    processing.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert processing.run.summary['created']==6
+    assert '6 candidates created' in page.summary.cget('text')
+    assert processing.process_button.cget('state')=='disabled'
+    assert 'Created: 6' in processing.detail.get('1.0','end')
+    processing.table.selection_set('2026-01:repairs');processing.selection_changed()
+    assert 'Candidate file:' in processing.detail.get('1.0','end')
+    assert 'Reported monthly labor / parts / total:' in processing.detail.get('1.0','end')
+    processing.select_all()
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+    assert not app.workspace.approved_folder.exists()
+    processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert all(i.action=='skip' for i in processing.plan.items)
+
+
+def test_historical_processing_month_type_filters_and_plan_invalidation(app,tmp_path):
+    page,processing=prepare_historical_processing(app,tmp_path)
+    processing.month.set('2026-02');processing.select_month()
+    assert len(processing.selected())==3
+    processing.types[ReportType.TMA_WORK_ORDERS].set(False);processing.selection_changed()
+    assert len(processing.selected())==2
+    processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert len(processing.plan.items)==2
+    processing.confirm.toggle()
+    processing.clear()
+    assert processing.plan is None and processing.process_button.cget('state')=='disabled'
+    app.show_page('Settings');app.show_page('Historical Data')
+    assert page.start.get()=='2026-01' and page.end.get()=='2026-03'
+    page.end.set('2026-02')
+    assert not processing.rows and processing.plan_button.cget('state')=='disabled'
+
+
+def test_historical_processing_worker_responsive_and_stop_keeps_first_commit(app,tmp_path,monkeypatch):
+    from threading import Event
+    import equipment_data_manager.historical_processing as module
+    page,processing=prepare_historical_processing(app,tmp_path)
+    processing.select_all();processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    entered,release=Event(),Event()
+    original=module.verify_inventory_source
+    def slow(provider,source):
+        entered.set();assert release.wait(10)
+        return original(provider,source)
+    monkeypatch.setattr(module,'verify_inventory_source',slow)
+    monkeypatch.setattr('equipment_data_manager.ui.historical_processing.messagebox.askyesno',lambda *a,**kw:True)
+    processing.confirm.toggle();processing.process_button.invoke()
+    pump(app,entered.is_set)
+    heartbeat=[];app.after(1,lambda:heartbeat.append(True));pump(app,lambda:bool(heartbeat))
+    app.stop_button.invoke();release.set();pump(app,lambda:not app.worker.busy)
+    assert processing.run.summary['created']==1 and processing.run.summary['not_started']==5
+    assert processing.run.stopped and processing.run.items[0].revision
+
+
+def test_historical_correction_route_uses_original_identity_and_never_bulk_confirms(app,tmp_path,monkeypatch):
+    from test_repair_financial import raw_report
+    page,processing=prepare_historical_processing(app,tmp_path)
+    processing.select_all();processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    processing.confirm.toggle()
+    monkeypatch.setattr('equipment_data_manager.ui.historical_processing.messagebox.askyesno',lambda *a,**kw:True)
+    processing.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    path=app.workspace.raw_folder/'2026/2026-01 (January)/CompuClean Repair Report.csv'
+    path.write_bytes(raw_report(costs=['$20']*3))
+    page.discover_button.invoke();pump(app,lambda:not app.worker.busy)
+    page.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    processing.table.selection_set('2026-01:repairs');processing.selection_changed()
+    processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert processing.plan.items[0].action=='correction' and processing.process_button.cget('state')=='disabled'
+    processing.correction_button.invoke()
+    assert app.page=='Process Reports' and app.period()=='2026-01'
+    assert app.sources[0].expected_sha256 and app.sources[0].expected_version
+    assert not app.month_confirmed.get() and app.process_button.cget('state')=='disabled'
+
+
+def test_historical_processing_keeps_saved_settings_month_and_opens_normalized_root(app,tmp_path,monkeypatch):
+    page,processing=prepare_historical_processing(app,tmp_path)
+    app.settings_store.save(app.saved_settings)
+    before=app.settings_store.path.read_bytes();month=app.period()
+    processing.select_all();processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    monkeypatch.setattr('equipment_data_manager.ui.historical_processing.messagebox.askyesno',lambda *a,**kw:True)
+    processing.confirm.toggle();processing.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.period()==month and app.settings_store.path.read_bytes()==before
+    seen=[]
+    monkeypatch.setattr('equipment_data_manager.ui.app.open_directory',seen.append)
+    processing.open_button.invoke()
+    assert seen==[app.workspace.candidate_folder/'powerbi_candidates']

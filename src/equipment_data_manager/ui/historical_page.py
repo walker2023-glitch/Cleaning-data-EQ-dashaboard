@@ -65,12 +65,21 @@ class HistoricalPage(ctk.CTkFrame):
         self.details.grid(row=0, column=0, sticky='nsew')
         self.technical = ctk.CTkTextbox(technical_tab, wrap='word')
         self.technical.grid(row=0, column=0, sticky='nsew')
+        from equipment_data_manager.ui.historical_processing import HistoricalProcessingPage
+        self.tabs = tabs
+        processing_tab = tabs.add('Batch processing')
+        processing_tab.grid_columnconfigure(0, weight=1)
+        processing_tab.grid_rowconfigure(0, weight=1)
+        self.processing = HistoricalProcessingPage(processing_tab, self)
+        self.processing.grid(row=0, column=0, sticky='nsew')
         self.invalidate()
 
     def invalidate(self):
         self.inventory = None
         self.batch = None
         self.preview_rows = {}
+        if hasattr(self, 'processing'):
+            self.processing.reset()
         if hasattr(self, 'table'):
             self.table.delete(*self.table.get_children())
             for box in (self.details, self.technical):
@@ -84,7 +93,7 @@ class HistoricalPage(ctk.CTkFrame):
         workspace = self.app.workspace
         root = str(workspace.raw_folder) if workspace else 'Configure Raw Data Folder in Settings'
         layout = LAYOUT_LABELS[self.app.folder_layout]
-        self.caption.configure(text=f'{layout}\nRaw root: {root}\nRead-only inventory and preview — no cleaned candidates, approval or publication. Cloud sync is unverified.')
+        self.caption.configure(text=f'{layout}\nRaw root: {root}\nDiscovery/preview are read-only. Batch processing requires a confirmed plan and creates local unapproved candidates only. Cloud sync is unverified.')
 
     def discover(self):
         if self.app.worker.busy or self.app.settings_worker.busy:
@@ -160,6 +169,7 @@ class HistoricalPage(ctk.CTkFrame):
             self.app._start('historical_export', lambda progress, stop: export_inventory(inventory, Path(target)))
 
     def busy(self, value):
+        self.processing.busy(value)
         for field in self.fields:
             field.configure(state='disabled' if value else 'normal')
         self.discover_button.configure(state='disabled' if value else 'normal')
@@ -175,6 +185,7 @@ class HistoricalPage(ctk.CTkFrame):
         inventory = self.inventory
         self.preview_rows = {}
         self.batch = None
+        self.processing.reset()
         root = self.app.workflow.base_output_root
         for month in inventory.months:
             self.table.item(month.period, values=(month.period, '—', '—', '—', 'Not previewed'))
@@ -199,6 +210,7 @@ class HistoricalPage(ctk.CTkFrame):
 
     def preview_completed(self, batch):
         self.batch = batch
+        self.processing.load_preview(batch)
         self.summary.configure(text=('Stopped safely. ' if batch.stopped else 'Batch preview complete. ')
             + f'{sum(n.count for n in batch.inventory_notices)} temporary/extra files ignored separately. '
             + f'{len(batch.reports)} report slots shown. No candidates written. Business accuracy not independently verified. Cloud synchronization unverified.')

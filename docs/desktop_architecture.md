@@ -214,3 +214,30 @@ closed. The shared temporary-name predicate rejects an actual selected temporary
 source before any read. Batch inventory_notices holds aggregate extra-file counts,
 separate from report code/warnings/failure_scope. GUI renders these on the main
 thread and CSV/JSON export preserves the distinction. No cleaning/store API changes.
+
+
+## Historical Batch Processing
+
+`historical_processing.make_plan` refreshes successful historical preview evidence
+against the same local/synced provider and actual normalized candidate history.
+`execute_plan` consumes only an in-memory immutable plan plus matching confirmation
+fingerprint. Its sequential worker emits aggregate progress/results, never Tk calls
+or report-cell payloads. `ui/historical_processing.py` adds filtered row selection,
+read-only plan display, explicit intent/dialog, cancellable processing and diagnostics.
+All UI updates remain in `app._poll`. Range/root changes invalidate plans; plans do
+not persist or auto-resume. Global single-month preferences are independent.
+
+`ProcessingCoordinator.process_guarded` is the small compatible M1 refactor: expected
+selected revision, cleaner version and output SHA checks occur inside the ordinary
+manifest transaction. It never supplies a replacement token or alters default APIs.
+Plans retain current/proposed hashes but no output bytes. Repairs' main-output hash
+binds the existing supplemental financial summary. Recent Windows path/export safety
+is shared through diagnostic_target/write_diagnostic; new candidate path preflight
+checks complete projected paths without modifying the packet-path implementation.
+
+Corrections are blocked in bulk and routed to existing individual preview/confirmation.
+A local nonblocking per-store batch lock prevents overlapping same-process batches;
+SQLite plus expected revision handles other local processes. No distributed lease is
+claimed. Committed manifest entries, not directory enumeration, determine recovery;
+orphan unselected revisions are never accepted or automatically removed. New plans
+reread original sources before any retry. See historical_batch_processing.md.

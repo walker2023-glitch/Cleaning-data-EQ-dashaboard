@@ -243,3 +243,15 @@ binding and recomputes financial controls, compares independently supplied expec
 and optionally hashes explicit original local files. It writes a new private report
 outside the snapshot; no cleaner/store/manifest/GUI or approval mutation is involved.
 No authenticated approval or production writer exists. See the real-data SOP.
+
+
+## Confirmed historical orchestration
+
+Historical Batch Processing delegates every transformation and candidate commit to
+the existing normalized coordinator. It does not add cleaning or financial rules.
+An opt-in guarded process checks reviewed revision/cleaner/output expectations under
+the existing SQLite transaction; legacy process/preview and correction-token APIs
+remain compatible. Source versions/hashes are checked again immediately before each
+report. Read-only preview adds hashes/revision metadata to bind the proposal; safe
+aggregate summaries reuse existing financial-v2 parsing. Corrections stay blocked
+in bulk. No approval, publication or combined snapshot is created.

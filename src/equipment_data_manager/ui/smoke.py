@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -351,6 +351,18 @@ def run_smoke(directory: Path | None) -> int:
                 assert list((workspace / 'reserved-approved').iterdir()) == []
                 assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
                 (workspace / 'sharepoint-raw/2026/2026-01 (January)/~$Work Orders January 2026.xlsx').write_bytes(b'SYNTHETIC OFFICE LOCK - NEVER READ')
+                # A new invented February month ensures packaged batch creation is exercised.
+                from openpyxl import Workbook
+                folder = workspace / 'sharepoint-raw/2026/2026-02 (February)'
+                folder.mkdir(parents=True)
+                for kind, name in [(ReportType.REPAIRS, 'CompuClean Repair Report.csv'), (ReportType.SERVICE_ORDERS, 'CompuClean Service Orders List.csv')]:
+                    (folder / name).write_bytes(sample_path(kind).read_bytes().replace(b'2026-09', b'2026-02').replace(b'2026-02-30', b'2026-02-28'))
+                book = Workbook(); sheet = book.active
+                for row in [['CU Repair WO History — February 2026','','','',''],
+                            ['Work Order #','Request Date','Requestor','Request','Assigned To'],
+                            ['000439','02/15/2026','Synthetic Requestor','Synthetic request',''],
+                            ['Total: 1 records','','','','']]: sheet.append(row)
+                book.save(folder / 'Work Orders February 2026.xlsx');book.close()
                 state['batch_before'] = {str(p): sha256(p.read_bytes()).hexdigest()
                     for p in workspace.rglob('*') if p.is_file()}
                 app.show_page('Historical Data')
@@ -383,6 +395,54 @@ def run_smoke(directory: Path | None) -> int:
             elif phase == 39:
                 assert 'NonproductionDiagnosticPreview' in (workspace / 'batch-preview.csv').read_text(encoding='utf-8-sig')
                 assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
+                app.historical_page.tabs.set('Batch processing')
+                processing=app.historical_page.processing
+                processing.select_all();processing.plan_button.invoke()
+            elif phase == 40:
+                processing=app.historical_page.processing
+                assert processing.winfo_ismapped()
+                processing._parent_canvas.yview_moveto(1)
+                app.update_idletasks()
+                assert processing.plan is not None and sum(i.action=='create' for i in processing.plan.items)>=3
+                assert processing.process_button.cget('state')=='disabled'
+                state['batch_corrections']=[(i.month,i.report_type,i.preview.existing_revision) for i in processing.plan.items if i.action=='correction']
+                from tkinter import messagebox
+                original=messagebox.askyesno
+                try:
+                    messagebox.askyesno=lambda *args,**kwargs: True
+                    processing.confirm.toggle();processing.process_button.invoke()
+                finally:messagebox.askyesno=original
+            elif phase == 41:
+                from equipment_data_manager.processing.repair_financial import powerbi_coordinator
+                engine=powerbi_coordinator(app.workspace.candidate_folder)
+                run=app.historical_page.processing.run
+                assert run is not None and run.summary['created']>=3
+                assert run.summary['failed']==run.summary['blocked']==0
+                entries=engine.store.history();state['batch_history_size']=len(entries)
+                for month,kind,revision in state['batch_corrections']:
+                    assert next(e for e in entries if e.period==month and e.report_type==kind and e.is_current).artifact.revision_id==revision
+                assert list((workspace/'reserved-approved').iterdir())==[]
+                app.historical_page.discover_button.invoke()
+            elif phase == 42:
+                app.historical_page.preview_button.invoke()
+            elif phase == 43:
+                processing=app.historical_page.processing
+                processing.select_all();processing.plan_button.invoke()
+            elif phase == 44:
+                processing=app.historical_page.processing
+                assert not any(i.action=='create' for i in processing.plan.items)
+                assert any(i.action=='skip' for i in processing.plan.items)
+                from tkinter import messagebox
+                original=messagebox.askyesno
+                try:
+                    messagebox.askyesno=lambda *args,**kwargs: True
+                    processing.confirm.toggle();processing.process_button.invoke()
+                finally:messagebox.askyesno=original
+            elif phase == 45:
+                from equipment_data_manager.processing.repair_financial import powerbi_coordinator
+                assert app.historical_page.processing.run.summary['created']==0
+                assert len(powerbi_coordinator(app.workspace.candidate_folder).store.history())==state['batch_history_size']
+                assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
                 app.month.set('January')
                 app.show_page('Process Reports')
                 finish(True)

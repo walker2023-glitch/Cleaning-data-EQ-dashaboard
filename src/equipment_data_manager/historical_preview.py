@@ -6,6 +6,7 @@ financial arithmetic and month validation belong exclusively to existing adapter
 from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from hashlib import sha256
 import csv
 from io import StringIO
 import json
@@ -50,6 +51,9 @@ class ReportPreview:
     cleaner_version: str = ''
     candidate_status: str = 'not_assessed'
     failure_scope: str = ''
+    proposed_output_sha256: str = ''
+    existing_revision: str | None = None
+    existing_output_sha256: str = ''
 
     def document(self):
         return asdict(self)
@@ -76,6 +80,7 @@ class BatchPreview:
     reports: tuple[ReportPreview, ...]
     stopped: bool
     inventory_notices: tuple[InventoryNotice, ...] = ()
+    candidate_root_sha256: str = ''
 
     def document(self):
         return dict(version=1, purpose='NonproductionDiagnosticPreview',
@@ -142,7 +147,10 @@ def _summarize(result, period, kind, source, integrity):
         source_count, retained, source_count - retained if source_count is not None and retained is not None else None,
         exclusions, missing, dates, financial, result.warnings, integrity, source.sha256 or '', source.version,
         cleaned.cleaner_version if cleaned else '', result.status.value,
-        failure_scope='report_validation' if failure else '')
+        failure_scope='report_validation' if failure else '',
+        proposed_output_sha256=sha256(cleaned.output_bytes).hexdigest() if cleaned else '',
+        existing_revision=(result.artifact or result.previous).revision_id if (result.artifact or result.previous) else None,
+        existing_output_sha256=(result.artifact or result.previous).output_hash if (result.artifact or result.previous) else '')
 
 
 def preview_history(provider, inventory, output_root, *, progress=None, on_result=None, on_start=None, cancelled=None):
@@ -216,7 +224,8 @@ def preview_history(provider, inventory, output_root, *, progress=None, on_resul
             if progress:
                 progress(len(results), len(periods) * len(ReportType))
     return BatchPreview(inventory.start, inventory.end, inventory.layout,
-                        datetime.now(timezone.utc).isoformat(), tuple(results), stop.is_set(), tuple(notices))
+                        datetime.now(timezone.utc).isoformat(), tuple(results), stop.is_set(), tuple(notices),
+                        sha256(str(Path(output_root).resolve()).encode()).hexdigest())
 
 
 EXPORT_COLUMNS = ('Purpose', 'ReportingMonth', 'ReportType', 'SourceFilename', 'SourceRecordCount',
@@ -238,17 +247,7 @@ def export_preview(batch, target, *, protected_roots):
 
     Nothing in this report can authorize processing, approval or publication.
     """
-    path = Path(target).absolute()
-    # Deterministic precedence on every OS: links, extension, location policy.
-    # Windows' location policy also rejects links; run the specific guard first.
-    if any(p.is_symlink() or p.is_junction() for p in (path, *path.parents)):
-        raise StorageError('storage_path_rejected')
-    if path.suffix.lower() not in ('.csv', '.json') or candidate_location_error(path):
-        raise StorageError('historical_export_requires_local_csv_or_json')
-    if any(path.resolve().is_relative_to(Path(root).resolve()) for root in protected_roots):
-        raise StorageError('historical_export_overlaps_workspace')
-    # Fail clearly on classic Windows path limits before creating anything.
-    _check_export_path(path)
+    path = diagnostic_target(target, protected_roots=protected_roots)
     if path.suffix.lower() == '.json':
         raw = json.dumps(batch.document(), indent=2) + '\n'
     else:
@@ -270,11 +269,32 @@ def export_preview(batch, target, *, protected_roots):
                 '; '.join(r.warnings), LABELS[r.status], r.code, r.integrity, r.failure_scope,
                 sum(n.count for n in batch.inventory_notices if n.month == r.month)))
         raw = stream.getvalue()
+    return write_diagnostic(path, raw.encode('utf-8-sig'))
+
+
+def diagnostic_target(target, *, protected_roots):
+    """Shared local-export security precedence; does not create any path."""
+    path = Path(target).absolute()
+    # Deterministic precedence on every OS: links, extension, location policy.
+    # Windows' location policy also rejects links; run the specific guard first.
+    if any(p.is_symlink() or p.is_junction() for p in (path, *path.parents)):
+        raise StorageError('storage_path_rejected')
+    if path.suffix.lower() not in ('.csv', '.json') or candidate_location_error(path):
+        raise StorageError('historical_export_requires_local_csv_or_json')
+    if any(path.resolve().is_relative_to(Path(root).resolve()) for root in protected_roots):
+        raise StorageError('historical_export_overlaps_workspace')
+    # Fail clearly on classic Windows path limits before creating anything.
+    _check_export_path(path)
+    return path
+
+
+def write_diagnostic(path, raw):
+    """Exclusive/fsynced write with owned-partial cleanup, after target validation."""
     owned = False
     try:
         with path.open('xb') as output:
             owned = True
-            output.write(raw.encode('utf-8-sig'))
+            output.write(raw)
             output.flush()
             os.fsync(output.fileno())
     except FileExistsError:

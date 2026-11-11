@@ -31,6 +31,16 @@ class ProcessingCoordinator:
     def process(self, request: ProcessingRequest) -> ProcessingResult:
         return self._run(request, preview=False)
 
+    def process_guarded(self, request: ProcessingRequest, *, expected_revision: str | None,
+                        expected_output_hash: str, expected_cleaner_version: str) -> ProcessingResult:
+        """Commit only the exact reviewed proposal against the selected revision.
+
+        The guard runs under the existing manifest transaction. It never grants
+        correction authorization; callers still need the ordinary replacement token.
+        """
+        return self._run(request, preview=False, guard=(expected_revision,
+            expected_output_hash, expected_cleaner_version))
+
     def preview(self, request: ProcessingRequest, *, include_details: bool = False) -> ProcessingResult:
         """Use the same decisions/transformations without writing any outputs.
 
@@ -40,9 +50,9 @@ class ProcessingCoordinator:
         """
         return self._run(request, preview=True, include_details=include_details)
 
-    def _run(self, request: ProcessingRequest, *, preview: bool, include_details: bool = False) -> ProcessingResult:
+    def _run(self, request: ProcessingRequest, *, preview: bool, include_details: bool = False, guard=None) -> ProcessingResult:
         try:
-            return self._process(request, preview=preview, include_details=include_details)
+            return self._process(request, preview=preview, include_details=include_details, guard=guard)
         except ProcessingError as exc:
             return ProcessingResult(ProcessingStatus.FAILURE, str(exc), rejection_diagnostics=exc.diagnostics)
         except OSError:
@@ -54,7 +64,7 @@ class ProcessingCoordinator:
             # category; never log raw exceptions or cell contents to the GUI.
             return ProcessingResult(ProcessingStatus.FAILURE, "processing_failed")
 
-    def _process(self, request: ProcessingRequest, *, preview: bool = False, include_details: bool = False) -> ProcessingResult:
+    def _process(self, request: ProcessingRequest, *, preview: bool = False, include_details: bool = False, guard=None) -> ProcessingResult:
         try:
             report_type = ReportType(request.report_type)
         except ValueError:
@@ -83,8 +93,13 @@ class ProcessingCoordinator:
         transaction = self.store.read_transaction if preview else self.store.transaction
         with transaction() as connection:
             current, prior_warnings = self.store.current(connection, report_type, request.period)
+            if guard is not None:
+                if (current.revision_id if current else None) != guard[0]:
+                    raise ProcessingError('batch_candidate_selection_changed')
+                if cleaner.version != guard[2]:
+                    raise ProcessingError('batch_preview_changed')
             unchanged = bool(current and current.source_hash == source_hash and current.cleaner_version == cleaner.version)
-            if unchanged and not (preview and include_details):
+            if unchanged and guard is None and not (preview and include_details):
                 return ProcessingResult(
                     ProcessingStatus.SKIPPED, "already_processed", prior_warnings, artifact=current,
                 )
@@ -93,6 +108,10 @@ class ProcessingCoordinator:
                 raise ProcessingError("cleaner_contract_mismatch")
             if not cleaned.output_bytes or cleaned.output_rows <= 0:
                 raise ProcessingError("no_output_rows")
+            if guard is not None and sha256(cleaned.output_bytes).hexdigest() != guard[1]:
+                raise ProcessingError('batch_preview_changed')
+            if unchanged and guard is not None and current.output_hash != guard[1]:
+                raise ProcessingError('batch_correction_required')
             if unchanged:
                 return ProcessingResult(ProcessingStatus.SKIPPED, "already_processed",
                     cleaned.warnings, cleaned=cleaned, artifact=current)
