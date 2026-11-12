@@ -214,7 +214,7 @@ entry('historical_inventory', 'Historical folder discovery',
     'Discover then preview up to 120 historical months without writing candidates or granting approval.',
     'Choose the raw root and explicit layout in Settings. Standard layout reads YYYY-MM/report-type folders; SharePoint layout reads year/YYYY-MM (month label) with three directly stored reports. Select start and end as YYYY-MM, then discover. Found means one stable readable file, not a supported source schema or verified financial total.',
     'Original files are read through the local/synced provider. Discovery writes no candidate history or database. A private JSON inventory can be exported outside the raw/synced folders.',
-    'Inspect Problems & files. Resolve missing/ambiguous/unavailable inputs. Click Preview Selected Months to run existing cleaners in memory. Select a month and open Problems & files for counts, date checks, missing values and financial warnings. Stop preserves completed previews and marks remaining reports Not previewed. Export Preview Report saves a local nonproduction diagnostic outside workspace folders. Changed sources require rediscovery. To create local candidates, open Batch processing and review/confirm a plan. Historical snapshots remain deferred.',
+    'Inspect Problems & files. Resolve missing/ambiguous/unavailable inputs. Click Preview Selected Months to run existing cleaners in memory. Select a month and open Problems & files for counts, date checks, missing values and financial warnings. Stop preserves completed previews and marks remaining reports Not previewed. Export Preview Report saves a local nonproduction diagnostic outside workspace folders. Changed sources require rediscovery. To create local candidates, open Batch processing and review/confirm a plan. The Power BI snapshot tab combines selected normalized candidates after a separate integrity preview and explicit local-test confirmation.',
     'Cloud synchronization is unverified. No Graph sign-in, automatic correction, approval or publishing occurs. Exported inventory is evidence only; it is never imported as processing authority.')
 
 
@@ -224,3 +224,10 @@ entry('historical_processing', 'Historical Batch Processing',
     'Sources are checked again. Exact output/cleaner/current revision guards run under the existing SQLite transaction. No approval, upload, publication or Power BI refresh occurs.',
     'Stop after the current report keeps committed revisions. Restart requires fresh discovery, preview, plan and confirmation; history identifies completed work and prevents duplicates.',
     'Missing costs remain missing and warnings remain visible. Do not recursively ingest immutable versions. Diagnostic summary exports are local/private and cannot authorize further processing.')
+
+entry('historical_dataset','Power BI Historical Snapshot',
+    'Creates four local unapproved datasets from current selected candidate revisions.',
+    'Use the range above, preview selected candidates, inspect missing slots, hashes, counts and warnings. All requested months and report types must be valid. Acknowledge compatibility gaps and trusted local storage, then confirm creation in a new snapshot directory.',
+    'Candidate revisions and originals are read only. Dates remain date-only, identifiers stay text, missing costs stay blank. This does not replace Requests and Work Order with identical tables.',
+    'Open the completed snapshot, read compatibility_report.md, then compare in a separate backup PBIX. No approval, Graph access, upload or refresh.',
+    'Missing or invalid selections block generation; resolve them through existing preview/correction workflows. Never recursively import candidate history or multiple snapshots.')

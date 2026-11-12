@@ -1,5 +1,25 @@
 # Test instructions and evidence limits
 
+
+## Historical Power BI datasets — 2026-11-12
+
+Based on merged main eea5d01 (PR #23). Historical Data → Power BI snapshot now
+previews only current manifest-selected normalized candidates and creates four
+deterministic local CandidateUnverified datasets with revision/source/output/summary
+hashes, counts, warnings and a compatibility report. Missing/invalid slots block
+generation; no older fallback, deduplication or dashboard filters are applied.
+Corrections remain in the existing individually confirmed workflow.
+See [snapshot workflow and Windows acceptance](historical_powerbi_dataset.md),
+[ordered schemas](historical_dataset_columns.md) and
+[PBIX metadata compatibility findings](historical_powerbi_compatibility.md).
+
+No cleaning/schema-v2 changes, candidate selection mutation, authoritative approval,
+Graph access, PBIX edit, production publishing or Power BI refresh. Actual owner
+snapshot/import acceptance and model/finance decisions remain separate gates.
+This section supersedes earlier statements that historical snapshot UI is deferred;
+older sections retain their dated historical scope.
+
+
 ## Windows review-packet staging paths
 
 Exact integration **1c63644b9da1d0e21345db936fcd36b270af9a1e** is now fetched and

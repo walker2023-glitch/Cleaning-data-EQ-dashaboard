@@ -530,7 +530,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         if self.settings_blocking():
             self.status.set('Finish checking or saving settings before processing reports.')
             return
-        if kind in ('preview','process','packet','history','business_review','historical_preview','historical_plan','historical_process'):
+        if kind in ('preview','process','packet','history','business_review','historical_preview','historical_plan','historical_process','dataset_preview','dataset_create'):
             problem=candidate_location_error(self.workflow.base_output_root)
             if problem:
                 self.status.set(problem)
@@ -593,8 +593,16 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                         self.status.set(event.payload + (" Check local folder availability; synchronization is unverified." if self.job in ("discover", "packet") else ""))
                         if self.job == "business_review":
                             self.business_review_page.failed()
+                        if self.job in ('dataset_preview','dataset_create'):
+                            self.historical_page.dataset.failed()
                         if self.job in ("historical_plan", "historical_process"):
                             self.historical_page.processing.failed()
+                    elif self.job == 'dataset_preview':
+                        self.historical_page.dataset.previewed(event.payload)
+                        self.status.set('Candidate snapshot preview complete. Missing/invalid selections block generation; compatibility and local storage need explicit confirmation.')
+                    elif self.job == 'dataset_create':
+                        self.historical_page.dataset.completed(event.payload)
+                        self.status.set('Local unapproved snapshot completed. Candidate selections unchanged; no approval, upload or refresh.')
                     elif self.job == "historical_discover":
                         self.historical_page.completed(event.payload)
                         self.status.set(("Historical inventory stopped; inspect unscanned months. " if event.payload.stopped else "Historical inventory complete. ") + "No cleaning or synchronization verification was performed.")
@@ -660,6 +668,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.stop_button.configure(state="disabled")
         if self.job in ('historical_preview','historical_plan'):
             self.status.set('Stopping after the current report. Read-only evidence remains visible; no candidates written.')
+        elif self.job in ('dataset_preview','dataset_create'):
+            self.status.set('Stopping local snapshot work safely; no incomplete dataset will be finalized.')
         elif self.job == 'historical_process':
             self.status.set('Stopping after the current report. Committed local candidates remain in History.')
         else:
@@ -918,6 +928,9 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                        self.historical_page.preview_button, self.historical_page.preview_export_button,
                        *self.historical_page.fields):
             self.guidance.register(widget,'historical_inventory')
+        for widget in (self.historical_page.dataset.preview_button,self.historical_page.dataset.create_button,
+                       self.historical_page.dataset.compatibility,self.historical_page.dataset.local_check,self.historical_page.dataset.open_button):
+            self.guidance.register(widget,'historical_dataset')
         for widget in (self.historical_page.processing.plan_button, self.historical_page.processing.process_button,
                        self.historical_page.processing.confirm, self.historical_page.processing.all_button,
                        self.historical_page.processing.correction_button, self.historical_page.processing.export_button):

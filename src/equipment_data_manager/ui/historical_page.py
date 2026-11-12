@@ -72,9 +72,15 @@ class HistoricalPage(ctk.CTkFrame):
         processing_tab.grid_rowconfigure(0, weight=1)
         self.processing = HistoricalProcessingPage(processing_tab, self)
         self.processing.grid(row=0, column=0, sticky='nsew')
+        from equipment_data_manager.ui.historical_dataset import HistoricalDatasetPage
+        snapshot_tab=tabs.add('Power BI snapshot')
+        snapshot_tab.grid_columnconfigure(0,weight=1);snapshot_tab.grid_rowconfigure(0,weight=1)
+        self.dataset=HistoricalDatasetPage(snapshot_tab,self)
+        self.dataset.grid(row=0,column=0,sticky='nsew')
         self.invalidate()
 
     def invalidate(self):
+        if hasattr(self,'dataset'):self.dataset.invalidate()
         self.inventory = None
         self.batch = None
         self.preview_rows = {}
@@ -170,6 +176,7 @@ class HistoricalPage(ctk.CTkFrame):
 
     def busy(self, value):
         self.processing.busy(value)
+        self.dataset.busy(value)
         for field in self.fields:
             field.configure(state='disabled' if value else 'normal')
         self.discover_button.configure(state='disabled' if value else 'normal')

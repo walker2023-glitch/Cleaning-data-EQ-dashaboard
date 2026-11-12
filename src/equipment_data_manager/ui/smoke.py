@@ -33,7 +33,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip", "historical_dataset_selected_revisions", "historical_dataset_integrity", "historical_dataset_repeatability", "historical_dataset_no_candidate_mutation"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -443,10 +443,36 @@ def run_smoke(directory: Path | None) -> int:
                 assert app.historical_page.processing.run.summary['created']==0
                 assert len(powerbi_coordinator(app.workspace.candidate_folder).store.history())==state['batch_history_size']
                 assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
-                app.month.set('January')
-                app.show_page('Process Reports')
-                finish(True)
-                return
+                page=app.historical_page
+                page.start.set('2026-02');page.end.set('2026-02')
+                page.tabs.set('Power BI snapshot');page.dataset.preview_button.invoke()
+            elif phase in (46,48):
+                dataset=app.historical_page.dataset
+                assert dataset.plan.ready and len(dataset.plan.selections)==3
+                from tkinter import filedialog,messagebox
+                pick,confirm=filedialog.askdirectory,messagebox.askyesno
+                try:
+                    filedialog.askdirectory=lambda **kwargs:str(workspace/'snapshot-test-output')
+                    messagebox.askyesno=lambda *args,**kwargs:True
+                    dataset.compatibility.toggle();dataset.local_check.toggle()
+                    dataset.create_button.invoke()
+                finally:filedialog.askdirectory,messagebox.askyesno=pick,confirm
+            elif phase in (47,49):
+                from equipment_data_manager.processing.repair_financial import powerbi_coordinator
+                from equipment_data_manager.historical_dataset import validate_dataset
+                dataset=app.historical_page.dataset
+                assert dataset.output is not None
+                manifest=validate_dataset(dataset.output)
+                digests=[e['sha256'] for e in manifest['datasets']]
+                assert len(digests)==4 and not manifest['production_ready']
+                assert len(powerbi_coordinator(app.workspace.candidate_folder).store.history())==state['batch_history_size']
+                assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+                if phase==47:
+                    state['dataset_hashes']=digests;dataset.preview_button.invoke()
+                else:
+                    assert state['dataset_hashes']==digests
+                    app.month.set('January');app.show_page('Process Reports')
+                    finish(True);return
             state["phase"] += 1
             app.after(50, advance)
         except Exception as exc:
