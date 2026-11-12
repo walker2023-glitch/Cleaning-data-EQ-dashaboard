@@ -64,7 +64,14 @@ jobs:
           if ($offline.status -ne "offline_components_available" -or $offline.network_contacted -or $offline.authentication_attempted -or $offline.publication_enabled) { throw "M365 offline check invalid" }
           $checkDir = Join-Path $PWD "data/packaged-smoke"
           $process = Start-Process -FilePath "dist/EquipmentDataManager/EquipmentDataManager.exe" -ArgumentList @("--smoke-test", "--smoke-dir", $checkDir) -PassThru
-          if (-not $process.WaitForExit(120000)) { $process.Kill(); throw "Desktop smoke timed out" }
+          # Desktop has a 90s inner budget and restart a separate 35s budget.
+          # Preserve both checks and cover their sum plus startup/diagnostic overhead.
+          $finished = $process.WaitForExit(180000)
+          if (Test-Path "$checkDir/smoke-progress.json") {
+            $heartbeat = Get-Content "$checkDir/smoke-progress.json" | ConvertFrom-Json
+            Write-Output "::notice title=Packaged smoke progress::stage=$($heartbeat.stage), phase=$($heartbeat.phase), elapsed=$($heartbeat.elapsed_seconds), job=$($heartbeat.job), busy=$($heartbeat.worker_busy), settings=$($heartbeat.settings_busy)"
+          }
+          if (-not $finished) { $process.Kill(); throw "Desktop smoke timed out (outer budget 180s; inspect smoke-progress.json)" }
           if (-not (Test-Path "$checkDir/desktop-smoke.json")) { throw "Desktop smoke exited without a report; exit code $($process.ExitCode)" }
           $report = Get-Content "$checkDir/desktop-smoke.json" | ConvertFrom-Json
           if ($process.ExitCode -ne 0) {
@@ -84,6 +91,7 @@ jobs:
             dist/EquipmentDataManager_v0.2.0_win64.zip
             dist/EquipmentDataManager_v0.2.0_win64.sha256.txt
             data/packaged-m365/components.json
+            data/packaged-smoke/smoke-progress.json
             data/packaged-smoke/desktop-smoke.json
 
       - if: always() && runner.os == 'Windows' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/integration/stable-baseline' || github.ref == 'refs/heads/feature/approval-publishing-foundation' || github.ref == 'refs/heads/feature/approval-ux-identity-readiness' || github.ref == 'refs/heads/feature/m365-readonly-connectivity' || github.ref == 'refs/heads/feature/historical-folder-discovery' || github.ref == 'refs/heads/feature/legacy-tma-compatibility' || github.ref == 'refs/heads/feature/tma-timestamped-layout' || github.ref == 'refs/heads/feature/tma-structure-diagnostics' || github.ref == 'refs/heads/feature/windows-review-packet-fix' || github.ref == 'refs/heads/feature/historical-batch-preview' || github.ref == 'refs/heads/feature/historical-batch-processing' || github.ref == 'refs/heads/feature/historical-powerbi-dataset')
@@ -93,5 +101,6 @@ jobs:
           if-no-files-found: ignore
           path: |
             data/packaged-m365/components.json
+            data/packaged-smoke/smoke-progress.json
             data/packaged-smoke/desktop-smoke.json
             data/packaged-smoke/restore-smoke.json

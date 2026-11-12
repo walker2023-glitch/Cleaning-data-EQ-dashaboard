@@ -8,6 +8,14 @@ from time import monotonic
 from equipment_data_manager.processing.models import ProcessingStatus as Status, ReportType
 
 
+def write_progress(directory, state, app=None, *, stage='desktop'):
+    """Synthetic smoke heartbeat: allowlisted phase/state only, no report cells."""
+    payload=dict(stage=stage,phase=state['phase'],elapsed_seconds=round(monotonic()-state['started'],1),
+        job=app.job if app is not None else '',worker_busy=bool(app.worker.busy) if app is not None else False,
+        settings_busy=bool(app.settings_worker.busy) if app is not None else False)
+    (Path(directory)/'smoke-progress.json').write_text(json.dumps(payload),encoding='utf-8')
+
+
 def run_smoke(directory: Path | None) -> int:
     if directory is None:
         return 2
@@ -16,6 +24,7 @@ def run_smoke(directory: Path | None) -> int:
     directory = Path(directory).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     # Each check uses a new output store, even if the diagnostic directory exists.
+    write_progress(directory,{'phase':-1,'started':monotonic()},stage='startup')
     from tempfile import mkdtemp
     workspace = Path(mkdtemp(prefix="desktop-check-", dir=directory))
     source = workspace / "synthetic.csv"
@@ -39,6 +48,10 @@ def run_smoke(directory: Path | None) -> int:
 
     def advance():
         try:
+            heartbeat=(state['phase'],app.job,app.worker.busy,app.settings_worker.busy)
+            if heartbeat!=state.get('heartbeat') or monotonic()-state.get('heartbeat_time',0)>2:
+                write_progress(directory,state,app)
+                state['heartbeat']=heartbeat;state['heartbeat_time']=monotonic()
             if monotonic() - state["started"] > 90:
                 finish(False)
                 return
@@ -487,6 +500,7 @@ def run_smoke(directory: Path | None) -> int:
     import subprocess
     import sys
     launch=[sys.executable] if getattr(sys,'frozen',False) else [sys.executable,'-m','equipment_data_manager.ui.app']
+    write_progress(directory,state,stage='restart')
     try:
         child=subprocess.run(launch+['--smoke-restore-settings',str(app.settings_store.path),'--smoke-dir',str(directory)],timeout=35)
         outcome={'passed':child.returncode==0,'exit_code':child.returncode}

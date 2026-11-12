@@ -40,3 +40,17 @@ def test_sharepoint_operations_fail_closed(operation):
             repository.download("synthetic-item", expected_etag="synthetic-v1")
         else:
             repository.create_output("synthetic-folder", name="example.csv", content=b"")
+
+
+def test_smoke_phase_diagnostics_exclude_unselected_application_values(tmp_path):
+    from types import SimpleNamespace
+    from time import monotonic
+    import json
+    from equipment_data_manager.ui.smoke import write_progress
+    app=SimpleNamespace(job='dataset_create',worker=SimpleNamespace(busy=True),
+        settings_worker=SimpleNamespace(busy=False),status='PRIVATE synthetic value',token='NEVER LOG')
+    write_progress(tmp_path,dict(phase=46,started=monotonic(),private='DO NOT EXPORT'),app)
+    result=json.loads((tmp_path/'smoke-progress.json').read_text())
+    assert result['phase']==46 and result['job']=='dataset_create' and result['worker_busy']
+    assert set(result)=={'stage','phase','elapsed_seconds','job','worker_busy','settings_busy'}
+    assert 'PRIVATE' not in str(result) and 'NEVER' not in str(result)

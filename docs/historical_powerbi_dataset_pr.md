@@ -42,3 +42,11 @@ Do not merge automatically.
 
 Manual PR link if API access remains blocked:
 https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/compare/main...feature/historical-powerbi-dataset?expand=1
+
+Packaging follow-up: initial hosted regression/build checks passed, but the packaged
+Windows smoke wrapper reached its 120-second outer timeout. That wrapper did not
+cover the existing 90-second desktop plus 35-second restart budgets and startup.
+The outer watchdog now allows 180 seconds; both inner limits, all 49 phases and
+all failure assertions remain unchanged. Allowlisted phase/job/busy/elapsed
+heartbeats are uploaded and surfaced as CI annotations to diagnose any remaining
+native stall. The initial timeout alone does not prove its underlying phase.

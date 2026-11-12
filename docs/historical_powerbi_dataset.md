@@ -252,3 +252,9 @@ This is the actual local desktop showing invented six-month candidate selections
 it is not a claim of departmental validation.
 
 ![Historical snapshot selection and confirmation](images/historical_powerbi_dataset.png)
+
+The Windows packaged wrapper allows 180 seconds for startup plus the unchanged
+90-second desktop and 35-second restart inner checks. `smoke-progress.json` records
+only phase, stage, elapsed time and worker/job states, never report cells. CI emits
+these fields as notices and retains them with diagnostics on failure. A successful
+build alone is not a successful packaged desktop test.
