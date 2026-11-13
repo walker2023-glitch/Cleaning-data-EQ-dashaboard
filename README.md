@@ -4,7 +4,10 @@ Historical Data supports **read-only preview** and a separate **confirmed histor
 batch processing** workflow creating local unapproved candidates. See the
 [processing plan and isolated Windows acceptance guide](docs/historical_batch_processing.md).
 Unchanged candidates skip; corrections remain individually reviewed. No business
-approval, publication, Graph write, Power BI refresh or combined snapshot is enabled.
+approval, publication, Graph write, Power BI refresh is enabled. A separate **Power BI snapshot** tab now combines current
+selected candidates into four local unapproved datasets. See the
+[snapshot guide](docs/historical_powerbi_dataset.md) and
+[PBIX compatibility findings](docs/historical_powerbi_compatibility.md).
 
 
 ## May structure rejection diagnostics

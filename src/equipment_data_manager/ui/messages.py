@@ -3,6 +3,27 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    'dataset_link_rejected': 'A linked folder, junction or file was detected. Choose a direct trusted local location; linked candidate artifacts are rejected.',
+    'dataset_trusted_local_required': 'Choose a trusted local fixed-disk folder outside synchronization services and network shares.',
+    'dataset_destination_overlaps_workspace': 'Snapshots must be outside the configured raw, candidate and reserved approved folders.',
+    'dataset_selected_revision_missing': 'No current candidate is selected for this month/report. Process and review it first; older revisions are not used.',
+    'dataset_revision_binding_rejected': 'The selected revision does not match its report, month, provenance or counts. Review candidate integrity before retrying.',
+    'dataset_revision_metadata_rejected': 'Candidate metadata or cleaner version is unsupported. Review the current revision and any required individual reprocessing.',
+    'dataset_candidate_hash_mismatch': 'Candidate contents changed or are damaged. Snapshot creation is blocked; inspect the selected revision.',
+    'dataset_candidate_unreadable': 'The candidate or its bound financial summary is missing or unreadable. Check local availability and selected history.',
+    'dataset_summary_hash_mismatch': 'The financial summary does not match the selected repair candidate. Snapshot creation is blocked.',
+    'dataset_schema_or_cleaner_rejected': 'The selected candidate schema or cleaner version is incompatible. Repair schema v2 is required.',
+    'dataset_duplicate_revision': 'A revision is bound to more than one selected report slot. Inspect the manifest; no snapshot was created.',
+    'dataset_store_unreadable': 'The local candidate store or snapshot destination could not be read or written. Check permissions and local availability.',
+    'dataset_incomplete_selection': 'All months must have valid selected repairs, services and TMA candidates. Missing data is not treated as zero.',
+    'dataset_confirmation_required': 'Preview again and confirm both the compatibility gaps and trusted local unapproved destination.',
+    'dataset_cancelled': 'Snapshot creation stopped safely. No incomplete dataset is ready for import; previous completed snapshots remain.',
+    'dataset_plan_stale': 'Candidate selections or integrity evidence changed since preview. Preview again and review a new plan.',
+    'dataset_windows_path_too_long': 'This Windows snapshot path is too long. Choose a shorter trusted local parent folder.',
+    'dataset_destination_exists': 'That snapshot directory already exists. Choose a new destination; completed snapshots are never overwritten.',
+    'dataset_write_integrity_failed': 'The saved bytes did not match the generated dataset. No snapshot was finalized.',
+    'dataset_manifest_journal_rejected': 'The manifest uses an unsupported journal configuration. Keep the application default; do not modify SQLite settings.',
+
     'batch_invalid_selection': 'Select at least one previewed month/report row, without duplicate selections.',
     'batch_preview_required': 'This report has no successful current preview. Resolve its issue, discover and preview again.',
     'batch_preview_changed': 'The source or cleaning proposal changed since preview. Discover and preview again, then review a new plan.',

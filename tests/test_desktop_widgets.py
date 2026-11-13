@@ -1407,3 +1407,88 @@ def test_historical_processing_keeps_saved_settings_month_and_opens_normalized_r
     monkeypatch.setattr('equipment_data_manager.ui.app.open_directory',seen.append)
     processing.open_button.invoke()
     assert seen==[app.workspace.candidate_folder/'powerbi_candidates']
+
+
+def prepare_historical_dataset(app,tmp_path):
+    page,processing=prepare_historical_processing(app,tmp_path)
+    processing.select_all();processing.plan_button.invoke();pump(app,lambda:not app.worker.busy)
+    # Backend invocation for setup only; GUI generation must read actual selections.
+    from equipment_data_manager.historical_processing import execute_plan
+    execute_plan(app.workspace,app.folder_layout,processing.plan,processing.plan.fingerprint)
+    page.end.set('2026-02')  # Setup intentionally leaves March missing.
+    page.tabs.set('Power BI snapshot');app.update()
+    assert page.dataset.winfo_ismapped()
+    return page,page.dataset
+
+
+def test_historical_dataset_gui_selected_candidates_confirmation_results_and_navigation(app,tmp_path,monkeypatch):
+    from test_historical_discovery import snapshot
+    page,dataset=prepare_historical_dataset(app,tmp_path)
+    before=snapshot(app.workspace.candidate_folder)
+    assert dataset.create_button.cget('state')=='disabled'
+    dataset.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert dataset.plan.ready and len(dataset.plan.selections)==6
+    dataset.table.selection_set('0');dataset.details()
+    assert 'Candidate SHA-256:' in dataset.detail.get('1.0','end')
+    dataset.compatibility.toggle();assert dataset.create_button.cget('state')=='disabled'
+    dataset.local_check.toggle();assert dataset.create_button.cget('state')=='normal'
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno',lambda *a,**kw:False)
+    dataset.create_button.invoke();assert not app.worker.busy
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno',lambda *a,**kw:True)
+    parent=tmp_path/'private-snapshots';parent.mkdir()
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory',lambda **kw:str(parent))
+    dataset.create_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert dataset.output and (dataset.output/'snapshot_manifest.json').exists()
+    assert 'CandidateUnverified' in dataset.detail.get('1.0','end')
+    assert dataset.create_button.cget('state')=='disabled'
+    assert snapshot(app.workspace.candidate_folder)==before
+    app.show_page('History');pump(app,lambda:not app.worker.busy)
+    app.show_page('Historical Data');app.update()
+    assert dataset.output and dataset.open_button.cget('state')=='normal'
+    opened=[];monkeypatch.setattr('equipment_data_manager.ui.app.open_directory',lambda p:opened.append(p))
+    dataset.open_button.invoke();assert opened==[dataset.output]
+    page.end.set('2026-03');assert dataset.plan is None
+    assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
+
+
+def test_historical_dataset_gui_missing_reports_block_and_show_safe_reason(app,tmp_path):
+    page=configure_historical_batch(app,tmp_path)
+    page.tabs.set('Power BI snapshot');dataset=page.dataset
+    dataset.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert dataset.plan and not dataset.plan.ready
+    assert all(s.status=='missing' for s in dataset.plan.selections)
+    dataset.table.selection_set('0');dataset.details()
+    assert 'No current candidate is selected' in dataset.detail.get('1.0','end')
+    assert dataset.create_button.cget('state')=='disabled' and not app.workspace.candidate_folder.exists()
+
+
+def test_historical_dataset_gui_long_operation_responsive_and_cancellation_safe(app,tmp_path,monkeypatch):
+    page,dataset=prepare_historical_dataset(app,tmp_path)
+    from threading import Event
+    entered,release=Event(),Event()
+    from equipment_data_manager.ui import historical_dataset as module
+    original=module.preview_dataset
+    def slow(*a,**kwargs):
+        entered.set();release.wait(5);return original(*a,**kwargs)
+    monkeypatch.setattr(module,'preview_dataset',slow)
+    dataset.preview_button.invoke();pump(app,entered.is_set)
+    assert app.worker.busy and dataset.preview_button.cget('state')=='disabled'
+    responsive=[];app.after(0,lambda:responsive.append(True));app.update();assert responsive
+    app.stop_work();release.set();pump(app,lambda:not app.worker.busy)
+    assert dataset.plan.stopped and dataset.create_button.cget('state')=='disabled'
+    assert not dataset.output
+
+
+def test_historical_dataset_gui_failed_creation_requires_new_preview(app,tmp_path,monkeypatch):
+    page,dataset=prepare_historical_dataset(app,tmp_path)
+    dataset.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    dataset.compatibility.toggle();dataset.local_check.toggle()
+    from equipment_data_manager.processing.models import ProcessingError
+    def fail(*a,**kwargs):raise ProcessingError('dataset_plan_stale')
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.generate_dataset',fail)
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno',lambda *a,**kw:True)
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory',lambda **kw:str(tmp_path/'out'))
+    dataset.create_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert dataset.plan is None and not dataset.output
+    assert 'changed since preview' in app.status.get()
+    assert dataset.create_button.cget('state')=='disabled'
