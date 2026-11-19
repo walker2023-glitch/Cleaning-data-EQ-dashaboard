@@ -1,5 +1,14 @@
 # Equipment Data Manager
 
+## Development comparison exports — Milestone 1a
+
+Historical Data → Power BI snapshot → **Development tools** can project one
+validated canonical snapshot into four simplified comparison CSVs. The new private
+container retains exact canonical evidence and row lineage. This temporary tool
+is for a backup PBIX; it does not add an employee output mode or change canonical
+schemas, cleaners, finances, candidate selection, activation or publishing.
+See [workflow, contract and Windows acceptance](docs/comparison_exports.md).
+
 Historical Data supports **read-only preview** and a separate **confirmed historical
 batch processing** workflow creating local unapproved candidates. See the
 [processing plan and isolated Windows acceptance guide](docs/historical_batch_processing.md).

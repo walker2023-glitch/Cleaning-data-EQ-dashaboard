@@ -225,6 +225,13 @@ entry('historical_processing', 'Historical Batch Processing',
     'Stop after the current report keeps committed revisions. Restart requires fresh discovery, preview, plan and confirmation; history identifies completed work and prevents duplicates.',
     'Missing costs remain missing and warnings remain visible. Do not recursively ingest immutable versions. Diagnostic summary exports are local/private and cannot authorize further processing.')
 
+entry('comparison_preview','Development comparison export',
+    'Makes simplified comparison CSVs from one completed canonical snapshot.',
+    'In Power BI snapshot, open Development tools. Choose one completed snapshot, confirm local backup-test intent and choose a separate local output parent. Four projected CSVs retain business values; audit/lineage.csv and the exact canonical copy preserve provenance.',
+    'Only a new private comparison container. No cleaning, candidate selection, financial changes, activation, approval, upload or refresh.',
+    'Verify the comparison with the developer guide, then import into new disconnected tables in a backup PBIX. This temporary preview is not another permanent employee output mode.',
+    'Equipment Type, Building, MaintenanceType and Equipment_History are not part of this milestone. Keep existing canonical Power Query helpers and production sources unchanged.')
+
 entry('historical_dataset','Power BI Historical Snapshot',
     'Creates four local unapproved datasets from current selected candidate revisions.',
     'Use the range above, preview selected candidates, inspect missing slots, hashes, counts and warnings. All requested months and report types must be valid. Acknowledge compatibility gaps and trusted local storage, then confirm creation in a new snapshot directory.',

@@ -42,7 +42,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip", "historical_dataset_selected_revisions", "historical_dataset_integrity", "historical_dataset_repeatability", "historical_dataset_no_candidate_mutation"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip", "historical_dataset_selected_revisions", "historical_dataset_integrity", "historical_dataset_repeatability", "historical_dataset_no_candidate_mutation", "comparison_development_action", "comparison_projection_integrity", "comparison_retained_canonical_lineage"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -484,8 +484,28 @@ def run_smoke(directory: Path | None) -> int:
                     state['dataset_hashes']=digests;dataset.preview_button.invoke()
                 else:
                     assert state['dataset_hashes']==digests
-                    app.month.set('January');app.show_page('Process Reports')
-                    finish(True);return
+            elif phase == 50:
+                from tkinter import filedialog,messagebox
+                dataset=app.historical_page.dataset
+                dataset.development_button.invoke()
+                choices=iter([dataset.output,workspace/'comparison-output'])
+                pick,confirm=filedialog.askdirectory,messagebox.askyesno
+                try:
+                    filedialog.askdirectory=lambda **kwargs:str(next(choices))
+                    messagebox.askyesno=lambda *args,**kwargs:True
+                    dataset.comparison_button.invoke()
+                finally:filedialog.askdirectory,messagebox.askyesno=pick,confirm
+                assert app.worker.busy
+            elif phase == 51:
+                from equipment_data_manager.comparison_export import validate_comparison
+                from equipment_data_manager.historical_dataset import validate_dataset
+                dataset=app.historical_page.dataset
+                comparison=validate_comparison(dataset.comparison_output)
+                assert comparison['export_schema']=='comparison-preview-v1'
+                assert len(comparison['datasets'])==4 and not comparison['production_ready']
+                assert validate_dataset(dataset.output)['status']=='CandidateUnverified'
+                app.month.set('January');app.show_page('Process Reports')
+                finish(True);return
             state["phase"] += 1
             app.after(50, advance)
         except Exception as exc:

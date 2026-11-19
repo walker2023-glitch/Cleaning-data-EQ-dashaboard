@@ -1,5 +1,17 @@
 # Test instructions and evidence limits
 
+## Milestone 1a comparison exports
+
+`tests/test_comparison_export.py` verifies ordered projections, exact canonical
+retention and lineage, null/zero/text-ID preservation, duplicate-looking business
+records, source changes, schemas/types, protected paths, Windows bounds, collisions,
+cancellation and owned cleanup. Three real-widget cases exercise the hidden
+development action, explicit confirmation, errors and responsive cancellation.
+Source/installed-wheel/executable smoke now reaches phase 51 and restart.
+See [acceptance and commands](comparison_exports.md). Tests of the M text/contract
+do not execute Power Query; native Windows packaging and backup-PBIX acceptance
+remain separate checks. No new dependency is needed.
+
 
 ## Historical Power BI datasets — 2026-11-12
 

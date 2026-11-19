@@ -1,5 +1,17 @@
 # Departmental workflow roadmap and project review
 
+## Owner-directed Milestone 1a — simplified comparison exports
+
+Owner approved this implementation after the audit of main c9f0984 (PR #24).
+A versioned comparison projection now reads validated canonical snapshots, creates
+four immutable simplified CSVs, retains canonical evidence/lineage, and exposes a
+temporary Development tools action on the existing snapshot page. No canonical
+schema, cleaning, financial, candidate-selection or production behavior changes.
+See [contract and acceptance](comparison_exports.md). Equipment/building/maintenance
+enrichment, the equipment lookup, employee navigation changes, monthly update modes
+and stable activation remain separately approved later milestones. Windows/PBIX
+acceptance and actual hosted checks must be recorded separately from local tests.
+
 
 ## Historical Power BI datasets — 2026-11-12
 

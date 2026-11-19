@@ -595,6 +595,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                             self.business_review_page.failed()
                         if self.job in ('dataset_preview','dataset_create'):
                             self.historical_page.dataset.failed()
+                        if self.job == 'comparison_create':
+                            self.historical_page.dataset.comparison_failed()
                         if self.job in ("historical_plan", "historical_process"):
                             self.historical_page.processing.failed()
                     elif self.job == 'dataset_preview':
@@ -603,6 +605,9 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                     elif self.job == 'dataset_create':
                         self.historical_page.dataset.completed(event.payload)
                         self.status.set('Local unapproved snapshot completed. Candidate selections unchanged; no approval, upload or refresh.')
+                    elif self.job == 'comparison_create':
+                        self.historical_page.dataset.comparison_completed(event.payload)
+                        self.status.set('Development comparison completed. Backup PBIX only; no activation, approval, upload or refresh.')
                     elif self.job == "historical_discover":
                         self.historical_page.completed(event.payload)
                         self.status.set(("Historical inventory stopped; inspect unscanned months. " if event.payload.stopped else "Historical inventory complete. ") + "No cleaning or synchronization verification was performed.")
@@ -931,6 +936,9 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         for widget in (self.historical_page.dataset.preview_button,self.historical_page.dataset.create_button,
                        self.historical_page.dataset.compatibility,self.historical_page.dataset.local_check,self.historical_page.dataset.open_button):
             self.guidance.register(widget,'historical_dataset')
+        for widget in (self.historical_page.dataset.development_button,self.historical_page.dataset.comparison_button,
+                       self.historical_page.dataset.comparison_open_button):
+            self.guidance.register(widget,'comparison_preview')
         for widget in (self.historical_page.processing.plan_button, self.historical_page.processing.process_button,
                        self.historical_page.processing.confirm, self.historical_page.processing.all_button,
                        self.historical_page.processing.correction_button, self.historical_page.processing.export_button):

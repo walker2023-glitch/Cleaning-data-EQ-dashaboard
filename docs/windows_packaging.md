@@ -1,5 +1,15 @@
 # Windows prototype packaging and distribution
 
+## Milestone 1a comparison preview
+
+The review package includes comparison_exports.md and fnReadComparisonPreview.pq.
+The desktop's Development tools action imports comparison_export through the
+existing page; no new dependency or canonical contract change is required.
+Executable smoke reaches phase 51 (comparison projection/evidence validation),
+then checks settings restoration in a separate process. Native Windows build and
+backup-PBIX evaluation must be verified on the feature commit; Linux checks are
+separate evidence. This is a development comparison, not activation/publication.
+
 ## Review-packet path maintenance checks
 
 The existing executable phase-36 smoke includes review-packet export and historical
