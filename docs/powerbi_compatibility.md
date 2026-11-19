@@ -1,5 +1,17 @@
 # Existing model compatibility review
 
+## Comparison v2 mapping (separate from canonical snapshots)
+
+Use fnReadComparisonPreviewV2 for comparison-preview-v2 only. Repairs/Services
+EquipmentId is now normalized by the shared R/E/Z spacing policy; RawEquipmentId
+remains the canonical raw field, and lineage retains CanonicalEquipmentId.
+Location is unchanged, while new Building is a conservative format-derived text
+label, blank when unresolved. Compare Building_Dim keys and collision diagnostics
+before relationships; no authoritative aliases/dimension were supplied. Do not
+reapply legacy Building or ID transforms. TMA/summary schemas and all financial
+meanings remain unchanged. [Exact v2 schema and migration checklist](comparison_exports_v2.md).
+The original v1/canonical helper contracts and model DAX remain unchanged.
+
 > **Superseded for current repair finances:** recommended output now uses repair
 > schema v2. See [repair_financial_v2.md](repair_financial_v2.md) for confirmed
 > total-cost mapping, separate monthly summaries, evidence limits and migration.

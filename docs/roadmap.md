@@ -1,5 +1,16 @@
 # Departmental workflow roadmap and project review
 
+## Owner-directed Milestone 1b — IDs and Building
+
+Owner-approved comparison enrichment starts from verified main 720dfb2 (merged
+Milestone 1a/PR #25). comparison-preview-v2 adds conservative IDs/Building and
+recomputed diagnostics, keeping the original v1 profile, canonical snapshots,
+financials and selected revisions intact. No authoritative Building dimension is
+available: labels are format-based/observed, with unresolved values left blank.
+See [rules, schema, evidence and Windows acceptance](comparison_exports_v2.md).
+Equipment Type, Equipment_History, MaintenanceType and update/activation modes are
+not included or approved by this milestone.
+
 ## Owner-directed Milestone 1a — simplified comparison exports
 
 Owner approved this implementation after the audit of main c9f0984 (PR #24).

@@ -35,7 +35,7 @@ def source(tmp_path):
 
 def create(source, destination, **kwargs):
     workspace, snapshot = source
-    return generate_comparison(workspace, snapshot, destination, confirmed=True, **kwargs)
+    return generate_comparison(workspace, snapshot, destination, confirmed=True, export_schema=module.EXPORT_SCHEMA, **kwargs)
 
 
 def test_repeatable_projections_lineage_and_retained_evidence_without_source_writes(source, tmp_path):

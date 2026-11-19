@@ -501,7 +501,9 @@ def run_smoke(directory: Path | None) -> int:
                 from equipment_data_manager.historical_dataset import validate_dataset
                 dataset=app.historical_page.dataset
                 comparison=validate_comparison(dataset.comparison_output)
-                assert comparison['export_schema']=='comparison-preview-v1'
+                assert comparison['export_schema']=='comparison-preview-v2'
+                assert 'warning_counts' in comparison and (dataset.comparison_output/'audit/diagnostics.csv').exists()
+                assert 'Building labels are format-based' in dataset.detail.get('1.0','end')
                 assert len(comparison['datasets'])==4 and not comparison['production_ready']
                 assert validate_dataset(dataset.output)['status']=='CandidateUnverified'
                 app.month.set('January');app.show_page('Process Reports')

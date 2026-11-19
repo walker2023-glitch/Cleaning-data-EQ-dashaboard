@@ -258,6 +258,19 @@ At the end, update this register only with evidence:
 
 ## 11. Owner approval record
 
+**2026-11-19 Milestone 1b addendum:** Remote main 720dfb2 was verified to contain
+the owner-merged Milestone 1a/PR #25 (ff2121d). The owner approved comparison-only
+equipment ID normalization, conservative Building resolution and diagnostics.
+Implementation is on `feature/comparison-id-building`, with a new
+comparison-preview-v2 contract and preserved v1/canonical/financial contracts.
+No authoritative Building_Dim/alias file was available; unresolved labels remain
+blank with explicit observed-pattern evidence and separate legacy references.
+Final local Linux validation: 1,037 tests passed with no failures/errors/skips;
+source, installed-wheel and frozen Linux desktop/restart checks passed.
+See [policy, validation and Windows acceptance](comparison_exports_v2.md).
+Native Windows/Power BI owner acceptance remains separate. Do not merge or start
+Milestone 1c (equipment lookup/classification) without owner review/approval.
+
 **2026-11-19 addendum:** The owner approved only Owner-Directed Improvements
 Milestone 1a: a development-stage simplified comparison layer over validated
 canonical snapshots, four immutable CSVs, retained provenance/lineage, a temporary

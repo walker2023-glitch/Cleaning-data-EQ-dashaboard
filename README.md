@@ -1,5 +1,12 @@
 # Equipment Data Manager
 
+## Milestone 1b — comparison-only IDs and Building
+
+The existing Development tools comparison action now generates **comparison-preview-v2**:
+shared R/E/Z ID spacing normalization, conservative Building derivation and readable
+collision/location warnings. Canonical snapshots, source values and financials stay
+unchanged; v1 remains supported. See [v2 contract and Windows acceptance](docs/comparison_exports_v2.md).
+
 ## Development comparison exports — Milestone 1a
 
 Historical Data → Power BI snapshot → **Development tools** can project one

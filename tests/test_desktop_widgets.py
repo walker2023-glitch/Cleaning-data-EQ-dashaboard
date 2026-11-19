@@ -1521,7 +1521,10 @@ def test_comparison_development_action_confirmation_lineage_and_preserved_source
     assert dataset.comparison_button.cget('state') == 'disabled'
     pump(app, lambda: not app.worker.busy)
     assert validate_comparison(dataset.comparison_output)['purpose'] == 'DevelopmentComparison'
+    assert validate_comparison(dataset.comparison_output)['export_schema'] == 'comparison-preview-v2'
     assert 'audit/lineage.csv' in dataset.detail.get('1.0','end')
+    assert 'Unsupported IDs left unchanged:' in dataset.detail.get('1.0','end')
+    assert 'Unresolved Building values:' in dataset.detail.get('1.0','end')
     assert tree(canonical) == before and tree(app.workspace.candidate_folder) == candidates
     assert dataset.output is None  # Comparison never replaces the canonical selection.
     opened=[];monkeypatch.setattr('equipment_data_manager.ui.app.open_directory', lambda p: opened.append(p))

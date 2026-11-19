@@ -2,6 +2,14 @@
 
 ## Development comparison tools
 
+The current preview is comparison-preview-v2. Supported R/E/Z IDs are normalized
+in the comparison only; likely Building labels are derived conservatively. Read the
+completion warning summary and comparison_warnings.txt; audit/diagnostics.csv lists
+collisions, unsupported IDs, unresolved locations and legacy differences. Original
+values and all transactions remain available. Do not change source IDs or join
+Building_Dim merely to clear warnings. Use fnReadComparisonPreviewV2 and see
+comparison_exports_v2.md; the original v1 helper remains for old v1 exports.
+
 For owner/developer backup-PBIX comparison only, Historical Data → Power BI snapshot
 → Development tools can create four simplified CSVs from one completed canonical
 snapshot. Confirm a separate trusted local test destination. The output includes

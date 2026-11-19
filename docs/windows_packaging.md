@@ -1,5 +1,15 @@
 # Windows prototype packaging and distribution
 
+## Milestone 1b comparison v2
+
+The existing executable comparison action now generates v2 and shows its readable
+ID/Building warning counts. The package includes both comparison guides and typed
+Power Query helpers; v1 remains compatible without a competing UI mode. Static
+imports include the new pure enrichment module without additional dependencies.
+Phase-51 desktop smoke validates v2 evidence and the displayed warning summary.
+Use [Windows acceptance and PBIX checklist](comparison_exports_v2.md); native
+Windows/Power BI evaluation is distinct from local Linux validation.
+
 ## Milestone 1a comparison preview
 
 The review package includes comparison_exports.md and fnReadComparisonPreview.pq.
