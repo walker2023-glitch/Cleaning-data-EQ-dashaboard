@@ -258,6 +258,16 @@ At the end, update this register only with evidence:
 
 ## 11. Owner approval record
 
+**2026-11-19 addendum:** The owner approved only Owner-Directed Improvements
+Milestone 1a: a development-stage simplified comparison layer over validated
+canonical snapshots, four immutable CSVs, retained provenance/lineage, a temporary
+desktop action, typed backup-PBIX helper, tests and documentation. Implemented on
+`feature/simplified-comparison-exports` from verified main c9f0984. Local Linux
+validation: 970 tests passed with no skips; wheel/source desktop and restart checks
+passed. Native Windows/Power BI acceptance and review remain pending; no main merge.
+See [scope, exact evidence and limitations](comparison_exports.md). This addendum
+does not approve enrichment, employee navigation changes or activation/update modes.
+
 - **Approved:** Product vision, workflow, stable output goal, local-first rollout, append default/rebuild setting, partial selection with preservation, explicit activation confirmation, successor handoff, and strict AI governance from planning rounds 1–5.
 - **Not yet approved:** Detailed implementations of milestones 2–5; activation architecture; exact correction and warning policies; shared-folder/Graph rollout; any new analytics or expanded approval infrastructure.
 - **Next review:** Examine the historical snapshot generator's actual outputs and compatibility report, then decide whether to approve the backup PBIX integration milestone.

@@ -3,6 +3,15 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    'comparison_invalid_value': 'A value does not match the comparison field type. Check the canonical evidence; no financial value was guessed or replaced.',
+    'comparison_source_changed': 'The snapshot changed while it was being read. Choose a complete unchanged canonical snapshot and retry.',
+    'comparison_confirmation_required': 'Confirm this local development comparison. It does not activate or approve data.',
+    'comparison_destination_exists': 'That comparison directory exists. Choose a new destination; existing exports are never overwritten.',
+    'comparison_destination_overlap': 'Choose a separate local parent outside the source snapshot, raw, candidates and reserved approved folders.',
+    'comparison_cancelled': 'Comparison export cancelled. Previous completed exports and source snapshots are unchanged.',
+    'comparison_contract_rejected': 'The comparison contract or retained evidence is invalid. Do not import it; create a new export from a valid snapshot.',
+    'comparison_projection_mismatch': 'A simplified file differs from its canonical evidence. Do not import this comparison.',
+    'comparison_lineage_mismatch': 'The comparison lineage differs from its canonical evidence. Do not import this comparison.',
     'dataset_link_rejected': 'A linked folder, junction or file was detected. Choose a direct trusted local location; linked candidate artifacts are rejected.',
     'dataset_trusted_local_required': 'Choose a trusted local fixed-disk folder outside synchronization services and network shares.',
     'dataset_destination_overlaps_workspace': 'Snapshots must be outside the configured raw, candidate and reserved approved folders.',

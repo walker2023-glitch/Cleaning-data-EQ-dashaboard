@@ -1,5 +1,14 @@
 # Equipment Data Manager: local prototype
 
+## Development comparison tools
+
+For owner/developer backup-PBIX comparison only, Historical Data → Power BI snapshot
+→ Development tools can create four simplified CSVs from one completed canonical
+snapshot. Confirm a separate trusted local test destination. The output includes
+private audit/lineage.csv and an exact canonical copy; it does not clean, activate,
+approve or refresh data. This temporary tool is not another employee output mode.
+See comparison_exports.md in the review package for typed imports and verification.
+
 
 ## Historical Power BI datasets — 2026-11-12
 

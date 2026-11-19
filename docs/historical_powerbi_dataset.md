@@ -1,5 +1,9 @@
 # Historical Power BI Dataset Generator
 
+Owner-directed Milestone 1a adds a separate **development comparison projection**
+under this page's Development tools. It consumes a completed snapshot without
+changing this canonical contract. See [comparison exports](comparison_exports.md).
+
 This feature starts from owner-merged main **eea5d01** (PR #23), on
 `feature/historical-powerbi-dataset`. Existing historical processing and corrections
 are reused, not replayed. No cleaning, financial schema v2, SQLite schema, approval,

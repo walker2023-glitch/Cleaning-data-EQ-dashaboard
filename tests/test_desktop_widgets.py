@@ -1492,3 +1492,70 @@ def test_historical_dataset_gui_failed_creation_requires_new_preview(app,tmp_pat
     assert dataset.plan is None and not dataset.output
     assert 'changed since preview' in app.status.get()
     assert dataset.create_button.cget('state')=='disabled'
+
+
+def comparison_source(app, tmp_path):
+    from equipment_data_manager.historical_dataset import preview_dataset, generate_dataset
+    page, dataset = prepare_historical_dataset(app, tmp_path)
+    plan = preview_dataset(app.workspace, '2026-01', '2026-02')
+    canonical = generate_dataset(app.workspace, plan, tmp_path/'canonical-input', confirmation=plan.fingerprint,
+        local_confirmed=True, compatibility_acknowledged=True)
+    return page, dataset, canonical
+
+
+def test_comparison_development_action_confirmation_lineage_and_preserved_sources(app,tmp_path,monkeypatch):
+    from test_comparison_export import tree
+    from equipment_data_manager.comparison_export import validate_comparison
+    page, dataset, canonical = comparison_source(app, tmp_path)
+    before, candidates = tree(canonical), tree(app.workspace.candidate_folder)
+    assert not dataset.development.winfo_ismapped()
+    dataset.development_button.invoke();app.update()
+    assert dataset.development.winfo_ismapped()
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory', lambda **kw: str(canonical))
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno', lambda *a,**kw: False)
+    dataset.comparison_button.invoke();assert not app.worker.busy and dataset.comparison_output is None
+    choices = iter([canonical, tmp_path/'comparison-parent'])
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory', lambda **kw: str(next(choices)))
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno', lambda *a,**kw: True)
+    dataset.comparison_button.invoke()
+    assert dataset.comparison_button.cget('state') == 'disabled'
+    pump(app, lambda: not app.worker.busy)
+    assert validate_comparison(dataset.comparison_output)['purpose'] == 'DevelopmentComparison'
+    assert 'audit/lineage.csv' in dataset.detail.get('1.0','end')
+    assert tree(canonical) == before and tree(app.workspace.candidate_folder) == candidates
+    assert dataset.output is None  # Comparison never replaces the canonical selection.
+    opened=[];monkeypatch.setattr('equipment_data_manager.ui.app.open_directory', lambda p: opened.append(p))
+    dataset.comparison_open_button.invoke();assert opened == [dataset.comparison_output]
+    assert app.business_review_page.approve_button.cget('state') == app.business_review_page.publish_button.cget('state') == 'disabled'
+
+
+def test_comparison_invalid_source_shows_failure_without_changing_previous_output(app,tmp_path,monkeypatch):
+    _, dataset, canonical = comparison_source(app, tmp_path)
+    from equipment_data_manager.comparison_export import generate_comparison
+    previous=generate_comparison(app.workspace, canonical, tmp_path/'previous', confirmed=True)
+    dataset.comparison_output=previous
+    (canonical/'Repairs_History.csv').write_bytes(b'invalid')
+    choices=iter([canonical, tmp_path/'comparison-parent'])
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory', lambda **kw: str(next(choices)))
+    monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno', lambda *a,**kw: True)
+    dataset.comparison_button.invoke();pump(app, lambda: not app.worker.busy)
+    assert dataset.comparison_output == previous and not (tmp_path/'comparison-parent').exists()
+    assert 'Comparison export stopped' in dataset.detail.get('1.0','end')
+
+
+def test_comparison_worker_remains_responsive_and_cancel_preserves_source(app,tmp_path,monkeypatch):
+    _, dataset, canonical = comparison_source(app, tmp_path)
+    from equipment_data_manager.ui import historical_dataset as view
+    entered, release = Event(), Event()
+    original=view.generate_comparison
+    def slow(*args,**kwargs):
+        entered.set();release.wait(5);return original(*args,**kwargs)
+    monkeypatch.setattr(view,'generate_comparison',slow)
+    choices=iter([canonical,tmp_path/'comparison-parent'])
+    monkeypatch.setattr(view.filedialog,'askdirectory',lambda **kw:str(next(choices)))
+    monkeypatch.setattr(view.messagebox,'askyesno',lambda *a,**kw:True)
+    dataset.comparison_button.invoke();pump(app,entered.is_set)
+    responsive=[];app.after(0,lambda:responsive.append(True));app.update();assert responsive
+    app.stop_work();release.set();pump(app,lambda:not app.worker.busy)
+    assert dataset.comparison_output is None and canonical.exists()
+    assert not (tmp_path/'comparison-parent').exists()

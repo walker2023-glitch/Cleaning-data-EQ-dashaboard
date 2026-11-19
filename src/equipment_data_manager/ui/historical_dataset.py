@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox, ttk
 import customtkinter as ctk
 
 from equipment_data_manager.historical_dataset import preview_dataset,generate_dataset
+from equipment_data_manager.comparison_export import generate_comparison
 from equipment_data_manager.monthly import _packet_identifier
 from equipment_data_manager.ui.messages import error_message,warning_message
 from equipment_data_manager.ui.workflow import SUPPORTED_REPORTS
@@ -13,7 +14,7 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
     def __init__(self,parent,history):
         super().__init__(parent,fg_color='white')
         self.history,self.app=history,history.app
-        self.plan=None;self.output=None
+        self.plan=None;self.output=None;self.comparison_output=None
         self.grid_columnconfigure(0,weight=1)
         ctk.CTkLabel(self,text='Power BI Historical Snapshot',font=ctk.CTkFont(size=18,weight='bold')).grid(row=0,column=0,sticky='w')
         ctk.CTkLabel(self,text='Combine current selected candidates for the range above. No raw cleaning, approval, upload or refresh.',
@@ -34,6 +35,16 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.open_button.grid(row=7,column=0,sticky='w',pady=5)
         self.create_button=ctk.CTkButton(self,text='Create local unapproved snapshot',command=self.create,width=280)
         self.create_button.grid(row=8,column=0,sticky='w',pady=5)
+        self.development_button=ctk.CTkButton(self,text='Development tools (show)',command=self.toggle_development,width=230)
+        self.development_button.grid(row=9,column=0,sticky='w',pady=5)
+        self.development=ctk.CTkFrame(self)
+        ctk.CTkLabel(self.development,text='Temporary comparison tools for a backup PBIX. No activation or refresh.',
+            wraplength=700,justify='left').pack(anchor='w',padx=8,pady=5)
+        self.comparison_button=ctk.CTkButton(self.development,text='Create simplified comparison export',command=self.create_comparison,width=300)
+        self.comparison_button.pack(anchor='w',padx=8,pady=5)
+        self.comparison_open_button=ctk.CTkButton(self.development,text='Open comparison export',command=self.open_comparison,width=230)
+        self.comparison_open_button.pack(anchor='w',padx=8,pady=5)
+        self.development_visible=False
         self.invalidate()
 
     def invalidate(self):
@@ -49,6 +60,46 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         for widget in (self.compatibility,self.local_check):widget.configure(state='normal' if self.plan and self.plan.ready and ready else 'disabled')
         self.create_button.configure(state='normal' if self.plan and self.plan.ready and self.ack.get() and self.local.get() and ready else 'disabled')
         self.open_button.configure(state='normal' if self.output and not busy else 'disabled')
+        self.comparison_button.configure(state='normal' if ready else 'disabled')
+        self.comparison_open_button.configure(state='normal' if self.comparison_output and not busy else 'disabled')
+
+    def toggle_development(self):
+        self.development_visible=not self.development_visible
+        if self.development_visible:self.development.grid(row=10,column=0,sticky='ew',pady=5)
+        else:self.development.grid_remove()
+        self.development_button.configure(text='Development tools (hide)' if self.development_visible else 'Development tools (show)')
+
+    def create_comparison(self):
+        if self.app.worker.busy or self.app.settings_worker.busy or self.app.workspace is None:return
+        source=filedialog.askdirectory(parent=self.app,title='Choose one completed canonical snapshot folder',
+            initialdir=str(self.output) if self.output else None)
+        if not source:return
+        if not messagebox.askyesno('Create development comparison only?',
+            'Create four simplified CSVs from this canonical snapshot?\n'+str(source)+
+            '\nUse only a backup PBIX. Confirm a trusted local destination outside raw, candidates, approved and production folders. No activation, approval, upload or refresh will occur.',parent=self.app):return
+        parent=filedialog.askdirectory(parent=self.app,title='Choose trusted local comparison parent (not production)')
+        if not parent:return
+        workspace=self.app.workspace
+        target=Path(parent)/('Comparison_Test_'+_packet_identifier())
+        self.app._start('comparison_create',lambda progress,stop:generate_comparison(workspace,Path(source),target,
+            confirmed=True,progress=progress,cancelled=stop.is_set))
+
+    def comparison_completed(self,path):
+        self.comparison_output=path
+        self.history._text(self.detail,'Development comparison completed — CandidateUnverified, not approved.\n'+str(path)+
+            '\nFour simplified CSVs are ready for a backup PBIX only. audit/lineage.csv maps every row to the retained canonical evidence. No activation or refresh occurred.')
+        self.busy(False)
+
+    def comparison_failed(self):
+        self.history._text(self.detail,'Comparison export stopped. No new incomplete export is ready for import. Check source integrity and local paths, then retry. Previous completed exports and canonical data remain unchanged.')
+        self.busy(False)
+
+    def open_comparison(self):
+        if self.comparison_output:
+            try:
+                from equipment_data_manager.ui.app import open_directory
+                open_directory(self.comparison_output)
+            except OSError:self.app.status.set('Could not open the comparison folder. Use the displayed local path.')
 
     def preview(self):
         if self.app.worker.busy or self.app.settings_worker.busy or self.app.workspace is None:return
