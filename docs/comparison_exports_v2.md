@@ -1,5 +1,9 @@
 # Comparison export v2 — equipment IDs and Building (Milestone 1b)
 
+> Current desktop generation uses [comparison-preview-v3](comparison_exports_v3.md).
+> This document describes the retained historical contract.
+
+
 Contract: **comparison-preview-v2**. Purpose: **DevelopmentComparison**.
 This feature starts from verified main **720dfb2** (owner-merged PR #25, Milestone
 1a). It extends only comparison projections. Canonical historical-powerbi-v1,

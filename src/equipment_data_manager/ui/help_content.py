@@ -227,10 +227,10 @@ entry('historical_processing', 'Historical Batch Processing',
 
 entry('comparison_preview','Development comparison export',
     'Makes simplified comparison CSVs from one completed canonical snapshot.',
-    'In Power BI snapshot, open Development tools. Choose one completed snapshot, confirm local backup-test intent and choose a separate local output parent. Comparison v2 normalizes uppercase R/E/Z ID spacing and derives likely Building labels conservatively. Original values, financial amounts and all transactions remain; lineage and an exact canonical copy preserve provenance.',
+    'In Power BI snapshot, open Development tools. Choose one completed snapshot, confirm local backup-test intent and choose a separate local output parent. Comparison v3 creates five tables, including observed Equipment with shared names/types and evidence-based Maintenance Type. It normalizes uppercase R/E/Z ID spacing and derives likely Building labels conservatively. Original values, financial amounts and all transactions remain; lineage and an exact canonical copy preserve provenance.',
     'Only a new private comparison container. No cleaning, candidate selection, financial changes, activation, approval, upload or refresh.',
     'Verify the comparison with the developer guide, then import into new disconnected tables in a backup PBIX. This temporary preview is not another permanent employee output mode.',
-    'Read comparison_warnings.txt and audit/diagnostics.csv for collisions, unsupported IDs, unresolved locations and legacy Building differences. Building labels are not validated dimension keys. Equipment Type, MaintenanceType and Equipment_History remain future work. Use the V2 Power Query helper with v2; keep canonical/old helpers and production sources unchanged.')
+    'Read comparison_warnings.txt and audit/diagnostics.csv for collisions, unsupported IDs, unresolved locations and legacy Building differences. Building labels are not validated dimension keys. Observed Equipment is not a complete inventory. Review conflicting names, broad equipment keywords and uncertain maintenance in the audit reports. Use the V3 Power Query helper with v3; keep canonical/old helpers and production sources unchanged.')
 
 entry('historical_dataset','Power BI Historical Snapshot',
     'Creates four local unapproved datasets from current selected candidate revisions.',

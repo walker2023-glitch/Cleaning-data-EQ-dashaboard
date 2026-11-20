@@ -75,7 +75,7 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
             initialdir=str(self.output) if self.output else None)
         if not source:return
         if not messagebox.askyesno('Create development comparison only?',
-            'Create four simplified CSVs from this canonical snapshot?\n'+str(source)+
+            'Create five simplified CSVs, including observed Equipment, from this canonical snapshot?\n'+str(source)+
             '\nUse only a backup PBIX. Confirm a trusted local destination outside raw, candidates, approved and production folders. No activation, approval, upload or refresh will occur.',parent=self.app):return
         parent=filedialog.askdirectory(parent=self.app,title='Choose trusted local comparison parent (not production)')
         if not parent:return
@@ -89,11 +89,11 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.comparison_output=path
         try:
             manifest=json.loads((path/'comparison_manifest.json').read_text(encoding='utf-8'))
-            warnings=(path/'comparison_warnings.txt').read_text(encoding='utf-8') if manifest['export_schema']=='comparison-preview-v2' else ''
+            warnings=(path/'comparison_warnings.txt').read_text(encoding='utf-8') if manifest['export_schema'] in ('comparison-preview-v2','comparison-preview-v3') else ''
         except (OSError,ValueError,KeyError):
             self.comparison_failed();self.app.status.set('Comparison completion evidence is unavailable. Verify the output before importing.');return
         self.history._text(self.detail,'Development comparison completed — CandidateUnverified, not approved.\n'+str(path)+
-            '\nFour simplified CSVs are ready for a backup PBIX only. audit/lineage.csv maps every row to the retained canonical evidence. No activation or refresh occurred.\n'+warnings)
+            '\nFive simplified CSVs are ready for a backup PBIX only. audit/lineage.csv maps every row to the retained canonical evidence. No activation or refresh occurred.\n'+warnings)
         self.busy(False)
 
     def comparison_failed(self):

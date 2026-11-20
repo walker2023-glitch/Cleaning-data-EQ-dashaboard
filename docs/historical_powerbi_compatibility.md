@@ -180,3 +180,12 @@ policies; dashboard-only exclusions; July–September coverage; time-of-day fide
 rate/budget assumptions; finance approval; complete relationship graph in Desktop.
 These gaps require explicit acknowledgement for local generation and block a claim
 of complete dashboard compatibility. They do not authorize publication.
+
+
+## Owner-approved Milestone 1c — comparison v3
+
+See [the v3 contract, classifications, audit lineage and acceptance steps](comparison_exports_v3.md).
+Five development datasets share resolved equipment names/types and evidence-based
+Maintenance Type. V1/V2, canonical four-table snapshots and financial schema 2 remain
+unchanged. Automated synthetic/Linux evidence and Windows/backup-PBIX acceptance
+are recorded separately; this is not production activation or approval of later work.

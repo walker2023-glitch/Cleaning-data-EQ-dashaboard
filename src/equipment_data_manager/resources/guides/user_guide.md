@@ -2,21 +2,22 @@
 
 ## Development comparison tools
 
-The current preview is comparison-preview-v2. Supported R/E/Z IDs are normalized
-in the comparison only; likely Building labels are derived conservatively. Read the
-completion warning summary and comparison_warnings.txt; audit/diagnostics.csv lists
-collisions, unsupported IDs, unresolved locations and legacy differences. Original
-values and all transactions remain available. Do not change source IDs or join
-Building_Dim merely to clear warnings. Use fnReadComparisonPreviewV2 and see
-comparison_exports_v2.md; the original v1 helper remains for old v1 exports.
+The current development preview is **comparison-preview-v3**, with five CSVs.
+Historical Data → Power BI snapshot → Development tools → Create simplified
+comparison export uses one completed canonical snapshot and a separate trusted
+local output parent. It includes an observed Equipment lookup, shared equipment
+names/types, original observed names and evidence-based Maintenance Type.
 
-For owner/developer backup-PBIX comparison only, Historical Data → Power BI snapshot
-→ Development tools can create four simplified CSVs from one completed canonical
-snapshot. Confirm a separate trusted local test destination. The output includes
-private audit/lineage.csv and an exact canonical copy; it does not clean, activate,
-approve or refresh data. This temporary tool is not another employee output mode.
-See comparison_exports.md in the review package for typed imports and verification.
+Read comparison_warnings.txt first. Conflicting names, broad equipment keywords,
+missing IDs and uncertain maintenance need review. Observed Equipment is not a
+complete inventory. Building labels are provisional, not validated dimension keys.
+All original transactions, descriptions, financial amounts/nulls and audit evidence
+remain. No cleaning, candidate mutation, activation, approval or refresh occurs.
 
+Use **fnReadComparisonPreviewV3** only in new disconnected queries in a backup
+PBIX. See [the v3 acceptance guide](comparison_exports_v3.md). Original V1/V2
+exports/helpers remain supported. This is a temporary development tool, not a
+permanent employee format choice.
 
 ## Historical Power BI datasets — 2026-11-12
 
