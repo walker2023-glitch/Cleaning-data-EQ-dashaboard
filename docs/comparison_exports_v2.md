@@ -155,7 +155,7 @@ uv run --frozen --all-extras python -m equipment_data_manager.ui.app
 ```
 
 In Settings import the demo's workspace.toml, choose SharePoint year/month layout,
-confirm local storage and save. Historical Data → Power BI snapshot → Development
+confirm local storage and save. Process Multiple Months → Power BI snapshot → Development
 tools → Create simplified comparison export. Select the demo's canonical/snapshot
 folder and a separate local output parent. Check these synthetic expectations:
 

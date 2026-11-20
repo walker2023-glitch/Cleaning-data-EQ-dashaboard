@@ -75,3 +75,18 @@ CustomTkinter. Help content lives in the registry, not lengthy button handlers.
 cleaning; help preference writes coalesce and preserve the latest saved folders,
 not unsaved form selections. All workers return plain data through queues; no
 worker calls Tk. Existing main-thread cyclic-GC ownership remains unchanged.
+
+
+## Employee interface simplification — Milestone 2
+
+The existing registry/F1/hover/focus system explains Process Reports & Save Candidate,
+Process Multiple Months, result outcomes, correction approval without saving,
+Settings → Processing History and optional Technical details. Explain this step
+uses the active Settings, History, multi-month or Results page. Keyboard activation
+remains registered for the Settings History button, Back to Settings and technical
+toggles. No chatbot or online service is involved.
+
+Navigation no longer offers History or Review & Approval as daily workflow steps.
+Earlier reports remain in Settings; the hidden review foundation and disabled
+approval/publishing safeguards are preserved. Technical identities are optional;
+business warnings, missing data and financial totals remain in the ordinary view.

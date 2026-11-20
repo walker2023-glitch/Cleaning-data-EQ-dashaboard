@@ -5,7 +5,7 @@ Contract: **comparison-preview-v3**, purpose **DevelopmentComparison**, status
 `d7e9d0c39d4a8600dd4d03fd3a6c96c7d0f9d72c`. Milestone 1c is owner-approved for
 implementation and review; it is not production activation or business signoff.
 
-The same Historical Data → Power BI snapshot → Development tools → **Create
+The same Process Multiple Months → Power BI snapshot → Development tools → **Create
 simplified comparison export** action now generates v3. There is no permanent
 format selector or competing employee workflow. Choose one validated completed
 canonical snapshot, confirm backup-test intent, and choose a NEW separate trusted

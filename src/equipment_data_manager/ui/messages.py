@@ -117,8 +117,11 @@ ERRORS = {
 
 
 def result_label(result, *, preview=False):
+    if not preview:
+        from equipment_data_manager.ui.results_presenter import outcome, LABELS
+        return LABELS[outcome(result)]
     if result.status == ProcessingStatus.SUCCESS:
-        return "New report" if preview else "Saved locally"
+        return "New report"
     if result.status == ProcessingStatus.SKIPPED:
         return "Already processed - will skip" if preview else "Skipped - already processed"
     if result.status == ProcessingStatus.NEEDS_REVIEW:
@@ -139,7 +142,7 @@ def warning_message(code: str):
             'source_summary_unavailable': 'This layout has no verified monthly financial summary; reported repair costs remain unassigned.'}
         return states.get(count, 'Repair financial reconciliation needs review.')
     messages = {
-        "repair_financial_schema_v2": "Financial schema v2 keeps reported totals separate from estimated labor and legacy arithmetic. A monthly financial summary is saved beside the repair CSV.",
+        "repair_financial_schema_v2": "Reported totals stay separate from estimated labor and legacy calculations. A monthly financial summary is saved beside the repair CSV.",
         "repair_reported_cost_unavailable": "Reported repair costs left blank because source fields are missing, malformed, unequal or outside the confirmed layout",
         "production_publication_blocked": "Power BI CSV candidate only. Production publication is blocked until financial reconciliation and trusted-output approval.",
         "normalized_financial_values_unavailable": "Rows with unavailable source parts/total values left blank; original calculated values remain in the Legacy columns",
@@ -188,15 +191,20 @@ REASONS = {
 }
 
 
-def diagnostic_lines(diagnostics):
+def diagnostic_lines(diagnostics, *, technical=True):
     """Private date cells are visible locally, never saved to history or logs."""
     summary = diagnostics.summary()
     lines = [f"Engine reporting month: {diagnostics.selected_period}",
              f"Source SHA-256: {diagnostics.source_sha256}",
              f"Cleaner: {diagnostics.cleaner_version}",
              f"Source records: {len(diagnostics.records)} | Retained by cleaner before validation: {diagnostics.retained_rows}"]
+    if not technical:
+        lines = [f"Reporting month: {diagnostics.selected_period}",
+                 f"Source records: {len(diagnostics.records)} | Retained before validation: {diagnostics.retained_rows}"]
     lines.extend(f"{REASONS.get(reason, 'Unclassified reason')}: {count}"
                  for reason, count in summary['reason_counts'].items())
+    if not technical:
+        return lines
     lines.append("Local date trace (data-record numbers, not CSV line numbers):")
     for row in diagnostics.records:
         values = '; '.join(f"{date.column} {date.raw_value!r} -> {date.parsed_value or 'invalid/blank'}"

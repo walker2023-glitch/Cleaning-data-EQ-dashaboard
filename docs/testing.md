@@ -673,3 +673,46 @@ are recorded separately; this is not production activation or approval of later 
   no hosted success is inferred from these local checks.
 
 See [schemas, policy differences and Windows/backup-PBIX steps](comparison_exports_v3.md).
+
+
+## Owner-directed Milestone 2 — employee interface
+
+Run the full existing isolated runner. New results-presenter tests check evidence-based
+saved/unchanged/review/failed/stopped counts, cancellation, missing save artifacts,
+warning visibility and no all-success claim on partial failures. Real-widget cases
+check five-entry navigation, refreshed read-only Settings History, hidden review
+foundation, internal route compatibility, correction approval without writes, stale
+confirmation invalidation, actual save-then-read-failure results, technical evidence,
+keyboard help and existing pipeline/export behavior. Original regression identifiers
+and assertions about retained evidence are preserved; assertions follow moved
+evidence into its technical pane rather than dropping it. Packaged smoke retains
+phase 51 and a separate-process restart, with employee-navigation/save/diagnostic
+assertions. See [Windows acceptance and implementation boundaries](employee_interface_simplification.md).
+
+
+### Milestone 2 final local evidence — 2026-11-20
+
+- Final full Linux/Python 3.12.14 runner: **1,157 passed**, zero failures, errors
+  or skips (1,078 core + 79 isolated real-widget cases), including 15 new
+  results-presenter cases and five new widget cases. All original test identifiers
+  remain. Two initial date-trace assertions were updated to verify the moved
+  technical pane as well as the normal summary; the evidence assertions remain.
+- Source distribution and wheel builds passed with `uv build`. Final source,
+  isolated installed-wheel and native Linux PyInstaller executable desktop smokes
+  each passed **phase 51** plus a fresh-process settings restart. The wheel's
+  app/presenter code and bundled employee guide matched source bytes.
+- Linux PyInstaller analysis used the image Python runtime library directory to
+  collect Tcl 9 dependencies. The resulting executable smoke ran without a
+  runtime library-path override. This is not general Linux distribution proof.
+- Synthetic visual check confirmed the full Results table/detail space, optional
+  technical pane, five-entry navigation, long action label and readable wrapping.
+  The image's read-only font cache produces an existing CustomTkinter fallback
+  warning; tests/builds/smokes passed. Managed Windows accessibility and DPI still
+  require the employee acceptance checklist.
+- Source, cleaning/financial models and coordinator/workflow, candidate storage,
+  canonical snapshot and comparison V1/V2/V3 code/contracts, Power Query helpers,
+  review services, Settings schema and dependency files have no changes.
+  `git diff --check` passed. Only synthetic local data was written.
+- Hosted CI results, native Windows executable/runtime/DPI and actual employee
+  acceptance are separate/unverified here. The push/PR matrix includes Windows
+  packaging and smoke for this feature branch. No main merge or later milestone.

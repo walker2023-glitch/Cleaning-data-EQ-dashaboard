@@ -13,7 +13,7 @@ supported labels, filenames, older-build settings compatibility and walkthrough.
 ## Reporting-month preference (settings v2)
 
 After setup has been saved, valid month/year changes are remembered in the same
-local profile and restored on restart. Review and Process Reports share the selector.
+local profile and restored on restart. The retained developer review foundation shares the Process Reports selector; it is hidden from employee navigation.
 Processing confirmation and previews are never restored. First-run selection alone
 writes no profile; Save Settings enables persistence. Invalid edits or failed writes
 retain the last saved period and display a session-only/error message.
@@ -133,3 +133,19 @@ Historical batch preview reuses the saved raw root, explicit layout and trusted
 local candidate root. It does not save settings or change the single reporting
 month. Its range/results survive navigation but reset on restart or root/layout/
 range changes. No new settings schema or production destination is introduced.
+
+
+## Processing History and advanced diagnostics
+
+Select **Processing History** in the Settings header. It opens the existing
+read-only current/previous revision view and refreshes it every time. Refresh
+history and Open selected revision folder remain available; Back to Settings
+returns to the form. Opening History writes no candidate or settings records.
+Choose the same base Candidate Output folder to retain access to earlier history.
+
+Storage connection/Microsoft test configuration diagnostics are in **Advanced
+Settings**, along with existing compatibility imports and runtime information.
+Graph, sign-in, approval and publishing remain unavailable; moving these controls
+does not enable authentication or modify settings schemas. Review & Approval has
+no employee navigation entry; existing local requests and implementation remain.
+The multi-month navigation label is **Process Multiple Months**.
