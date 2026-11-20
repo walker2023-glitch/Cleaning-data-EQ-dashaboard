@@ -288,3 +288,16 @@ does not approve enrichment, employee navigation changes or activation/update mo
 ---
 
 **Success test for the entire project:** A coworker opens the Windows application, selects or refreshes the month folder, reviews the detected changes, processes eligible reports, confirms the Power BI input update, and can refresh the existing dashboard without programming or editing Power Query. The process is repeatable, preserves history, reports issues plainly, and has documented support and recovery steps.
+
+
+## Milestone 1c owner approval — 2026-11-20
+
+Owner explicitly approved Equipment Lookup and Maintenance Classification only.
+Verified main `d7e9d0c39d4a8600dd4d03fd3a6c96c7d0f9d72c` already contains 1a/1b.
+Implementation on `feature/comparison-equipment-maintenance` adds the separate
+comparison-preview-v3 contract, five business CSVs, shared equipment resolution,
+conservative maintenance evidence, internal diagnostics/lineage, typed helper and
+acceptance instructions. See [scope, exact validation and limitations](comparison_exports_v3.md).
+Implementation/PR review does not establish Windows real-data or backup-PBIX acceptance.
+No main merge, production activation, financial/canonical/cleaner changes or later
+milestone implementation is authorized by this record.

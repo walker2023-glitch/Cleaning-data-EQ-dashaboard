@@ -1,5 +1,9 @@
 # Development comparison exports — Milestone 1a
 
+> Current desktop generation uses [comparison-preview-v3](comparison_exports_v3.md).
+> This document describes the retained historical contract.
+
+
 **Original v1 contract reference.** The current development action and CLI default
 now generate [comparison-preview-v2](comparison_exports_v2.md), adding ID/Building
 enrichment. This v1 schema/helper are preserved. Request `--export-schema

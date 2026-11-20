@@ -43,7 +43,7 @@ def create_demo(target):
     plan=preview_dataset(workspace,'2026-01','2026-06')
     canonical=generate_dataset(workspace,plan,target/'canonical',confirmation=plan.fingerprint,
         local_confirmed=True,compatibility_acknowledged=True)
-    outputs=[generate_comparison(workspace,canonical,target/f'comparison-{i}',confirmed=True) for i in (1,2)]
+    outputs=[generate_comparison(workspace,canonical,target/f'comparison-{i}',confirmed=True,export_schema='comparison-preview-v2') for i in (1,2)]
     manifests=[validate_comparison(output) for output in outputs]
     if manifests[0]!=manifests[1]:raise RuntimeError('Comparison was not deterministic')
     (target/'workspace.toml').write_text('\n'.join(key+' = '+json.dumps(str(value)) for key,value in

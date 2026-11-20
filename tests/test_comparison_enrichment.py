@@ -87,7 +87,7 @@ def enriched_source(tmp_path):
 
 
 def create(source,target,**kwargs):
-    return module.generate_comparison(source[0],source[1],target,confirmed=True,**kwargs)
+    return module.generate_comparison(source[0],source[1],target,confirmed=True,**({'export_schema':module.V2_SCHEMA} | kwargs))
 
 
 def test_v2_determinism_collisions_originals_counts_lineage_and_financial_nulls(enriched_source,tmp_path):
@@ -189,6 +189,6 @@ def test_v2_helper_exact_columns_types_and_rejects_v1():
     text=Path('powerquery/fnReadComparisonPreviewV2.pq').read_text()
     for kind in module.FIELDS_V2:
         body=re.search(r'\b'+kind+r' = \{([^\n]+)\}',text).group(1)
-        assert re.findall(r'\{"([^"]+)", "([^"]+)"',body)==[(c.name,c.data_type) for c in module.schema(kind,module.LATEST_SCHEMA)]
+        assert re.findall(r'\{"([^"]+)", "([^"]+)"',body)==[(c.name,c.data_type) for c in module.schema(kind,module.V2_SCHEMA)]
     assert 'comparison-preview-v2' in text and 'comparison-preview-v1' not in text
     assert 'Folder.Files' not in text and 'type nullable number' in text

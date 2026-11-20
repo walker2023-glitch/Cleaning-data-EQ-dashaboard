@@ -632,3 +632,44 @@ layout is now covered by mapped-widget and scroll-to-control visibility assertio
 Source and isolated installed-wheel phase-45 desktop smoke and separate-process
 restart passed. Wheel/sdist builds passed. Native Windows and hosted outcomes
 require the feature's actual CI results; Linux success alone is not Windows proof.
+
+
+## Owner-approved Milestone 1c — comparison v3
+
+See [the v3 contract, classifications, audit lineage and acceptance steps](comparison_exports_v3.md).
+Five development datasets share resolved equipment names/types and evidence-based
+Maintenance Type. V1/V2, canonical four-table snapshots and financial schema 2 remain
+unchanged. Automated synthetic/Linux evidence and Windows/backup-PBIX acceptance
+are recorded separately; this is not production activation or approval of later work.
+
+
+### Milestone 1c local validation — 2026-11-20
+
+- Final full Linux/Python 3.12.14 isolated-GUI runner: **1,137 passed**, zero
+  failures/errors/skips (1,063 core + 74 widgets), including 100 new classification
+  tests. Initial test-expectation and bundled-guide mismatches were corrected;
+  the final fresh full runner passed. No tests were skipped, weakened or retried
+  automatically. Subsequent documentation synchronization/typed-helper checks
+  passed (2 focused cases).
+- `uv build`: sdist and wheel passed. Isolated installed-wheel v3 demo and Python
+  verifier passed with repeatable complete output bundles. Counts: 18 repairs,
+  12 services, 13 TMA, 6 summaries, 3 equipment rows, 79 lineage links,
+  24 conflicting-name observations and 12 maintenance review observations.
+  Six unavailable repair costs remain blank.
+- Source, isolated installed wheel and native Linux PyInstaller executable each
+  passed desktop smoke phase **51** and a fresh-process settings restart. The
+  PyInstaller build used this image's Python runtime library directory during
+  analysis to collect Tcl 9 libraries. The resulting executable smoke ran without
+  a runtime library-path override. A temporary virtual display was used; Linux
+  is not proof of Windows or general Linux distribution readiness.
+- Direct comparison with the verified-main implementation confirmed identical
+  V1/V2 projection/lineage/warning/diagnostic bytes, counts and manifests for the
+  same synthetic canonical snapshot. `git diff --check` passed.
+- Cleaner/financial, canonical-generator, Settings, dependency and original
+  V1/V2 Power Query helper paths are unchanged. Only invented data was written.
+- Native Windows executable/Power BI testing, actual M/DAX, real January–June
+  input comparison, authoritative Building dimension membership and owner
+  acceptance remain unverified. Hosted CI must be checked at the pushed commit;
+  no hosted success is inferred from these local checks.
+
+See [schemas, policy differences and Windows/backup-PBIX steps](comparison_exports_v3.md).
