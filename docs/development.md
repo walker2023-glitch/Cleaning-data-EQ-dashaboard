@@ -1,5 +1,21 @@
 # Development (M2 offline desktop)
 
+## Owner-directed comparison v2 (Milestone 1b)
+
+`comparison_enrichment.py` contains shared pure ID/Building resolution and
+deterministic collision/legacy diagnostics. `comparison_export.py` selects the
+versioned projection: generation defaults to comparison-preview-v2, while explicit
+`export_schema='comparison-preview-v1'` reproduces v1. Validation detects either
+version and recomputes its exact evidence. The canonical reader, cleaners, Settings
+and dependency contracts are unchanged. Use the v2-specific typed M helper.
+
+Run `pytest tests/test_comparison_enrichment.py tests/test_comparison_export.py`,
+then the full isolated GUI runner and source/installed-wheel desktop/restart smoke.
+`examples/create_comparison_enrichment_demo.py --output data/new-v2-demo` generates
+new invented raw reports BEFORE cleaning, then valid canonical snapshots and two
+deterministic v2 comparisons. Never edit existing canonical data to create a demo.
+See [v2 contract, policy limits and acceptance](comparison_exports_v2.md).
+
 ## Microsoft 365 test-pilot development
 
 Use feature/m365-readonly-connectivity, based on main 6b7e861 (owner PR #16 merge).

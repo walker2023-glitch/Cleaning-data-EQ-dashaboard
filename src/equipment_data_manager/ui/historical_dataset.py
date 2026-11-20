@@ -85,9 +85,15 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
             confirmed=True,progress=progress,cancelled=stop.is_set))
 
     def comparison_completed(self,path):
+        import json
         self.comparison_output=path
+        try:
+            manifest=json.loads((path/'comparison_manifest.json').read_text(encoding='utf-8'))
+            warnings=(path/'comparison_warnings.txt').read_text(encoding='utf-8') if manifest['export_schema']=='comparison-preview-v2' else ''
+        except (OSError,ValueError,KeyError):
+            self.comparison_failed();self.app.status.set('Comparison completion evidence is unavailable. Verify the output before importing.');return
         self.history._text(self.detail,'Development comparison completed — CandidateUnverified, not approved.\n'+str(path)+
-            '\nFour simplified CSVs are ready for a backup PBIX only. audit/lineage.csv maps every row to the retained canonical evidence. No activation or refresh occurred.')
+            '\nFour simplified CSVs are ready for a backup PBIX only. audit/lineage.csv maps every row to the retained canonical evidence. No activation or refresh occurred.\n'+warnings)
         self.busy(False)
 
     def comparison_failed(self):

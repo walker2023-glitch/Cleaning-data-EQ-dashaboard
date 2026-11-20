@@ -1,5 +1,16 @@
 # Test instructions and evidence limits
 
+## Milestone 1b ID and Building enrichment
+
+`test_comparison_enrichment.py` covers narrow R/E/Z whitespace handling, zeros,
+unsupported/missing IDs, cross-fact collisions without deduplication, room suffixes,
+multiword/abbreviated/building-only locations, numbered/ambiguous locations, distinct
+legacy references, v1 compatibility, v2 diagnostics/lineage validation and failure
+cleanup. The existing real-widget comparison test now requires the v2 warning
+summary. The packaged smoke verifies v2 through the same desktop action.
+See [v2 acceptance and limitations](comparison_exports_v2.md). Actual Windows/M/DAX
+and departmental Building_Dim acceptance remain separate owner checks.
+
 ## Milestone 1a comparison exports
 
 `tests/test_comparison_export.py` verifies ordered projections, exact canonical

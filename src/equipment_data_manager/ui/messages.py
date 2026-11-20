@@ -3,6 +3,8 @@
 from equipment_data_manager.processing.models import ProcessingStatus
 
 ERRORS = {
+    'comparison_version_unsupported': 'This comparison contract version is unsupported. Use the matching application and Power Query helper.',
+    'comparison_diagnostics_mismatch': 'The comparison warnings or diagnostics differ from the retained evidence. Create a fresh export before importing.',
     'comparison_invalid_value': 'A value does not match the comparison field type. Check the canonical evidence; no financial value was guessed or replaced.',
     'comparison_source_changed': 'The snapshot changed while it was being read. Choose a complete unchanged canonical snapshot and retry.',
     'comparison_confirmation_required': 'Confirm this local development comparison. It does not activate or approve data.',

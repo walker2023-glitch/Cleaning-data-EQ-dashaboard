@@ -26,9 +26,13 @@ from equipment_data_manager.processing.repair_financial import (
 )
 from equipment_data_manager.processing.interfaces import ColumnSchema
 from equipment_data_manager.settings import candidate_location_error
+from equipment_data_manager.comparison_enrichment import (
+    ID_POLICY, BUILDING_POLICY, DIAGNOSTIC_FIELDS, EVIDENCE_FIELDS, enrich_records, warnings_text,
+)
 
 
 EXPORT_SCHEMA = 'comparison-preview-v1'
+LATEST_SCHEMA = 'comparison-preview-v2'
 NAMES = dict(CANONICAL_NAMES)  # Independent projection registry; canonical stays four-table.
 # One ordered registry governs projection, validation and the import contract.
 # Later enrichment belongs here/in project_tables, under a new contract version;
@@ -47,25 +51,43 @@ FIELDS = {
         'LegacyLaborCostSum', 'LegacyLaborCostMissingCount',
         'LegacyEstimatedTotalCostSum', 'LegacyEstimatedTotalCostMissingCount'),
 }
+FIELDS_V2 = {kind: tuple(field for name in columns for field in
+    ((name, 'Building') if name == 'Location' else (name,))) for kind, columns in FIELDS.items()}
 LINEAGE_FIELDS = ('Dataset', 'ExportRecordNumber', 'CanonicalRecordNumber', 'RecordId',
     'ReportMonth', 'CandidateRevisionId', 'CandidateOutputSHA256', 'CandidateCleanerVersion',
     'SourceFileName', 'SourceFileSHA256', 'SourceRecordNumber', 'FinancialSummarySHA256')
 CANONICAL_FILES = (*CANONICAL_NAMES.values(), 'snapshot_manifest.json', 'compatibility_report.md')
 MANIFEST_NAME = 'comparison_manifest.json'
 LINEAGE_NAME = 'audit/lineage.csv'
+DIAGNOSTICS_NAME = 'audit/diagnostics.csv'
+WARNINGS_NAME = 'comparison_warnings.txt'
 
 
-def schema(kind):
+def fields_for(export_schema):
+    if export_schema == EXPORT_SCHEMA:
+        return FIELDS
+    if export_schema == LATEST_SCHEMA:
+        return FIELDS_V2
+    raise ProcessingError('comparison_version_unsupported')
+
+
+def lineage_fields(export_schema):
+    fields_for(export_schema)
+    return LINEAGE_FIELDS + EVIDENCE_FIELDS if export_schema == LATEST_SCHEMA else LINEAGE_FIELDS
+
+
+def schema(kind, export_schema=EXPORT_SCHEMA):
     """Explicit types for this projection; identifiers always remain text."""
     if kind == 'repair_financial_summary':
         integers = {'ReportedRepairCount', 'SourceRecordCount', 'RetainedRepairCount',
                     'UnavailableRepairCostCount'}
         texts = {'ReportMonth', 'ReconciliationStatus'}
         return tuple(ColumnSchema(n, 'text' if n in texts else 'integer'
-            if n in integers or n.endswith('MissingCount') else 'decimal') for n in FIELDS[kind])
+            if n in integers or n.endswith('MissingCount') else 'decimal') for n in fields_for(export_schema)[kind])
     base = repair_schema() if kind == 'repairs' else transaction_schema(ReportType(kind))
     types = {c.name: c.data_type for c in base}
-    return tuple(ColumnSchema(n, types[n]) for n in FIELDS[kind])
+    types['Building'] = 'text'
+    return tuple(ColumnSchema(n, types[n]) for n in fields_for(export_schema)[kind])
 
 
 def _json(value):
@@ -96,16 +118,22 @@ def _capture(snapshot):
     return manifest, payloads
 
 
-def project_tables(payloads):
-    """Pure, ordered projection. Never parse/reformat financial strings or dedupe."""
+def _project(payloads, export_schema):
+    """Versioned pure projection; enrichment never changes financial strings."""
+    canonical = {kind: _rows(payloads[name]) for kind, name in NAMES.items()}
+    evidence, diagnostics, counts = {}, [], {}
+    if export_schema == LATEST_SCHEMA:
+        records_by_kind, evidence, diagnostics, counts = enrich_records(canonical, NAMES)
+    else:
+        records_by_kind = canonical
     tables, lineage = {}, []
-    for kind, fields in FIELDS.items():
-        records = _rows(payloads[NAMES[kind]])
+    for kind, fields in fields_for(export_schema).items():
+        records = records_by_kind[kind]
         # Validate the projected contract too, including summary controls that are
         # additional to the canonical monthly summary reader. Never reserialize
         # parsed values: canonical decimal/date strings remain byte-for-byte cells.
         for row in records:
-            for column in schema(kind):
+            for column in schema(kind, export_schema):
                 value = row[column.name]
                 try:
                     if not value or column.data_type == 'text':
@@ -121,30 +149,47 @@ def project_tables(payloads):
                     raise ProcessingError('comparison_invalid_value') from None
         tables[kind] = _encode([{field: row[field] for field in fields} for row in records], fields)
         for ordinal, row in enumerate(records, 1):
-            evidence = {key: row.get(key, '') for key in LINEAGE_FIELDS}
-            evidence.update(Dataset=NAMES[kind], ExportRecordNumber=ordinal, CanonicalRecordNumber=ordinal)
-            lineage.append(evidence)
-    return tables, _encode(lineage, LINEAGE_FIELDS)
+            link = {key: row.get(key, '') for key in LINEAGE_FIELDS}
+            link.update({key: evidence.get((kind, ordinal), {}).get(key, '') for key in EVIDENCE_FIELDS}
+                        if export_schema == LATEST_SCHEMA else {})
+            link.update(Dataset=NAMES[kind], ExportRecordNumber=ordinal, CanonicalRecordNumber=ordinal)
+            lineage.append(link)
+    extras = {}
+    if export_schema == LATEST_SCHEMA:
+        extras = {DIAGNOSTICS_NAME: _encode(diagnostics, DIAGNOSTIC_FIELDS),
+            WARNINGS_NAME: warnings_text(counts).encode('utf-8')}
+    return tables, _encode(lineage, lineage_fields(export_schema)), extras, counts
 
 
-def _manifest(source, payloads, tables, lineage):
+def project_tables(payloads, export_schema=EXPORT_SCHEMA):
+    """Compatibility API: v1 remains an exact canonical business-field projection."""
+    tables, lineage, _, _ = _project(payloads, export_schema)
+    return tables, lineage
+
+
+def _manifest(source, payloads, tables, lineage, export_schema=EXPORT_SCHEMA, extras=None, counts=None):
     entries = []
     for kind, raw in tables.items():
         records = _rows(raw)
         entries.append(dict(report_type=kind, file=NAMES[kind], rows=len(records),
             rows_by_month={m: sum(r['ReportMonth'] == m for r in records)
                 for m in sorted({r['ReportMonth'] for r in records})},
-            columns=[dict(name=c.name, type=c.data_type) for c in schema(kind)],
+            columns=[dict(name=c.name, type=c.data_type) for c in schema(kind, export_schema)],
             sha256=sha256(raw).hexdigest()))
-    return dict(export_schema=EXPORT_SCHEMA, purpose='DevelopmentComparison',
+    manifest = dict(export_schema=export_schema, purpose='DevelopmentComparison',
         status='CandidateUnverified', approval_status='NotApproved', production_ready=False,
         source_snapshot_schema=source['snapshot_schema'], start=source['start'], end=source['end'],
         source_manifest_sha256=sha256(payloads['snapshot_manifest.json']).hexdigest(),
-        datasets=entries, lineage=dict(file=LINEAGE_NAME, columns=list(LINEAGE_FIELDS),
+        datasets=entries, lineage=dict(file=LINEAGE_NAME, columns=list(lineage_fields(export_schema)),
             rows=sum(e['rows'] for e in entries), sha256=sha256(lineage).hexdigest()))
+    if export_schema == LATEST_SCHEMA:
+        manifest.update(equipment_id_policy=ID_POLICY, building_policy=BUILDING_POLICY,
+            building_knowledge='ObservedPatternsNotAuthoritativeDimension', warning_counts=counts,
+            diagnostics=[dict(file=name, sha256=sha256(raw).hexdigest()) for name, raw in extras.items()])
+    return manifest
 
 
-def _destination(workspace, source, destination, *, windows=None):
+def _destination(workspace, source, destination, *, windows=None, export_schema=LATEST_SCHEMA):
     import sys
     workspace.validate()
     source, final = _safe(source, local=True), _safe(destination, local=True)
@@ -157,12 +202,13 @@ def _destination(workspace, source, destination, *, windows=None):
     stage, completed = final / '.s', final / 'comparison'
     if windows if windows is not None else sys.platform == 'win32':
         relatives = (*NAMES.values(), MANIFEST_NAME, LINEAGE_NAME,
+            *((DIAGNOSTICS_NAME, WARNINGS_NAME) if export_schema == LATEST_SCHEMA else ()),
             *(f'audit/canonical/{name}' for name in CANONICAL_FILES))
         _check_windows_packet_paths(stage, completed, relatives)
     return final, stage, completed
 
 
-def generate_comparison(workspace, snapshot, destination, *, confirmed=False,
+def generate_comparison(workspace, snapshot, destination, *, confirmed=False, export_schema=LATEST_SCHEMA,
                         progress=lambda *_: None, cancelled=lambda: False):
     """Create a new immutable comparison container after explicit local-test intent.
 
@@ -171,17 +217,18 @@ def generate_comparison(workspace, snapshot, destination, *, confirmed=False,
     """
     if confirmed is not True:
         raise ProcessingError('comparison_confirmation_required')
-    final, stage, completed = _destination(workspace, snapshot, destination)
+    fields_for(export_schema)
+    final, stage, completed = _destination(workspace, snapshot, destination, export_schema=export_schema)
     if final.exists():
         raise ProcessingError('comparison_destination_exists')
     if cancelled():
         raise ProcessingError('comparison_cancelled')
     source, payloads = _capture(snapshot)
-    tables, lineage = project_tables(payloads)
-    manifest = _manifest(source, payloads, tables, lineage)
+    tables, lineage, extras, counts = _project(payloads, export_schema)
+    manifest = _manifest(source, payloads, tables, lineage, export_schema, extras, counts)
     if cancelled():
         raise ProcessingError('comparison_cancelled')
-    _destination(workspace, snapshot, destination)
+    _destination(workspace, snapshot, destination, export_schema=export_schema)
     final.parent.mkdir(parents=True, exist_ok=True)
     final.mkdir(exist_ok=False)  # Cleanup starts only after exclusive ownership.
     try:
@@ -189,6 +236,7 @@ def generate_comparison(workspace, snapshot, destination, *, confirmed=False,
         outputs = {NAMES[k]: raw for k, raw in tables.items()}
         outputs.update({f'audit/canonical/{name}': raw for name, raw in payloads.items()})
         outputs[LINEAGE_NAME] = lineage
+        outputs.update(extras)
         outputs[MANIFEST_NAME] = _json(manifest)
         for index, (name, raw) in enumerate(outputs.items(), 1):
             if cancelled():
@@ -213,21 +261,26 @@ def validate_comparison(root):
     """
     try:
         root = _safe(root, local=True)
-        if {p.name for p in root.iterdir()} != {*NAMES.values(), MANIFEST_NAME, 'audit'}:
+        manifest = json.loads(_safe(root / MANIFEST_NAME).read_bytes())
+        export_schema = manifest['export_schema']
+        fields_for(export_schema)
+        v2 = export_schema == LATEST_SCHEMA
+        if {p.name for p in root.iterdir()} != {*NAMES.values(), MANIFEST_NAME, 'audit'} | ({WARNINGS_NAME} if v2 else set()):
             raise ProcessingError('comparison_contract_rejected')
         audit = _safe(root / 'audit')
-        if {p.name for p in audit.iterdir()} != {'canonical', 'lineage.csv'}:
+        if {p.name for p in audit.iterdir()} != {'canonical', 'lineage.csv'} | ({'diagnostics.csv'} if v2 else set()):
             raise ProcessingError('comparison_contract_rejected')
         source, payloads = _capture(audit / 'canonical')
-        tables, lineage = project_tables(payloads)
-        manifest = json.loads(_safe(root / MANIFEST_NAME).read_bytes())
-        if manifest != _manifest(source, payloads, tables, lineage):
+        tables, lineage, extras, counts = _project(payloads, export_schema)
+        if manifest != _manifest(source, payloads, tables, lineage, export_schema, extras, counts):
             raise ProcessingError('comparison_contract_rejected')
         for kind, raw in tables.items():
             if _safe(root / NAMES[kind]).read_bytes() != raw:
                 raise ProcessingError('comparison_projection_mismatch')
         if _safe(root / LINEAGE_NAME).read_bytes() != lineage:
             raise ProcessingError('comparison_lineage_mismatch')
+        if any(_safe(root / name).read_bytes() != raw for name, raw in extras.items()):
+            raise ProcessingError('comparison_diagnostics_mismatch')
         return manifest
     except ProcessingError:
         raise
@@ -243,6 +296,7 @@ def main(argv=None):
     for name in ('raw-folder', 'candidate-folder', 'approved-folder'):
         parser.add_argument('--' + name, type=Path)
     parser.add_argument('--confirm-local-test', action='store_true')
+    parser.add_argument('--export-schema', choices=(EXPORT_SCHEMA, LATEST_SCHEMA), default=LATEST_SCHEMA)
     args = parser.parse_args(argv)
     try:
         if args.verify:
@@ -253,7 +307,8 @@ def main(argv=None):
                 'snapshot', 'destination', 'raw_folder', 'candidate_folder', 'approved_folder')):
                 parser.error('Supply snapshot, destination and three protected workspace folders, or --verify')
             workspace = Workspace(args.raw_folder, args.candidate_folder, args.approved_folder)
-            result = generate_comparison(workspace, args.snapshot, args.destination, confirmed=args.confirm_local_test)
+            result = generate_comparison(workspace, args.snapshot, args.destination,
+                confirmed=args.confirm_local_test, export_schema=args.export_schema)
             print('Development comparison created:', result)
     except (ProcessingError, OSError):
         parser.exit(1, 'Comparison stopped. Check snapshot integrity, trusted local paths and explicit test confirmation.\n')

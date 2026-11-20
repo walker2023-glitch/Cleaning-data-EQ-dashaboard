@@ -1,5 +1,11 @@
 # Development comparison exports — Milestone 1a
 
+**Original v1 contract reference.** The current development action and CLI default
+now generate [comparison-preview-v2](comparison_exports_v2.md), adding ID/Building
+enrichment. This v1 schema/helper are preserved. Request `--export-schema
+comparison-preview-v1` explicitly to reproduce v1; the demo scripts use the latest
+profile. Use the V2 guide/helper for new desktop exports.
+
 Contract: **comparison-preview-v1**. Purpose: **DevelopmentComparison**.
 This is a temporary development tool for comparing a backup PBIX, not another
 permanent employee output mode. It does not activate files, approve data, refresh
