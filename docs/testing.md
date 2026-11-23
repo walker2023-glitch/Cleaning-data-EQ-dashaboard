@@ -751,3 +751,18 @@ assertions. See [Windows acceptance and implementation boundaries](employee_inte
   authority and business acceptance remain separate evidence requirements. See
   [Windows/backup-PBIX execution guide](automated_acceptance.md). No merge or
   Milestone 3a/3b work is authorized by this testing result.
+
+## Milestone 3a — hybrid monthly update
+
+Synthetic backend cases exercise initial/add/unchanged/corrected/blocked/removal
+recommendations, real committed correction tokens, complete coverage, exact retained
+rows, deterministic CSVs, stale source/baseline/selection/destination evidence,
+invalid/missing/ambiguous data, required confirmations, collisions, cancellation,
+interrupted writes and preservation of prior outputs/raw/candidate bytes.
+Four added real-widget cases cover primary controls, explicit baseline/destination,
+initial/add/retry, mode-change invalidation, rejected final confirmation, removal
+consent, stale failure/recovery and range/settings invalidation. Prior tests remain.
+Full source/wheel/frozen desktop smoke extends all earlier checks through phase 55
+and a fresh-process restart. Windows feature pushes build and smoke natively.
+Exact executed results are recorded in the review delivery; manual employee/DPI and
+Power BI/runtime acceptance remain separate. No production data is used.

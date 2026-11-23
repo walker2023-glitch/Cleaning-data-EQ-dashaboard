@@ -110,9 +110,12 @@ def run(output,checkout,*,desktop=False,executable=None):
             try:
                 smoke=analyzer.document(analyzer.read_bytes(folder/'desktop-smoke.json'))
                 restore=analyzer.document(analyzer.read_bytes(folder/'restore-smoke.json'))
-                ok=code==0 and smoke.get('status')=='passed' and smoke.get('phase')==51 and restore.get('passed') is True
+                expected_phase=55 if (checkout/'src/equipment_data_manager/monthly_update.py').is_file() else 51
+                ok=code==0 and smoke.get('status')=='passed' and smoke.get('phase')==expected_phase and restore.get('passed') is True
+                if expected_phase==55:
+                    ok=ok and {'monthly_update_recommendation','monthly_update_explicit_confirmation','monthly_update_version_and_retry'}<=set(smoke.get('checks',[]))
             except (OSError,ValueError):ok=False;smoke={};restore={}
-            checks.add('desktop_'+name,'PASS' if ok else 'FAIL','Existing phase-51 desktop and fresh-process settings restart.',
+            checks.add('desktop_'+name,'PASS' if ok else 'FAIL','Complete desktop smoke (including monthly updates when available) and fresh-process settings restart.',
                 dict(exit_code=code,execution=reason,phase=smoke.get('phase'),restart_passed=restore.get('passed',False)))
     else:
         checks.add('desktop_source','NOT TESTED','Desktop checks need --desktop, a usable display and the Milestone 2 interface in the selected checkout.',

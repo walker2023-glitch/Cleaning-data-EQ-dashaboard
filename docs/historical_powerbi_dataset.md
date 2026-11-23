@@ -262,3 +262,11 @@ The Windows packaged wrapper allows 180 seconds for startup plus the unchanged
 only phase, stage, elapsed time and worker/job states, never report cells. CI emits
 these fields as notices and retains them with diagnostics on failure. A successful
 build alone is not a successful packaged desktop test.
+
+## Current primary employee path — Milestone 3a
+
+**Process Multiple Months → Power BI snapshot** now presents **Monthly Historical
+Update** with explicit baseline and destination selection, recommendation, plan
+review and confirmation. The independent generator controls described above remain
+inside Development tools for maintainers. The four-table/six-file canonical
+contract and generator are unchanged. See [monthly workflow](monthly_update.md).
