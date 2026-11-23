@@ -319,3 +319,15 @@ Owner review and Windows employee acceptance remain separate gates. No merge,
 production changes, schema/cleaner/financial changes, append/rebuild, activation,
 new dependencies or later milestone implementation are authorized. Stop after
 Milestone 2; Milestone 3a needs separate owner review/approval.
+
+
+## Testing-only acceptance workflow approval — 2026-11-23
+
+Owner authorized a read-only V3 analyzer, synthetic desktop acceptance automation,
+regression tests, redacted reports and a Windows/backup-PBIX procedure only. Verified
+remote main remains dc73a80. Milestone 2 is still on f2718b3, so it is tested in a
+separate pinned checkout; this testing branch starts from main and carries no UI
+implementation. See [the acceptance guide](automated_acceptance.md). Production
+code, financial/classification rules, schemas, dependencies and data remain unchanged.
+Existing application bugs, if found, require owner approval before any fix. No
+Milestone 3a/3b work or automatic merge is authorized.
