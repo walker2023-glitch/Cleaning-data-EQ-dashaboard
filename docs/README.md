@@ -306,13 +306,16 @@ A comma-separated values text file used for source reports and EDM output datase
 
 - [Predecessor Equipment Lifecycle Analytics repository](https://github.com/walker2023-glitch/Equipment-Lifecycle-Analytics)
 - **Archived SIT 0-1 Equipment Dashboard SOP.docx:** approved SharePoint link to be added
-- **Instructions for running the predecessor locally:** needs a reviewed local-only maintainer procedure before being included
+- **Predecessor repository README:** [view the README](https://github.com/walker2023-glitch/Equipment-Lifecycle-Analytics/blob/main/README.md). It contains developer setup information; it is not an approved employee run procedure. A reviewed local-only maintainer procedure is still needed.
 
 ### Learning and AI planning resources
 
-- **LinkedIn Learning Power BI course:** course title and URL to be added
-- **Planning conversation used to develop EDM:** approved link or summary to be added
-- **Reusable AI instructions for planning or maintaining EDM:** approved prompt to be added
+- **LinkedIn Learning:** [Power BI Essential Training](https://www.linkedin.com/learning/power-bi-essential-training-25882735/get-the-competitive-edge-in-business-analysis-with-power-bi) (course access may require BYU-Idaho sign-in).
+- **LinkedIn Learning:** [Microsoft Power Automate Essential Training](https://www.linkedin.com/learning/microsoft-power-automate-essential-training-26159458/save-time-by-automating-common-business-processes) (course access may require BYU-Idaho sign-in).
+- **Planning conversation used to develop EDM:** approved link or summary to be added.
+- **Reusable AI instructions for planning or maintaining EDM:** approved prompt to be added.
+
+The private SharePoint links supplied for the project folder, 05_Documentation, 03_Power_BI, the source guide, the shortcut guide, and the two archived SOPs belong in the internal SharePoint copy. They remain placeholders in this public repository copy.
 
 Do not put private reports, credentials, tokens, or unnecessary personal data into public repositories or AI prompts.
 
