@@ -1,0 +1,55 @@
+name: Synthetic V3 and employee UI acceptance
+on:
+  push:
+    branches: [feature/automated-acceptance-testing]
+  pull_request:
+    paths:
+      - 'tools/acceptance/**'
+      - 'tests/test_acceptance*'
+      - 'docs/automated_acceptance*'
+      - '.github/workflows/acceptance.yml'
+  workflow_dispatch:
+    inputs:
+      app_ref:
+        description: 'Reviewed application commit/ref to test (M2 is not yet on main)'
+        required: true
+        default: 'f2718b384f0c2ce7730239ee872f5da1b9d101a8'
+permissions:
+  contents: read
+jobs:
+  synthetic:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.app_ref || 'f2718b384f0c2ce7730239ee872f5da1b9d101a8' }}
+          path: application-under-test
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install uv==0.12.23
+      - run: uv python install 3.12.14
+      - run: uv sync --frozen --all-extras
+      # Existing tests.yml runs the complete root regression suite on this head.
+      - run: uv run --frozen --all-extras python -m pytest tests/test_acceptance_analyzer.py tests/test_acceptance_runner.py -q
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a uv run --directory application-under-test --frozen --all-extras python .github/run_tests.py --isolate-gui
+      - if: runner.os == 'Windows'
+        run: uv run --directory application-under-test --frozen --all-extras python .github/run_tests.py
+      - if: runner.os == 'Windows'
+        working-directory: application-under-test
+        run: ./packaging/build.ps1
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a uv run --frozen --all-extras python tools/acceptance/run_synthetic.py --app-checkout application-under-test --output "${{ runner.temp }}/ea" --desktop
+      - if: runner.os == 'Windows'
+        run: uv run --frozen --all-extras python tools/acceptance/run_synthetic.py --app-checkout application-under-test --output "${{ runner.temp }}/ea" --desktop --executable application-under-test/dist/EquipmentDataManager/EquipmentDataManager.exe
+      # Short disposable local paths preserve existing conservative Windows path guards.
+      # No dataset/audit/report uploads. Only sanitized summary text reaches logs.
