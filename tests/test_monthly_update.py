@@ -145,3 +145,23 @@ def test_missing_month_and_destination_collision_preserve_no_zero_policy(tmp_pat
     (tmp_path/'collision').mkdir();(tmp_path/'collision'/'keep').write_text('unchanged')
     p=plan(w,tmp_path/'collision');assert not p.permitted
     assert (tmp_path/'collision'/'keep').read_text()=='unchanged'
+
+
+@pytest.mark.parametrize('evidence',['source','baseline','cancel'])
+def test_evidence_change_or_stop_during_staged_writes_cleans_owned_output(tmp_path,monkeypatch,evidence):
+    from equipment_data_manager import historical_dataset as module
+    w=selected(tmp_path,(1,2));a=baseline(w,tmp_path/'base');before=snapshot(a);store=snapshot(w.candidate_folder)
+    p=plan(w,tmp_path/'out',end='2026-02',baseline=a);stop=Event();original=module._write;changed=False
+    def write(path,raw):
+        nonlocal changed
+        original(path,raw)
+        if not changed:
+            changed=True
+            if evidence=='cancel':stop.set()
+            else:
+                target=source(w) if evidence=='source' else a/'snapshot_manifest.json'
+                target.write_bytes(target.read_bytes()+b' ')
+    monkeypatch.setattr(module,'_write',write)
+    with pytest.raises(ProcessingError,match='cancelled|plan_stale'):generate(w,p,cancelled=stop)
+    assert changed and not (tmp_path/'out').exists() and snapshot(w.candidate_folder)==store
+    if evidence!='baseline':assert snapshot(a)==before

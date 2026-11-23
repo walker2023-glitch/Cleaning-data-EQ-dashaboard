@@ -13,7 +13,7 @@ from equipment_data_manager.historical_dataset import (
     preview_dataset, generate_dataset, validate_dataset,
 )
 from equipment_data_manager.processing.models import ProcessingError
-from equipment_data_manager.storage.local import LocalFolderStorage
+from equipment_data_manager.storage.local import LocalFolderStorage, _stat, _version
 from equipment_data_manager.storage.contracts import StorageError
 
 ADD = 'Add New Months'
@@ -147,6 +147,17 @@ def preview_update(workspace, start, end, layout, destination, *, baseline=None,
         recommendation,permitted,added,unchanged,removed,replacements,tuple(issues),tuple(sources))
 
 
+
+def _evidence_versions(workspace, plan):
+    """Cheap stable-file identity checks between writes, using the raw read contract."""
+    provider=LocalFolderStorage(workspace.raw_folder)
+    paths=[provider._path(s[2]) for s in plan.sources]
+    if plan.baseline:
+        paths += [_safe(Path(plan.baseline)/n) for n in
+            (*NAMES.values(),'snapshot_manifest.json','compatibility_report.md')]
+    return tuple(_version(_stat(p)) for p in paths)
+
+
 def generate_update(workspace, plan, *, mode, confirmation, changes_confirmed=False,
                     local_confirmed=False, compatibility_acknowledged=False,
                     progress=lambda *_:None, cancelled=None):
@@ -158,10 +169,21 @@ def generate_update(workspace, plan, *, mode, confirmation, changes_confirmed=Fa
     # Hold the existing DELETE-journal read lock through recheck and generation.
     # Baseline/source evidence is reread without cleaning; no candidate writes occur.
     with _store(workspace):
+        try:versions=_evidence_versions(workspace,plan)
+        except (StorageError,OSError):
+            raise ProcessingError('monthly_update_plan_stale') from None
         fresh=preview_update(workspace,plan.dataset.start,plan.dataset.end,plan.layout,plan.destination,
             baseline=plan.baseline,progress=progress,cancelled=stop)
         if stop.is_set():raise ProcessingError('dataset_cancelled')
         if fresh.fingerprint!=plan.fingerprint:raise ProcessingError('monthly_update_plan_stale')
+        def guarded_cancelled():
+            if stop.is_set():return True
+            try:
+                if _evidence_versions(workspace,plan)!=versions:
+                    raise ProcessingError('monthly_update_plan_stale')
+            except (StorageError,OSError):
+                raise ProcessingError('monthly_update_plan_stale') from None
+            return False
         return generate_dataset(workspace,plan.dataset,plan.destination,
             confirmation=plan.dataset.fingerprint,local_confirmed=local_confirmed,
-            compatibility_acknowledged=compatibility_acknowledged,progress=progress,cancelled=stop.is_set)
+            compatibility_acknowledged=compatibility_acknowledged,progress=progress,cancelled=guarded_cancelled)

@@ -758,7 +758,8 @@ Synthetic backend cases exercise initial/add/unchanged/corrected/blocked/removal
 recommendations, real committed correction tokens, complete coverage, exact retained
 rows, deterministic CSVs, stale source/baseline/selection/destination evidence,
 invalid/missing/ambiguous data, required confirmations, collisions, cancellation,
-interrupted writes and preservation of prior outputs/raw/candidate bytes.
+interrupted writes, in-flight source/baseline changes and preservation of prior
+outputs/raw/candidate bytes.
 Four added real-widget cases cover primary controls, explicit baseline/destination,
 initial/add/retry, mode-change invalidation, rejected final confirmation, removal
 consent, stale failure/recovery and range/settings invalidation. Prior tests remain.

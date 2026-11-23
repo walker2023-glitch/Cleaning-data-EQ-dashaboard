@@ -78,6 +78,8 @@ Generation requires a mode-bound confirmation and separate change consent. It ho
 the existing DELETE-journal candidate read transaction while revalidating the plan and
 calling the existing generator. Sources/baseline/selections are reread before generation;
 a changed identity, hash, selection, configuration or destination invalidates confirmation.
+Existing stable-file identities are also checked between staged writes and immediately
+before finalization, so an in-flight source/baseline change stops and cleans this run.
 No cleaner is called. Raw discovery reads bounded local bytes and cannot prove remote
 sync completion. Concurrent hostile same-user file edits are outside the existing local
 filesystem trust model; this is not a distributed lock or signed authority.
