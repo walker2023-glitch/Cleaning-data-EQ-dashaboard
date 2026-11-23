@@ -2,7 +2,7 @@
 
 **Purpose:** A starting point for employees, dashboard users, and future maintainers to understand the project, how it changed, what the tools currently do, and where to find detailed instructions.
 
-**Status:** Initial guide. Repository information checked against main commit dc73a80 on November 23, 2026. Several history details are owner-reported; SharePoint destinations are placeholders until approved links are provided.
+**Status:** Initial guide. Repository information checked against main commit a49b587 on November 23, 2026. Several history details are owner-reported; SharePoint destinations remain placeholders in this public repository copy.
 
 > **Read this first:** Equipment Data Manager currently creates local review candidates and test datasets. It does not automatically collect reports from SharePoint, publish approved data, or refresh a production Power BI dashboard. An output file is not automatically approved for business use.
 
@@ -97,6 +97,8 @@ This describes the repository's documented main-branch baseline as reviewed Nove
 - Historical workflows support discovery and review of multiple months. Batch processing creates local candidates after a plan is reviewed and confirmed.
 - A historical Power BI snapshot generator creates a canonical four-table local dataset from selected candidate revisions. Outputs are unverified and are not published or refreshed automatically.
 - A separate five-table comparison export, comparison-preview-v3, adds observed equipment and maintenance classifications for development comparison. It is explicitly CandidateUnverified / NotApproved, not an approved production export.
+- PR #29 added an independent, read-only V3 acceptance analyzer and synthetic desktop acceptance workflow. The tests can exercise Milestone 2 from a separately pinned checkout; this did not merge the UI changes.
+- The analyzer found that the existing application verifier accepts some wrong JSON scalar types in a copied V3 manifest. The analyzer detects this validation defect; an application fix was not part of PR #29 and needs separate owner approval. See [automated acceptance guide](automated_acceptance.md).
 - Some Microsoft 365 configuration checks are offline checks only. A valid local configuration check does not mean the app is connected, authorized, or synchronized.
 
 ### Not implemented as an employee production workflow
@@ -112,7 +114,7 @@ The department's preferred Power BI refresh process is manual. The approved PBIX
 
 ### In progress or unmerged
 
-The employee-interface simplification work was found on the branch [feature/employee-interface-simplification](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/tree/feature/employee-interface-simplification), one commit ahead of main during review. It changes navigation and labels, including moving processing history into Settings. Do not assume those branch labels are in the main release until the change is merged and Windows acceptance is complete.
+The employee-interface simplification work remains on [feature/employee-interface-simplification](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/tree/feature/employee-interface-simplification), two commits ahead of main at this review. It changes navigation and labels, including moving processing history into Settings. Do not assume those branch labels are in the main release until the change is merged and Windows acceptance is complete.
 
 ## 5. Monthly source-report workflow
 
@@ -194,11 +196,12 @@ This page is an overview. Use the focused guide for detailed steps:
 | Employee use of EDM | [User guide](user_guide.md) |
 | Configure folders and recover settings | [Settings guide](settings_guide.md) |
 | Monthly report handling | [Monthly workflow](monthly_workflow.md) |
-| Find months and source reports | [Historical discovery](historical_backfill.md) |
+| Find months and source reports | [Historical discovery](historical_backfill.md); source and export instructions are in the existing SharePoint 01-data-sources.md guide, with its private URL added only to the internal copy |
 | Plan and run historical batches | [Historical batch processing](historical_batch_processing.md) |
 | Create a canonical four-table snapshot | [Historical Power BI dataset](historical_powerbi_dataset.md) |
 | Understand the architecture | [Cleaning architecture](cleaning_architecture.md) and [desktop architecture](desktop_architecture.md) |
 | Understand V3 development comparison output | [V3 comparison](comparison_exports_v3.md) |
+| Independent synthetic acceptance checks and limitations | [Automated acceptance guide](automated_acceptance.md) |
 | Review evidence and remaining blockers | [Inputs needed](inputs_needed.md) and [milestone status](milestones.md) |
 | Build and distribute a Windows review package | [Windows packaging](windows_packaging.md) |
 
@@ -323,12 +326,15 @@ Do not put private reports, credentials, tokens, or unnecessary personal data in
 
 Resolve these before treating this page as a complete employee reference:
 
-- Add approved SharePoint links for the project folder, documentation folder, dashboard, and glossary topics.
+- Add approved SharePoint links for the project folder, documentation folder, Power BI folder, 01-data-sources.md, and glossary topics to the internal SharePoint copy. Keep private URLs out of this public repository.
+- Replace or update the SharePoint START HERE - File Organization Guide.url shortcut with a complete employee-facing EDM guide; the supplied shortcut is not itself the full guide.
+- Link both archived SOPs by their correct titles in the internal copy: SIT 0-1 Equipment Dashboard SOP.docx and Equipment Dashboard Maintain SOP.docx.
 - Confirm who currently collects each report and the correct CompuClean export settings, date filters, and equipment/building scope.
 - Confirm the current status and acceptance of the hourly-rate slider and meeting overview in the Power BI file.
 - Confirm the authoritative equipment-count source and how missing assets such as sanitizers should be accounted for.
 - Confirm the approved production PBIX, who validates updates, how manual refresh is performed, and who can publish.
 - Confirm the employee-interface branch merge and Windows acceptance before updating exact UI labels.
+- Review the V3 manifest scalar-type validation issue reported by the independent acceptance analyzer and decide separately whether to authorize an application fix. The testing-only PR did not change application code.
 - Add an approved employee installation guide and separate maintainer setup guide.
 - Decide whether and when SharePoint intake, processing, approval, and refresh automation will be pursued.
 
