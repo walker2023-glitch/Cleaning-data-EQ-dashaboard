@@ -37,7 +37,7 @@ entry('discover', 'Discover month', 'Searches your Raw Data folders for reports 
 entry('preview', 'Preview Processing', 'Checks the selected files without creating cleaned outputs.',
     'Examines reports for supported formats, reporting dates, duplicates, existing revisions and potential problems. Preview does not modify original reports or publish data to Power BI.',
     'Selected raw files and the current candidate history, read only.', 'Review every warning and resolve errors or corrections before processing.')
-entry('process', 'Process Reports', 'Runs the cleaning process and creates candidate files.',
+entry('process', 'Process Reports & Save Candidate', 'Runs the cleaning process and creates candidate files.',
     'Uses the existing cleaning engine to transform selected reports into consistent CSV files. Original reports are preserved. Results are candidates for review; they are not automatically approved, uploaded to SharePoint or loaded into Power BI.',
     'Selected source files are read; new candidate revisions are saved in the Candidate Output folder.',
     'Review Results, then export a review packet when all three current report types are available.',
@@ -47,9 +47,9 @@ entry('packet', 'Export Review Packet', "Creates a review package containing the
     'A new immutable folder under Candidate Output / review_packets. It uses last successful current candidates, not an unsaved correction.',
     'Inspect the packet and follow the separate departmental validation procedure.', 'A failed later attempt does not replace the last successful candidate. Check that the intended source revisions were processed.')
 entry('correction', 'Review Correction', 'Reviews changes to a report that has already been processed.',
-    'Shows current and proposed candidate counts and totals. Confirming a correction allows processing to select a new candidate revision while preserving the earlier version. It does not provide business or financial approval.',
+    'Shows current and proposed candidate counts and totals. Approve Correction for Processing saves nothing. Next, click Process Reports & Save Candidate. Only successful processing saves the correction, keeping the previous revision in Settings → Processing History. It does not provide business or financial approval.',
     'Only the proposed report type/month and its source-bound correction acknowledgement.',
-    'Compare both candidates, check the explicit confirmation box, then Process Reports.', 'Changing the source or current revision requires another preview and review.')
+    'Compare counts/totals, check the confirmation box, approve for processing, then Process Reports & Save Candidate. Confirmation alone writes no files.', 'Changing the source or current revision requires another preview and review.')
 entry('powerbi', 'Power BI CSV Candidate', 'Creates standardized CSV files designed for Power BI review.',
     'Produces header-first CSVs with consistent columns, ISO dates, text identifiers, reporting-month information and source tracking. These simplify imports but still require validation before production use.',
     'Separate normalized candidate history; original cleaning rules remain unchanged.',
@@ -58,8 +58,8 @@ entry('legacy', 'Legacy CSV', 'Produces the original report-style cleaned output
     'Uses the previous output format for compatibility and comparison. Repair and TMA files can include titles and introductory rows, making them less suitable for direct folder ingestion.',
     'Separate legacy candidate revisions, with the same cleaning calculations and exclusions.',
     'Use for comparison; choose Power BI CSV Candidate for standardized review tables.')
-entry('history', 'History', 'Shows previously processed candidate versions.',
-    'Locate current and previous saved revisions for troubleshooting and recovery. This history contains candidates, not business-approved releases or a permanent log of failed attempts.',
+entry('history', 'Processing History', 'Open Settings → Processing History to see earlier saved report versions. Opening refreshes this read-only view.',
+    'In Settings → Processing History, opening reloads current and previous saved revisions for troubleshooting and recovery. This history contains candidates, not business-approved releases or a permanent log of failed attempts.',
     'Completed local candidate revisions in the selected output format/store.', 'Select a revision and open its folder to inspect it.',
     'Power BI must not automatically combine historical revision folders.')
 entry('load_config', 'Load Folder Configuration', 'Loads an existing folder configuration for this session.',
@@ -155,10 +155,10 @@ def missing_help(kinds):
         notes.append('Missing TMA Work Orders: request the supported XLSX report currently supplied by Tim.')
     return '\n'.join(notes)
 
-entry('business_review', 'Review candidate', 'Shows the selected month’s current candidate counts, costs, warnings and exact revisions.',
-    'Reads selected normalized candidates and the financial summary without changing processing history. Refresh evidence before requesting review; missing reports block the request.',
+entry('business_review', 'Review foundation (hidden)', 'This retained developer foundation is hidden from employee navigation.',
+    'Reads selected normalized candidates and the financial summary without changing processing history. It has no ordinary employee navigation link; existing developer tests and local records remain. Final approval, publishing and sign-in remain disabled. Missing reports still block local requests.',
     'Local candidate revisions, source/output/summary hashes and available original bytes.',
-    'Inspect missing values and warnings, then record a local review request.',
+    'For ordinary use inspect Results and Settings → Processing History; follow separate departmental review procedures.',
     'A successful reconciliation and a readable OneDrive folder do not establish approval or verified cloud sync.')
 entry('validation_evidence', 'Validation evidence', 'Shows the evidence bound to this request; a note is an unverified statement.',
     'Counts, nullable financial summaries, exclusions/warnings and exact hashes identify what was reviewed. Add a concise private reference to independent checks; do not enter credentials or unnecessary personal information.',
@@ -179,7 +179,7 @@ entry('publication_readiness', 'Publication readiness', 'Publish is disabled. No
     'Mock approvals and in-memory recovery tests cannot authorize a real publication.')
 entry('publication_history', 'Publication history', 'Published revision history is unavailable without a publishing service.',
     'The application cannot query previous published SharePoint snapshots. This does not mean none exist. Local candidate history remains available separately.',
-    'No remote files are accessed.', 'Use the existing History view for local candidates.',
+    'No remote files are accessed.', 'Use Settings → Processing History for local candidates.',
     'Rollback is a future authorized pointer change, never deletion or overwrite of history.')
 
 entry('review_month', 'Review reporting month', 'Uses the same reporting month as Process Reports; navigation does not change it.',
@@ -210,7 +210,7 @@ entry('m365_test_config', 'Check Microsoft 365 test configuration', 'Validates a
     'A valid configuration is not proof of IT permission, tenant access, MFA success, cloud synchronization or reviewer authority. No candidate is uploaded.')
 
 
-entry('historical_inventory', 'Historical folder discovery',
+entry('historical_inventory', 'Process Multiple Months',
     'Discover then preview up to 120 historical months without writing candidates or granting approval.',
     'Choose the raw root and explicit layout in Settings. Standard layout reads YYYY-MM/report-type folders; SharePoint layout reads year/YYYY-MM (month label) with three directly stored reports. Select start and end as YYYY-MM, then discover. Found means one stable readable file, not a supported source schema or verified financial total.',
     'Original files are read through the local/synced provider. Discovery writes no candidate history or database. A private JSON inventory can be exported outside the raw/synced folders.',
@@ -218,9 +218,9 @@ entry('historical_inventory', 'Historical folder discovery',
     'Cloud synchronization is unverified. No Graph sign-in, automatic correction, approval or publishing occurs. Exported inventory is evidence only; it is never imported as processing authority.')
 
 
-entry('historical_processing', 'Historical Batch Processing',
+entry('historical_processing', 'Process selected months',
     'Creates local unapproved candidates only after a reviewed and confirmed plan.',
-    'Preview first. Select month/report rows, review the plan, inspect warnings and existing candidates, then check the intent statement and confirm Process Selected Reports. Unchanged reports skip. Corrections stay blocked here; select one and open the single-report correction workflow.',
+    'Preview first. Select month/report rows, review the plan, inspect warnings and existing candidates, then check the intent statement and confirm Process Selected Reports & Save Candidates. Unchanged reports skip. Corrections stay blocked here; select one and open the single-report correction workflow.',
     'Sources are checked again. Exact output/cleaner/current revision guards run under the existing SQLite transaction. No approval, upload, publication or Power BI refresh occurs.',
     'Stop after the current report keeps committed revisions. Restart requires fresh discovery, preview, plan and confirmation; history identifies completed work and prevents duplicates.',
     'Missing costs remain missing and warnings remain visible. Do not recursively ingest immutable versions. Diagnostic summary exports are local/private and cannot authorize further processing.')
@@ -238,3 +238,20 @@ entry('historical_dataset','Power BI Historical Snapshot',
     'Candidate revisions and originals are read only. Dates remain date-only, identifiers stay text, missing costs stay blank. This does not replace Requests and Work Order with identical tables.',
     'Open the completed snapshot, read compatibility_report.md, then compare in a separate backup PBIX. No approval, Graph access, upload or refresh.',
     'Missing or invalid selections block generation; resolve them through existing preview/correction workflows. Never recursively import candidate history or multiple snapshots.')
+
+
+entry('navigation_process', 'Process one month',
+    'Select reports for one month, preview them, then explicitly process and save.',
+    'First confirm Raw Data and local output folders in Settings. Discover month finds the three report types; individual file selection is also available. Confirm the reporting month before Preview Processing.',
+    'Discovery/preview are read-only. Process Reports & Save Candidate writes local cleaned report revisions and preserves originals/history.',
+    'Review Results and warnings. For several months use Process Multiple Months. Resolve errors and preview again before retrying.')
+entry('results', 'Understand processing results',
+    'Shows what was saved, unchanged, needs review, failed or was stopped.',
+    'Select a month/report row for counts, missing data, totals and readable warnings. Run finished means processing ended, not that every report succeeded.',
+    'Viewing results writes no files. Technical details retains source hashes, versions, paths and diagnostic dates for your maintainer.',
+    'Resolve failed/review rows and preview again. Saved copies remain local and unapproved. Open Settings → Processing History for earlier versions.')
+entry('technical_details', 'Technical details',
+    'Shows diagnostic evidence for a maintainer without changing any reports.',
+    'Select the affected result, then expand Technical details for file identities, source-date traces and candidate revision information. Business warnings and totals remain in the ordinary view.',
+    'Read-only; no reports, selections or settings are changed.',
+    'Share only necessary evidence privately with your maintainer; do not post operational reports or paths publicly.')

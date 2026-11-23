@@ -303,6 +303,24 @@ No main merge, production activation, financial/canonical/cleaner changes or lat
 milestone implementation is authorized by this record.
 
 
+## Current owner-directed Milestone 2 approval — 2026-11-20
+
+The owner's latest scope names **Milestone 2 — Employee Interface Simplification**;
+this supersedes the older numbering above for the current work only. Approved:
+move History into Settings, hide Review & Approval navigation while preserving its
+foundation, rename Historical Data to Process Multiple Months, clarify separate
+correction approval/process-save actions, improve truthful result summaries,
+optional technical evidence and contextual help. Baseline verified remote main:
+`dc73a80a4ecbbe038f687c7735887bb1a210f644` (1a/1b/1c merged). Feature branch:
+`feature/employee-interface-simplification`. See
+[implementation, validation and Windows acceptance](employee_interface_simplification.md).
+
+Owner review and Windows employee acceptance remain separate gates. No merge,
+production changes, schema/cleaner/financial changes, append/rebuild, activation,
+new dependencies or later milestone implementation are authorized. Stop after
+Milestone 2; Milestone 3a needs separate owner review/approval.
+
+
 ## Testing-only acceptance workflow approval — 2026-11-23
 
 Owner authorized a read-only V3 analyzer, synthetic desktop acceptance automation,

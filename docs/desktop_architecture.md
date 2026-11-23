@@ -3,7 +3,7 @@
 
 ## Historical Power BI datasets — 2026-11-12
 
-Based on merged main eea5d01 (PR #23). Historical Data → Power BI snapshot now
+Based on merged main eea5d01 (PR #23). Process Multiple Months → Power BI snapshot now
 previews only current manifest-selected normalized candidates and creates four
 deterministic local CandidateUnverified datasets with revision/source/output/summary
 hashes, counts, warnings and a compatibility report. Missing/invalid slots block
@@ -270,3 +270,30 @@ Five development datasets share resolved equipment names/types and evidence-base
 Maintenance Type. V1/V2, canonical four-table snapshots and financial schema 2 remain
 unchanged. Automated synthetic/Linux evidence and Windows/backup-PBIX acceptance
 are recorded separately; this is not production activation or approval of later work.
+
+
+## Owner-directed Milestone 2 — employee interface simplification
+
+Built from verified main dc73a80 (1a/1b/1c merged). Existing CustomTkinter pages,
+workers and internal routes are retained. Primary navigation has five choices;
+`Historical Data` remains the internal key with the visible label Process Multiple
+Months, and that visible label is also accepted as a route alias. Settings opens
+`History`, highlights Settings and refreshes the unchanged read-only store API.
+ReviewPage is still instantiated and testable through its explicit developer API
+route, but no ordinary navigation/control opens it. Hiding it is a usability
+boundary, not new authentication. Final approval/publication remain disabled.
+
+ui/results_presenter.py derives labels/counts/next steps from existing results,
+separating cancelled failures from processing failures and requiring a saved
+artifact before calling a success saved. Preview success is never save evidence.
+No engine status, correction token, coordinator or manifest behavior changed.
+Single-report technical evidence is optional; snapshot technical evidence and
+revision columns are optional; multi-month technical JSON/exports remain intact.
+Business counts, missing values, financial metrics and warnings remain visible.
+Storage connection diagnostics are grouped under Advanced Settings.
+
+Correction approval still only captures the existing token. The dialog makes
+this explicit, keeps controls outside its scrollable summary, and directs the
+operator to the separate process/save action. No data/settings/export contract,
+dependency, cleaning, financial or activation changes are included. See
+[review scope and Windows acceptance](employee_interface_simplification.md).

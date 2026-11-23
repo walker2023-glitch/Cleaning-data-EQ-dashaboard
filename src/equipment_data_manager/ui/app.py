@@ -23,11 +23,28 @@ from equipment_data_manager.ui.guidance import Guidance
 from equipment_data_manager.ui.help_content import HELP, missing_help
 from equipment_data_manager.monthly import Workspace, discover, export_review_packet, load_workspace
 from equipment_data_manager.ui.messages import diagnostic_lines, error_message, result_label, warning_message
+from equipment_data_manager.ui.results_presenter import summary as results_summary, run_message, next_step
 from equipment_data_manager.ui.worker import BackgroundWorker
 from equipment_data_manager.ui.workflow import DesktopWorkflow, SUPPORTED_REPORTS, selected_files
 
 NAVY = "#172B4D"
 TEAL = "#087F8C"
+# Internal route names remain compatible with existing automation.
+PAGE_LABELS = {'Historical Data': 'Process Multiple Months', 'History': 'Processing History'}
+PRIMARY_PAGES = ('Process Reports', 'Results', 'Historical Data', 'Settings', 'Help')
+OPERATION_MESSAGES = {
+    'preview': 'Previewing source reports. No cleaned reports are saved.',
+    'process': 'Processing source reports and saving local candidates. Originals stay unchanged.',
+    'history': 'Loading Processing History. Saved reports stay unchanged.',
+    'historical_discover': 'Discovering reports across months. No cleaned reports are saved.',
+    'historical_preview': 'Previewing selected months. No cleaned reports are saved.',
+    'historical_plan': 'Reviewing the processing plan. No cleaned reports are saved.',
+    'historical_process': 'Processing selected months and saving local candidates.',
+    'dataset_preview': 'Checking saved reports for a local Power BI snapshot. No snapshot is written.',
+    'dataset_create': 'Creating a local unapproved Power BI snapshot from saved reports. No raw cleaning or production refresh.',
+    'comparison_create': 'Creating a development comparison export. Backup PBIX only; no production refresh.',
+}
+
 BACKGROUND = "#F3F6FA"
 TEXT = "#24354B"
 MUTED = "#52647A"
@@ -143,8 +160,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         ctk.CTkLabel(rail, text="EDM", text_color="white", font=ctk.CTkFont(size=30, weight="bold")).grid(row=0, column=0, padx=24, pady=(32, 4), sticky="w")
         ctk.CTkLabel(rail, text="Equipment\nData Manager", justify="left", text_color="white", font=ctk.CTkFont(size=18, weight="bold")).grid(row=1, column=0, padx=24, pady=(0, 32), sticky="w")
         self.navigation = {}
-        for row, name in enumerate(("Process Reports", "Results", "History", "Review & Approval", "Historical Data", "Settings", "Help"), 2):
-            button = ctk.CTkButton(rail, text=name, anchor="w", height=44, fg_color="transparent", hover_color="#294160", command=lambda value=name: self.show_page(value))
+        for row, name in enumerate(PRIMARY_PAGES, 2):
+            button = ctk.CTkButton(rail, text=PAGE_LABELS.get(name, name), anchor="w", height=44, fg_color="transparent", hover_color="#294160", command=lambda value=name: self.show_page(value))
             button.grid(row=row, column=0, padx=14, pady=4, sticky="ew")
             self.navigation[name] = button
         self.guided_switch = ctk.CTkSwitch(rail, text='Guided Mode', variable=self.guided,
@@ -185,7 +202,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.table_frame.grid(row=1, column=0, sticky="nsew", pady=(14, 0))
         self.table_frame.grid_columnconfigure(0, weight=1)
         self.table_frame.grid_rowconfigure(1, weight=1, minsize=150 if self.compact_layout else 0)
-        self.summary = ctk.CTkLabel(self.table_frame, text="No files selected", text_color=TEXT, anchor="w", font=ctk.CTkFont(size=15, weight="bold"))
+        self.summary = ctk.CTkLabel(self.table_frame, text="No files selected", text_color=TEXT, anchor="w", wraplength=880, justify="left", font=ctk.CTkFont(size=15, weight="bold"))
         self.summary.grid(row=0, column=0, sticky="ew", padx=18, pady=(12, 6))
         style = ttk.Style(self)
         style.theme_use("clam")
@@ -213,6 +230,14 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self._detail_text("Select a row to see its counts, warnings and next steps. Your original files stay unchanged.")
         self.review_button = ctk.CTkButton(self.table_frame, text="Review correction...", command=self.review_correction, fg_color=TEAL, state="disabled")
         self.review_button.grid(row=3, column=0, sticky="w", padx=16, pady=(0, 12))
+        self.results_back_button = ctk.CTkButton(self.table_frame, text='Process more reports',
+            command=lambda: self.show_page('Process Reports'), fg_color=NAVY)
+
+        self.technical_visible = False
+        self.technical_button = ctk.CTkButton(self.table_frame, text='Technical details (show)',
+            command=self.toggle_result_technical, fg_color='#E4EDF4', text_color=NAVY)
+        self.technical_button.grid(row=4, column=0, sticky='w', padx=16, pady=(0, 8))
+        self.technical_detail = ctk.CTkTextbox(self.table_frame, height=110, wrap='word')
 
         self.history_page = ctk.CTkFrame(self.body, fg_color="white", corner_radius=10)
         self.history_page.grid_columnconfigure(0, weight=1)
@@ -225,6 +250,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.history_table.grid(row=1, column=0, sticky="nsew", padx=18)
         actions = ctk.CTkFrame(self.history_page, fg_color="transparent")
         actions.grid(row=2, column=0, sticky="ew", padx=18, pady=16)
+        self.history_back_button = ctk.CTkButton(actions, text="Back to Settings", command=lambda: self.show_page("Settings"), fg_color=NAVY)
+        self.history_back_button.pack(side="left", padx=(0,12))
         ctk.CTkButton(actions, text="Refresh history", command=self.load_history, fg_color=TEAL).pack(side="left")
         ctk.CTkButton(actions, text="Open selected revision folder", command=self.open_history_output, fg_color=NAVY).pack(side="left", padx=12)
         self.help_page = ctk.CTkFrame(self.body, fg_color="white", corner_radius=10)
@@ -260,7 +287,11 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.progress = ctk.CTkProgressBar(footer, progress_color=TEAL, height=6)
         self.progress.grid(row=0, column=0, columnspan=3, sticky="ew")
         self.progress.set(0)
-        ctk.CTkLabel(footer, textvariable=self.status, text_color=TEXT, wraplength=710, anchor="w", justify="left").grid(row=1, column=0, sticky="ew", pady=(8, 4))
+        self.status_label = ctk.CTkLabel(footer, textvariable=self.status, text_color=TEXT,
+            wraplength=710, anchor="w", justify="left")
+        self.status_label.grid(row=1, column=0, sticky="ew", pady=(8,4))
+        self.status_label.bind('<Configure>', lambda event: self.status_label.configure(
+            wraplength=max(120,self.status_label.winfo_width()-8)))
         self.stop_button = ctk.CTkButton(footer, text="Stop after current file", command=self.stop_work, fg_color=NAVY, state="disabled", width=175)
         self.stop_button.grid(row=1, column=1, padx=(12, 0))
         self.output_button = ctk.CTkButton(footer, text="Open output folder", command=self.open_output, fg_color=NAVY, width=155)
@@ -312,7 +343,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         buttons.grid(row=4, column=0, columnspan=3, sticky="ew", padx=16, pady=(0, 16))
         self.preview_button = ctk.CTkButton(buttons, text="1  Preview Processing", command=self.start_preview, fg_color=NAVY, height=40, width=200)
         self.preview_button.pack(side="left")
-        self.process_button = ctk.CTkButton(buttons, text="2  Process Reports", command=self.start_process, fg_color=TEAL, height=40, width=200, state="disabled")
+        self.process_button = ctk.CTkButton(buttons, text="2  Process Reports & Save Candidate", command=self.start_process, fg_color=TEAL, height=40, width=300, state="disabled")
         self.process_button.pack(side="left", padx=12)
         self.packet_button = ctk.CTkButton(buttons, text="Export review packet", command=self.export_packet,
             fg_color=NAVY, height=40, width=165)
@@ -539,7 +570,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.job = kind
             self.progress.set(0)
             self._busy_controls(True)
-            self.status.set("Previewing reports..." if kind == "preview" else "Processing reports... Original files remain unchanged.")
+            self.status.set(OPERATION_MESSAGES.get(kind, 'Working locally. Original reports stay unchanged.'))
 
     def _busy_controls(self, busy):
         busy = busy or self.settings_blocking()
@@ -548,7 +579,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.historical_page.busy(busy)
         state = "disabled" if busy else "normal"
         for widget in (self.select_button, self.sample_button, self.folder_button, self.preview_button,
-                       self.workspace_button, self.scan_button, self.packet_button, self.settings_shortcut,
+                       self.workspace_button, self.scan_button, self.packet_button, self.settings_shortcut, self.results_back_button,
                        self.year_entry, self.month_check, *self.report_buttons, *self.navigation.values()):
             widget.configure(state=state)
         self.month_selector.configure(state="disabled" if busy else "readonly")
@@ -623,7 +654,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                         self.previews = ()
                         self.approvals.clear()
                         self.process_button.configure(state='disabled')
-                        self.status.set("Historical processing stopped safely; committed candidates retained." if event.payload.stopped else "Historical processing complete. Candidates remain unapproved; review results and warnings.")
+                        self.status.set(self.historical_page.processing.run_message(event.payload))
                     elif self.job == "historical_process_export":
                         self.status.set(f"Local candidate processing diagnostic saved: {event.payload}. Not an approved dataset.")
                     elif self.job == "historical_preview_export":
@@ -656,7 +687,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                         self.approvals.clear()
                         self.show_page("Results")
                         self.process_button.configure(state="disabled")
-                        self.status.set("Run complete. Review results below. Preview again to process more reports.")
+                        self.status.set(run_message(self.results))
                     elif self.job == "history":
                         self.history_entries = event.payload
                         self._render_history()
@@ -676,7 +707,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         elif self.job in ('dataset_preview','dataset_create'):
             self.status.set('Stopping local snapshot work safely; no incomplete dataset will be finalized.')
         elif self.job == 'historical_process':
-            self.status.set('Stopping after the current report. Committed local candidates remain in History.')
+            self.status.set('Stopping after the current report. Saved reports remain in Settings → Processing History.')
         else:
             self.status.set('Stopping after the current file. Completed files remain saved.')
 
@@ -685,24 +716,37 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.guidance.hide()
         if name in ("Process Reports","Results"):
             self.last_report_page=name
+        if name == 'Process Multiple Months':
+            name = 'Historical Data'
         self.page = name
         if name in ('Settings','Help'):
             self.app_footer.grid_remove()
         else:
             self.app_footer.grid()
         for label, button in self.navigation.items():
-            button.configure(fg_color=TEAL if label == name else "transparent")
-        self.heading.configure(text="Processing results" if name == "Results" else name)
+            button.configure(fg_color=TEAL if label == ("Settings" if name == "History" else name) else "transparent")
+        self.heading.configure(text="Processing results" if name == "Results" else PAGE_LABELS.get(name, name))
         for frame in (self.processing_page, self.history_page, self.help_page, self.settings_page, self.business_review_page, self.historical_page):
             frame.grid_remove()
         if name in ("Process Reports", "Results"):
             self.processing_page.grid(row=0, column=0, sticky="nsew")
             if name == "Results":
+                self.table.heading("status", text="Processing outcome")
+                self.controls.grid_remove()
+                self.review_button.grid_remove()
+                self.results_back_button.grid(row=3,column=0,sticky='w',padx=16,pady=(0,12))
+                self.detail.configure(height=190)
                 self._render(self.results, preview=False)
-            elif self.previews:
-                self._render(self.previews, preview=True)
             else:
-                self._show_selection()
+                self.table.heading('status',text='Preview decision')
+                self.controls.grid(row=0,column=0,sticky='ew')
+                self.review_button.grid(row=3,column=0,sticky='w',padx=16,pady=(0,12))
+                self.results_back_button.grid_remove()
+                self.detail.configure(height=80)
+                if self.previews:
+                    self._render(self.previews, preview=True)
+                else:
+                    self._show_selection()
         elif name == "History":
             self.history_page.grid(row=0, column=0, sticky="nsew")
             self.load_history()
@@ -721,6 +765,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
     def _clear_table(self):
         self.table.delete(*self.table.get_children())
         self.review_button.configure(state="disabled")
+        self._technical_text('')
 
     def _show_selection(self):
         self._clear_table()
@@ -745,12 +790,12 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             warning_files += bool(result.warnings)
             label = result_label(result, preview=preview)
             if preview and index in self.approvals:
-                label = "Correction approved for this preview"
+                label = "Approved for processing — not saved"
             self.table.insert("", "end", iid=str(index), values=(entry.source.name, SUPPORTED_REPORTS.get(entry.report_type, "TMA Work Orders"), entry.period, label, result.output_rows if result.output_rows is not None else "-"))
-        self.summary.configure(text=(f"{'Preview' if preview else 'Results'}  |  "
-            f"{counts[ProcessingStatus.SUCCESS]} {'new' if preview else 'saved'}   "
-            f"{counts[ProcessingStatus.SKIPPED]} skipped   {counts[ProcessingStatus.NEEDS_REVIEW]} review   "
-            f"{counts[ProcessingStatus.FAILURE]} errors   {warning_files} with warnings"))
+        self.summary.configure(text=(f"Preview  |  {counts[ProcessingStatus.SUCCESS]} new   "
+            f"{counts[ProcessingStatus.SKIPPED]} unchanged   {counts[ProcessingStatus.NEEDS_REVIEW]} need review   "
+            f"{counts[ProcessingStatus.FAILURE]} blocked/stopped   {warning_files} with warnings"
+            if preview else results_summary(entries)))
         if entries:
             self.table.selection_set("0")
             self._show_detail()
@@ -762,6 +807,22 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.detail.delete("1.0", "end")
         self.detail.insert("1.0", text)
         self.detail.configure(state="disabled")
+
+    def _technical_text(self, text):
+        if not hasattr(self, 'technical_detail'):
+            return
+        self.technical_detail.configure(state='normal')
+        self.technical_detail.delete('1.0', 'end')
+        self.technical_detail.insert('1.0', text)
+        self.technical_detail.configure(state='disabled')
+
+    def toggle_result_technical(self):
+        self.technical_visible = not self.technical_visible
+        if self.technical_visible:
+            self.technical_detail.grid(row=5, column=0, sticky='ew', padx=16, pady=(0,8))
+        else:
+            self.technical_detail.grid_remove()
+        self.technical_button.configure(text='Technical details (hide)' if self.technical_visible else 'Technical details (show)')
 
     def _selected_index(self):
         selection = self.table.selection()
@@ -780,17 +841,27 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         if result.status in (ProcessingStatus.FAILURE, ProcessingStatus.NEEDS_REVIEW):
             text.append(error_message(result.code))
         if result.previous:
-            text.append(f"Current output: {result.previous.output_rows} rows. Previous revision will be retained.")
+            text.append(f"{'Current saved version' if self.page == 'Process Reports' else 'Earlier saved version'}: {result.previous.output_rows} rows. Previous revision remains available.")
         if result.diagnostics:
-            text.extend(diagnostic_lines(result.diagnostics))
+            text.extend(diagnostic_lines(result.diagnostics, technical=False))
         text.extend(warning_message(warning) for warning in result.warnings)
         if result.cleaned:
             for metric in result.cleaned.reconciliation_metrics:
                 text.append(f"{metric.name}: {metric.value}")
-        text.append(f"Selected file: {entry.source.reference}")
-        if result.output_location:
-            text.append(f"Candidate: {result.output_location}")
+        if self.page == 'Results':
+            text.append(next_step(result))
+        elif result.status == ProcessingStatus.NEEDS_REVIEW:
+            text.append('Approve Correction for Processing saves nothing. Then click Process Reports & Save Candidate; the previous revision remains in Settings → Processing History.')
         self._detail_text("\n".join(text))
+        technical = [f'Selected file: {entry.source.reference}', f'Diagnostic category: {result.code}',
+                     f'Preview source SHA-256: {entry.source_hash}']
+        if result.diagnostics:
+            technical.extend(diagnostic_lines(result.diagnostics))
+        if result.artifact:
+            artifact = result.artifact
+            technical += [f'Candidate: {artifact.output_path}', f'Revision: {artifact.revision_id}',
+                f'Cleaner: {artifact.cleaner_version}', f'Source SHA-256: {artifact.source_hash}', f'Output SHA-256: {artifact.output_hash}']
+        self._technical_text('\n'.join(technical))
         self.review_button.configure(state="normal" if self.page == "Process Reports" and not self.worker.busy and result.status == ProcessingStatus.NEEDS_REVIEW else "disabled")
 
     def review_correction(self):
@@ -808,10 +879,12 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         dialog.transient(self)
         dialog.grab_set()
         ctk.CTkLabel(dialog, text="Review this correction", font=ctk.CTkFont(size=23, weight="bold"), text_color=NAVY).pack(anchor="w", padx=24, pady=(24, 12))
-        summary = f"{entry.source.name}\n{SUPPORTED_REPORTS[entry.report_type]} | {entry.period}\n\nCurrent output: {result.previous.output_rows} rows\nProposed output: {result.output_rows} rows\n\nA new local candidate will be selected. The previous revision stays in History.\nProduction accuracy remains unverified."
+        summary = f"{entry.source.name}\n{SUPPORTED_REPORTS[entry.report_type]} | {entry.period}\n\nCurrent output: {result.previous.output_rows} rows\nProposed output: {result.output_rows} rows\n\nApproval here saves nothing. Next, click Process Reports & Save Candidate. Only successful processing saves the correction. The previous revision remains in Settings → Processing History.\nProduction accuracy remains unverified."
         if result.cleaned:
             summary += "\n\nProposed totals (not baseline-validated):\n" + "\n".join(f"{metric.name}: {metric.value}" for metric in result.cleaned.reconciliation_metrics)
-        ctk.CTkLabel(dialog, text=summary, justify="left", wraplength=580, text_color=TEXT).pack(anchor="w", padx=24)
+        correction_body = ctk.CTkScrollableFrame(dialog, fg_color='transparent')
+        correction_body.pack(fill='both', expand=True, padx=12)
+        ctk.CTkLabel(correction_body, text=summary, justify="left", wraplength=580, text_color=TEXT).pack(anchor="w", padx=24)
 
         def open_previous():
             try:
@@ -819,9 +892,9 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             except OSError:
                 messagebox.showerror("Folder unavailable", "The current revision folder could not be opened. Keep the history intact.", parent=dialog)
 
-        ctk.CTkButton(dialog, text="Open current revision folder", command=open_previous, fg_color=NAVY).pack(anchor="w", padx=24, pady=(12, 0))
+        ctk.CTkButton(correction_body, text="Open current revision folder", command=open_previous, fg_color=NAVY).pack(anchor="w", padx=24, pady=(12, 0))
         approved = ctk.BooleanVar(value=False)
-        check = ctk.CTkCheckBox(dialog, text="I reviewed and approve this new monthly revision", variable=approved, fg_color=TEAL)
+        check = ctk.CTkCheckBox(dialog, text="I reviewed this correction and approve it for processing only", variable=approved, fg_color=TEAL)
         check.pack(anchor="w", padx=24, pady=16)
 
         def accept():
@@ -830,9 +903,9 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                 dialog.destroy()
                 self._render(self.previews, preview=True)
                 self.process_button.configure(state="normal" if self.can_process() else "disabled")
-                self.status.set("Correction approved for this preview. Process Reports will recheck the file and current revision.")
+                self.status.set("Approved for processing only — no correction has been saved. Next: Process Reports & Save Candidate. Source and current revision will be checked again; the previous revision remains available.")
 
-        button = ctk.CTkButton(dialog, text="Confirm correction", command=accept, state="disabled", fg_color=TEAL)
+        button = ctk.CTkButton(dialog, text="Approve Correction for Processing", command=accept, state="disabled", fg_color=TEAL)
         button.pack(anchor="e", padx=24, pady=(0, 16))
         check.configure(command=lambda: button.configure(state="normal" if approved.get() else "disabled"))
         dialog.confirmation_check = check
@@ -922,8 +995,12 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         for key in FOLDER_KEYS:
             for widget in (self.settings_page.entries[key],self.settings_page.browse_buttons[key],self.settings_page.indicators[key]):
                 self.guidance.register(widget,key)
+        self.guidance.register(self.settings_page.history_button, 'history')
+        self.guidance.register(self.history_back_button, 'save_settings')
+        self.guidance.register(self.technical_button, 'technical_details')
+        self.guidance.register(self.results_back_button, 'navigation_process')
         for name,widget in self.navigation.items():
-            self.guidance.register(widget, 'business_review' if name=='Review & Approval' else 'history' if name=='History' else 'save_settings' if name=='Settings' else 'status')
+            self.guidance.register(widget, 'business_review' if name=='Review & Approval' else 'history' if name=='History' else 'save_settings' if name=='Settings' else 'navigation_process' if name=='Process Reports' else 'results' if name=='Results' else 'status')
         for widget in self.business_review_page.stage_labels:
             self.guidance.register(widget,'review_stages')
         self.guidance.register(self.format_selector,'powerbi')
@@ -936,6 +1013,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         for widget in (self.historical_page.dataset.preview_button,self.historical_page.dataset.create_button,
                        self.historical_page.dataset.compatibility,self.historical_page.dataset.local_check,self.historical_page.dataset.open_button):
             self.guidance.register(widget,'historical_dataset')
+        self.guidance.register(self.historical_page.dataset.technical_button, 'technical_details')
         for widget in (self.historical_page.dataset.development_button,self.historical_page.dataset.comparison_button,
                        self.historical_page.dataset.comparison_open_button):
             self.guidance.register(widget,'comparison_preview')
@@ -1001,6 +1079,8 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.help_text.configure(state='disabled')
 
     def open_context_help(self,key=None):
+        if key is None:
+            key = {'History':'history', 'Settings':'save_settings', 'Historical Data':'historical_inventory', 'Results':'results'}.get(self.page)
         if key is None:
             key=('save_settings' if self.workspace is None else 'month' if not self.month_confirmed.get()
                 else 'status' if self.results and getattr(self,'last_report_page','')=='Results'

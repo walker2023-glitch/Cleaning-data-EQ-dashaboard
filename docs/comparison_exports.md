@@ -20,7 +20,7 @@ remain subsequent, separately approved milestones.
 ## Desktop workflow
 
 1. Configure the existing raw/candidate/reserved-approved roots in Settings.
-2. Open Historical Data → Power BI snapshot. Generate a canonical snapshot using
+2. Open Process Multiple Months → Power BI snapshot. Generate a canonical snapshot using
    the existing reviewed workflow, or use a previously completed snapshot.
 3. Expand **Development tools** and choose **Create simplified comparison export**.
 4. Select one completed canonical folder ending in `snapshot`. Confirm development

@@ -24,8 +24,14 @@ class SettingsPage(ctk.CTkFrame):
         self.footer=ctk.CTkFrame(self,fg_color='white')
         self.footer.grid(row=1,column=0,sticky='ew')
         self.footer.grid_columnconfigure(0,weight=1)
-        self.welcome = ctk.CTkLabel(self.content, text='Settings', anchor='w', font=ctk.CTkFont(size=22, weight='bold'), text_color='#172B4D')
-        self.welcome.grid(row=0, column=0, sticky='ew', padx=22, pady=(18,4))
+        header = ctk.CTkFrame(self.content, fg_color='transparent')
+        header.grid(row=0,column=0,sticky='ew',padx=22,pady=(18,4))
+        header.grid_columnconfigure(0,weight=1)
+        self.history_button = ctk.CTkButton(header, text='Processing History',
+            command=lambda: app.show_page('History'), fg_color='#172B4D', width=180)
+        self.history_button.grid(row=0,column=1,padx=(12,0))
+        self.welcome = ctk.CTkLabel(header, text='Settings', anchor='w', font=ctk.CTkFont(size=22, weight='bold'), text_color='#172B4D')
+        self.welcome.grid(row=0, column=0, sticky='ew')
         ctk.CTkLabel(self.content, text='Choose folders with Browse, confirm local candidate storage, then Check Locations and Save Settings.',
             wraplength=820, justify='left', anchor='w', text_color='#52647A').grid(row=1,column=0,sticky='ew',padx=22,pady=(0,12))
         self.path_vars, self.entries, self.browse_buttons, self.indicators = {}, {}, {}, {}
@@ -68,20 +74,6 @@ class SettingsPage(ctk.CTkFrame):
         self.format_picker.pack(side='left')
         ctk.CTkLabel(self.content,text='Guided Mode & Help: use the switch and Brief / Detailed choice in the left navigation. F1 opens help for a control.',
             anchor='w',justify='left',wraplength=820,text_color='#52647A').grid(row=8,column=0,sticky='ew',padx=22,pady=8)
-        self.connection_card=ctk.CTkFrame(self.content,fg_color='#F3F6FA')
-        self.connection_card.grid(row=9,column=0,sticky='ew',padx=22,pady=8)
-        self.connection_card.grid_columnconfigure(0,weight=1)
-        ctk.CTkLabel(self.connection_card,text='Storage connection',anchor='w',font=ctk.CTkFont(size=15,weight='bold'),text_color='#172B4D').grid(row=0,column=0,sticky='ew',padx=12,pady=(8,3))
-        self.connection_status=ctk.CTkLabel(self.connection_card,
-            text='Local reads enabled. Downloaded SharePoint-synced raw folders supported. Cloud synchronization unverified.',
-            anchor='w',justify='left',wraplength=760,text_color='#52647A')
-        self.connection_status.grid(row=1,column=0,sticky='ew',padx=12,pady=4)
-        self.graph_button=ctk.CTkButton(self.connection_card,text='Graph test pilot — desktop connection unavailable',state='disabled',width=390)
-        self.graph_button.grid(row=2,column=0,sticky='w',padx=12,pady=6)
-        self.m365_check_button=ctk.CTkButton(self.connection_card,text='Check Microsoft 365 test configuration',command=app.check_m365_config,width=390,fg_color='#172B4D')
-        self.m365_check_button.grid(row=3,column=0,sticky='w',padx=12,pady=6)
-        ctk.CTkLabel(self.connection_card,text='Candidate history and SQLite stay local. Approval and publication remain unavailable.',
-            anchor='w',justify='left',wraplength=760,text_color='#52647A').grid(row=4,column=0,sticky='ew',padx=12,pady=(0,8))
         actions=ctk.CTkFrame(self.footer,fg_color='transparent');actions.grid(row=0,column=0,sticky='ew',padx=22,pady=10)
         self.check_button=ctk.CTkButton(actions,text='Check Locations',command=app.check_settings,fg_color='#172B4D')
         self.check_button.pack(side='left')
@@ -101,6 +93,20 @@ class SettingsPage(ctk.CTkFrame):
         self.export_button.grid(row=0,column=1,sticky='w',padx=12,pady=10)
         self.advanced_info=ctk.CTkLabel(self.advanced,text='',wraplength=790,anchor='w',justify='left',text_color='#52647A')
         self.advanced_info.grid(row=3,column=0,columnspan=2,sticky='ew',padx=12,pady=12)
+        self.connection_card=ctk.CTkFrame(self.advanced,fg_color='#F3F6FA')
+        self.connection_card.grid(row=4,column=0,columnspan=2,sticky='ew',padx=22,pady=8)
+        self.connection_card.grid_columnconfigure(0,weight=1)
+        ctk.CTkLabel(self.connection_card,text='Storage connection',anchor='w',font=ctk.CTkFont(size=15,weight='bold'),text_color='#172B4D').grid(row=0,column=0,sticky='ew',padx=12,pady=(8,3))
+        self.connection_status=ctk.CTkLabel(self.connection_card,
+            text='Local reads enabled. Downloaded SharePoint-synced raw folders supported. Cloud synchronization unverified.',
+            anchor='w',justify='left',wraplength=760,text_color='#52647A')
+        self.connection_status.grid(row=1,column=0,sticky='ew',padx=12,pady=4)
+        self.graph_button=ctk.CTkButton(self.connection_card,text='Graph test pilot — desktop connection unavailable',state='disabled',width=390)
+        self.graph_button.grid(row=2,column=0,sticky='w',padx=12,pady=6)
+        self.m365_check_button=ctk.CTkButton(self.connection_card,text='Check Microsoft 365 test configuration',command=app.check_m365_config,width=390,fg_color='#172B4D')
+        self.m365_check_button.grid(row=3,column=0,sticky='w',padx=12,pady=6)
+        ctk.CTkLabel(self.connection_card,text='Processing history stays on this computer. Approval and publication remain unavailable.',
+            anchor='w',justify='left',wraplength=760,text_color='#52647A').grid(row=4,column=0,sticky='ew',padx=12,pady=(0,8))
         self.advanced_visible=False
 
     def toggle_advanced(self):
@@ -134,7 +140,7 @@ class SettingsPage(ctk.CTkFrame):
                 text_color='#087F8C' if ready else '#754C0B' if creation else '#9F2639')
 
     def busy(self, value):
-        for widget in (*self.browse_buttons.values(),self.recommended_button,self.local_check,self.check_button,self.save_button,self.reset_button,self.import_button,self.export_button,self.m365_check_button):
+        for widget in (self.history_button,*self.browse_buttons.values(),self.recommended_button,self.local_check,self.check_button,self.save_button,self.reset_button,self.import_button,self.export_button,self.m365_check_button):
             widget.configure(state='disabled' if value else 'normal')
         self.layout_picker.configure(state='disabled' if value else 'readonly')
         self.format_picker.configure(state='disabled' if value else 'readonly')

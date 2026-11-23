@@ -53,7 +53,7 @@ def test_launch_real_widgets_select_sample_preview_process_and_history(app):
     assert app.page == "Results"
     assert app.results[0].result.status == Status.SUCCESS
     assert "unverified" in app.detail.get("1.0", "end").lower() or "not been verified" in app.detail.get("1.0", "end")
-    app.navigation["History"].invoke()
+    app.show_page("Settings");app.settings_page.history_button.invoke()
     pump(app, lambda: not app.worker.busy)
     assert len(app.history_table.get_children()) == 1
 
@@ -267,8 +267,13 @@ def test_rejection_detail_shows_engine_month_and_source_date_trace(app, tmp_path
     assert app.previews[0].period == '2026-01'
     assert app.previews[0].result.code == code
     detail = app.detail.get('1.0', 'end')
-    assert 'Engine reporting month: 2026-01' in detail
-    assert trace in detail and 'Record 1:' in detail
+    assert 'Reporting month: 2026-01' in detail
+    assert trace not in detail
+    app.technical_button.invoke();app.update()
+    technical=app.technical_detail.get('1.0','end')
+    assert app.technical_detail.winfo_ismapped()
+    assert 'Engine reporting month: 2026-01' in technical
+    assert trace in technical and 'Record 1:' in technical
     assert app.process_button.cget('state') == 'disabled'
     assert not app.workflow.output_root.exists()
 
@@ -770,7 +775,7 @@ def prepare_business_review(app, tmp_path):
     app.workspace = workspace
     app.workflow = DesktopWorkflow(workspace.candidate_folder, output_format='powerbi')
     app.month.set('January'); app.year.set('2026')
-    app.navigation['Review & Approval'].invoke()
+    app.show_page('Review & Approval')  # Explicit maintainer route; hidden from employees.
     app.business_review_page.load_button.invoke()
     pump(app, lambda:not app.worker.busy)
     return workspace, app.business_review_page
@@ -1327,9 +1332,10 @@ def test_historical_processing_selection_plan_confirmation_and_results(app,tmp_p
     assert processing.run.summary['created']==6
     assert '6 candidates created' in page.summary.cget('text')
     assert processing.process_button.cget('state')=='disabled'
-    assert 'Created: 6' in processing.detail.get('1.0','end')
+    assert 'Saved successfully: 6' in processing.detail.get('1.0','end')
     processing.table.selection_set('2026-01:repairs');processing.selection_changed()
-    assert 'Candidate file:' in processing.detail.get('1.0','end')
+    assert 'Candidate file:' not in processing.detail.get('1.0','end')
+    assert 'output_location' in page.technical.get('1.0','end')
     assert 'Reported monthly labor / parts / total:' in processing.detail.get('1.0','end')
     processing.select_all()
     assert app.business_review_page.approve_button.cget('state')==app.business_review_page.publish_button.cget('state')=='disabled'
@@ -1429,7 +1435,10 @@ def test_historical_dataset_gui_selected_candidates_confirmation_results_and_nav
     dataset.preview_button.invoke();pump(app,lambda:not app.worker.busy)
     assert dataset.plan.ready and len(dataset.plan.selections)==6
     dataset.table.selection_set('0');dataset.details()
-    assert 'Candidate SHA-256:' in dataset.detail.get('1.0','end')
+    assert 'Candidate SHA-256:' not in dataset.detail.get('1.0','end')
+    dataset.technical_button.invoke();app.update()
+    assert dataset.technical.winfo_ismapped()
+    assert 'Candidate SHA-256:' in dataset.technical.get('1.0','end')
     dataset.compatibility.toggle();assert dataset.create_button.cget('state')=='disabled'
     dataset.local_check.toggle();assert dataset.create_button.cget('state')=='normal'
     monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno',lambda *a,**kw:False)
@@ -1437,9 +1446,12 @@ def test_historical_dataset_gui_selected_candidates_confirmation_results_and_nav
     monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno',lambda *a,**kw:True)
     parent=tmp_path/'private-snapshots';parent.mkdir()
     monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory',lambda **kw:str(parent))
-    dataset.create_button.invoke();pump(app,lambda:not app.worker.busy)
+    dataset.create_button.invoke()
+    assert app.status.get().startswith('Creating a local unapproved Power BI snapshot')
+    pump(app,lambda:not app.worker.busy)
     assert dataset.output and (dataset.output/'snapshot_manifest.json').exists()
-    assert 'CandidateUnverified' in dataset.detail.get('1.0','end')
+    assert 'not approved' in dataset.detail.get('1.0','end')
+    assert 'CandidateUnverified' in dataset.technical.get('1.0','end')
     assert dataset.create_button.cget('state')=='disabled'
     assert snapshot(app.workspace.candidate_folder)==before
     app.show_page('History');pump(app,lambda:not app.worker.busy)
@@ -1518,6 +1530,7 @@ def test_comparison_development_action_confirmation_lineage_and_preserved_source
     monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.filedialog.askdirectory', lambda **kw: str(next(choices)))
     monkeypatch.setattr('equipment_data_manager.ui.historical_dataset.messagebox.askyesno', lambda *a,**kw: True)
     dataset.comparison_button.invoke()
+    assert app.status.get().startswith('Creating a development comparison export')
     assert dataset.comparison_button.cget('state') == 'disabled'
     pump(app, lambda: not app.worker.busy)
     assert validate_comparison(dataset.comparison_output)['purpose'] == 'DevelopmentComparison'
@@ -1562,3 +1575,107 @@ def test_comparison_worker_remains_responsive_and_cancel_preserves_source(app,tm
     app.stop_work();release.set();pump(app,lambda:not app.worker.busy)
     assert dataset.comparison_output is None and canonical.exists()
     assert not (tmp_path/'comparison-parent').exists()
+
+
+def test_employee_navigation_history_refresh_and_hidden_review_foundation(app,tmp_path):
+    from test_comparison_export import tree
+    assert list(app.navigation)==['Process Reports','Results','Historical Data','Settings','Help']
+    assert app.navigation['Historical Data'].cget('text')=='Process Multiple Months'
+    for button in app.navigation.values():
+        button.invoke();app.update()
+        assert not app.business_review_page.winfo_ismapped()
+    app.navigation['Historical Data'].invoke();app.update()
+    assert app.page=='Historical Data' and app.heading.cget('text')=='Process Multiple Months'
+    assert app.historical_page.winfo_ismapped()
+    app.show_page('Process Multiple Months');assert app.page=='Historical Data'
+    prepare(app);app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    before=tree(app.workflow.output_root)
+    app.show_page('Settings');app.settings_page.history_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert app.heading.cget('text')=='Processing History'
+    assert len(app.history_entries)==1 and app.history_page.winfo_ismapped()
+    app.history_entries=()  # Reopening must load durable history, not stale UI cache.
+    app.history_back_button.invoke();assert app.page=='Settings'
+    app.settings_page.history_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert len(app.history_entries)==1 and tree(app.workflow.output_root)==before
+    assert app.business_review_page.approve_button.cget('state')=='disabled'
+    assert app.business_review_page.publish_button.cget('state')=='disabled'
+    assert app.business_review_page.sign_in_button.cget('state')=='disabled'
+
+
+def test_employee_correction_approval_saves_nothing_and_selection_invalidates_it(app,tmp_path):
+    from test_comparison_export import tree
+    app.sample_button.invoke();raw=tmp_path/'raw.csv';raw.write_bytes(Path(app.sources[0].reference).read_bytes())
+    app.set_files([str(raw)]);app.month_confirmed.set(True);app.start_preview();pump(app,lambda:not app.worker.busy)
+    app.start_process();pump(app,lambda:not app.worker.busy)
+    original=app.results[0].result.output_location
+    raw.write_bytes(raw.read_bytes().replace(b'$10.00',b'$20.00'))
+    app.show_page('Process Reports');app.start_preview();pump(app,lambda:not app.worker.busy)
+    before=tree(app.workflow.output_root)
+    app.review_button.invoke();app.update()
+    assert app.dialog.confirm_button.cget('text')=='Approve Correction for Processing'
+    assert 'Process Reports & Save Candidate' in app.process_button.cget('text')
+    app.dialog.confirmation_check.toggle();app.dialog.confirm_button.invoke()
+    assert 'no correction has been saved' in app.status.get()
+    assert tree(app.workflow.output_root)==before and not app.worker.busy and app.can_process()
+    app.month.set('October')
+    assert not app.approvals and not app.previews and not app.can_process()
+    assert tree(app.workflow.output_root)==before and original.is_file()
+
+
+def test_employee_result_partial_failure_warning_and_technical_details(app):
+    from equipment_data_manager.processing.models import ProcessingResult
+    from equipment_data_manager.ui.workflow import RunEntry
+    prepare(app);app.start_process();pump(app,lambda:not app.worker.busy)
+    saved=app.results[0]
+    app.results=(saved,RunEntry(saved.preview,ProcessingResult(Status.SKIPPED,'unchanged',artifact=saved.result.artifact)),
+        RunEntry(saved.preview,ProcessingResult(Status.FAILURE,'input_changed_since_preview')),
+        RunEntry(saved.preview,ProcessingResult(Status.FAILURE,'cancelled')))
+    app.show_page('Results');app.update()
+    statuses=[app.table.item(i,'values')[3] for i in app.table.get_children()]
+    assert statuses==['Saved successfully','Already processed / unchanged','Failed','Stopped / not processed']
+    assert 'Failed: 1' in app.summary.cget('text') and 'Stopped / not processed: 1' in app.summary.cget('text')
+    assert 'SHA-256' not in app.detail.get('1.0','end')
+    assert not app.controls.winfo_ismapped() and app.results_back_button.winfo_ismapped()
+    assert not app.technical_detail.winfo_ismapped()
+    app.technical_button.invoke();app.update()
+    assert app.technical_detail.winfo_ismapped() and 'Source SHA-256:' in app.technical_detail.get('1.0','end')
+    assert 'not been verified' in app.detail.get('1.0','end') or 'unverified' in app.detail.get('1.0','end')
+    app.table.selection_set('2');app._show_detail()
+    assert 'changed' in app.detail.get('1.0','end').lower() and 'Next:' in app.detail.get('1.0','end')
+    assert 'input_changed_since_preview' in app.technical_detail.get('1.0','end')
+
+
+def test_employee_settings_history_and_multi_month_keyboard_help(app):
+    app.show_page('Settings')
+    app.guidance.schedule(app.settings_page.history_button,'history');app.guidance.show();app.update()
+    assert 'Processing History' in app.guidance.text('history')
+    app.open_context_help('history');assert app.page=='Help'
+    assert 'Settings' in app.help_text.get('1.0','end')
+    app.show_page('Settings');app.settings_page.history_button.focus_set();app.update()
+    app.settings_page.history_button.event_generate('<Return>');pump(app,lambda:not app.worker.busy)
+    assert app.page=='History'
+    app.history_back_button.invoke();app.navigation['Historical Data'].invoke()
+    app.open_context_help('historical_inventory')
+    assert 'Process Multiple Months' in app.help_text.get('1.0','end')
+
+
+def test_employee_partial_failure_completion_uses_actual_saved_and_failed_results(app,tmp_path,monkeypatch):
+    app.sample_button.invoke()
+    raw=Path(app.sources[0].reference).read_bytes()
+    first,second=tmp_path/'first.csv',tmp_path/'second.csv'
+    first.write_bytes(raw);second.write_bytes(raw)
+    app.set_files([str(first),str(second)]);app.month_confirmed.set(True)
+    app.start_preview();pump(app,lambda:not app.worker.busy)
+    assert app.can_process() and len(app.previews)==2
+    read=app.workflow.source.read
+    def unavailable(source):
+        if source.reference==str(second):raise OSError('Synthetic local availability failure')
+        return read(source)
+    monkeypatch.setattr(app.workflow.source,'read',unavailable)
+    app.process_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert [r.result.status for r in app.results]==[Status.SUCCESS,Status.FAILURE]
+    assert app.status.get().startswith('Run finished with failed reports.')
+    assert 'Saved successfully: 1' in app.summary.cget('text')
+    assert 'Failed: 1' in app.summary.cget('text')
+    assert len(app.workflow.coordinator.store.history())==1
+    assert app.table.item('1','values')[1:3]==('Repair Reports','2026-09')

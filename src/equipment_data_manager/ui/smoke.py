@@ -69,7 +69,14 @@ def run_smoke(directory: Path | None) -> int:
                 app.process_button.invoke()
             elif phase == 2:
                 assert app.results[0].result.status == Status.SUCCESS
+                assert "Saved successfully" in app.table.item("0", "values")[3]
+                assert "SHA-256" not in app.detail.get("1.0", "end")
+                app.technical_button.invoke()
+                assert "SHA-256" in app.technical_detail.get("1.0", "end")
+                app.technical_button.invoke()
                 state["first_artifact"] = app.results[0].result.output_location
+                assert "History" not in app.navigation and "Review & Approval" not in app.navigation
+                assert app.navigation["Historical Data"].cget("text") == "Process Multiple Months"
                 app.show_page("Process Reports")
                 app.preview_button.invoke()
             elif phase == 3:
@@ -90,12 +97,14 @@ def run_smoke(directory: Path | None) -> int:
                 app.dialog.confirmation_check.toggle()
                 app.dialog.confirm_button.invoke()
                 assert app.can_process()
+                assert "no correction has been saved" in app.status.get()
+                assert len(app.workflow.coordinator.store.history()) == 1
                 app.process_button.invoke()
             elif phase == 6:
                 assert app.results[0].result.status == Status.SUCCESS
                 assert state["first_artifact"].is_file()
                 assert app.results[0].result.output_location != state["first_artifact"]
-                app.show_page("History")
+                app.show_page("Settings"); app.settings_page.history_button.invoke()
             elif phase == 7:
                 assert len(app.history_entries) == 2
                 assert sum(entry.is_current for entry in app.history_entries) == 1

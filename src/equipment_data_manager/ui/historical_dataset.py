@@ -24,6 +24,7 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.table=ttk.Treeview(self,columns=('month','type','status','rows','revision'),show='headings',height=5,style='EDM.Treeview')
         for key,label in zip(('month','type','status','rows','revision'),('Month','Report','Selection / integrity','Rows','Revision')):
             self.table.heading(key,text=label);self.table.column(key,width=180 if key=='type' else 125,minwidth=70)
+        self.table.configure(displaycolumns=('month','type','status','rows'))
         self.table.grid(row=3,column=0,sticky='ew');self.table.bind('<<TreeviewSelect>>',self.details)
         self.detail=ctk.CTkTextbox(self,height=130,wrap='word');self.detail.grid(row=4,column=0,sticky='ew',pady=5)
         self.ack=ctk.BooleanVar(value=False);self.local=ctk.BooleanVar(value=False)
@@ -44,11 +45,25 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.comparison_button.pack(anchor='w',padx=8,pady=5)
         self.comparison_open_button=ctk.CTkButton(self.development,text='Open comparison export',command=self.open_comparison,width=230)
         self.comparison_open_button.pack(anchor='w',padx=8,pady=5)
+        self.technical_visible = False
+        self.technical_button = ctk.CTkButton(self, text='Technical details (show)', command=self.toggle_technical, width=230)
+        self.technical_button.grid(row=11,column=0,sticky='w',pady=5)
+        self.technical = ctk.CTkTextbox(self,height=130,wrap='word')
         self.development_visible=False
         self.invalidate()
 
+    def toggle_technical(self):
+        self.technical_visible = not self.technical_visible
+        if self.technical_visible:
+            self.technical.grid(row=12,column=0,sticky='ew',pady=5)
+        else:
+            self.technical.grid_remove()
+        self.table.configure(displaycolumns=('month','type','status','rows','revision') if self.technical_visible else ('month','type','status','rows'))
+        self.technical_button.configure(text='Technical details (hide)' if self.technical_visible else 'Technical details (show)')
+
     def invalidate(self):
         self.plan=None;self.ack.set(False);self.local.set(False)
+        self.history._text(self.technical,'')
         self.table.delete(*self.table.get_children())
         self.history._text(self.detail,'Preview selected candidates for this range first. Missing or invalid slots block generation. Compatibility gaps include TMA table grain, date-only requests, Building derivation and dashboard filters. No revisions are changed.')
         self.busy(False)
@@ -92,7 +107,8 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
             warnings=(path/'comparison_warnings.txt').read_text(encoding='utf-8') if manifest['export_schema'] in ('comparison-preview-v2','comparison-preview-v3') else ''
         except (OSError,ValueError,KeyError):
             self.comparison_failed();self.app.status.set('Comparison completion evidence is unavailable. Verify the output before importing.');return
-        self.history._text(self.detail,'Development comparison completed — CandidateUnverified, not approved.\n'+str(path)+
+        self.history._text(self.technical,json.dumps(manifest,indent=2))
+        self.history._text(self.detail,'Development comparison completed — backup test only, not approved.\n'+str(path)+
             '\nFive simplified CSVs are ready for a backup PBIX only. audit/lineage.csv maps every row to the retained canonical evidence. No activation or refresh occurred.\n'+warnings)
         self.busy(False)
 
@@ -117,22 +133,23 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         for index,item in enumerate(plan.selections):
             self.table.insert('','end',iid=str(index),values=(item.month,SUPPORTED_REPORTS[item.report_type],item.status,item.rows if item.status=='ready' else 'Not assessed',item.revision[:12] or 'None'))
         self.history._text(self.detail,('All requested candidate slots passed integrity checks. ' if plan.ready else 'Snapshot blocked: missing, invalid or unassessed candidate slots. No older fallback will be used. ')
-            +'No snapshot written. Business accuracy is unverified. Read the compatibility guide before confirming. Select a row for counts, missing values, warnings and exact revision/hash evidence.')
+            +'No snapshot written. Business accuracy is unverified. Read the compatibility guide before confirming. Select a row for counts, missing values and warnings; expand Technical details for revision and hash evidence.')
         self.history.summary.configure(text=f'Snapshot preview: {sum(s.status=="ready" for s in plan.selections)} of {len(plan.selections)} selected candidate slots ready. '+('Complete selection; compatibility still needs review.' if plan.ready else 'Incomplete or invalid — creation disabled.'))
         self.busy(False)
 
     def details(self,*_):
         if not self.plan or not self.table.selection():return
         s=self.plan.selections[int(self.table.selection()[0])]
+        import json
+        from dataclasses import asdict
+        self.history._text(self.technical, f'Revision: {s.revision}\nSource SHA-256: {s.source_sha256}\nCandidate SHA-256: {s.output_sha256}\nFinancial summary SHA-256: {s.summary_sha256}\nCleaner version: {s.cleaner_version}\n' + json.dumps(asdict(s),indent=2))
         if s.status!='ready':
-            self.history._text(self.detail,f'{s.month} — {SUPPORTED_REPORTS[s.report_type]}: {s.status}\nCounts and missing values: Not assessed.\nIssue: {error_message(s.code)}\nDiagnostic category: {s.code}')
+            self.history._text(self.detail,f'{s.month} — {SUPPORTED_REPORTS[s.report_type]}: {s.status}\nCounts and missing values: Not assessed.\nIssue: {error_message(s.code)}')
             return
-        lines=[f'{s.month} — {s.report_type}: {s.status}',f'Records: {s.rows if s.status=="ready" else "Not assessed"}',
+        lines=[f'{s.month} — {SUPPORTED_REPORTS[s.report_type]}: {s.status}',f'Records: {s.rows if s.status=="ready" else "Not assessed"}',
             f'Missing reported costs: {s.unavailable_costs}; missing assignments: {s.missing_assignments}; missing identifiers: {s.missing_identifiers}',
-            f'Reconciliation: {s.reconciliation or "Not applicable"}',f'Revision: {s.revision or "No valid selected revision"}',
-            f'Source SHA-256: {s.source_sha256}',f'Candidate SHA-256: {s.output_sha256}',f'Financial summary SHA-256: {s.summary_sha256}',
-            f'Cleaner version: {s.cleaner_version}']
-        if s.code:lines+=['Issue: '+error_message(s.code),f'Diagnostic category: {s.code}']
+            f'Reconciliation: {s.reconciliation or "Not applicable"}']
+        if s.code:lines+=['Issue: '+error_message(s.code)]
         lines+=['Warning: '+warning_message(w) for w in s.warnings]
         self.history._text(self.detail,'\n'.join(lines))
 
@@ -154,7 +171,8 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         try:manifest=json.loads((path/'snapshot_manifest.json').read_text(encoding='utf-8'))
         except (OSError,ValueError):
             self.failed();self.app.status.set('Snapshot completion evidence is unavailable. Inspect the local folder before importing.');return
-        lines=['Local snapshot completed. CandidateUnverified — not approved or published.',str(path)]
+        self.history._text(self.technical,json.dumps(manifest,indent=2))
+        lines=['Local snapshot completed — not approved or published.',str(path)]
         lines += [f'{e["file"]}: {e["rows"]} rows; monthly counts {e["rows_by_month"]}' for e in manifest['datasets']]
         lines+=['Read compatibility_report.md and snapshot_manifest.json before importing into a backup PBIX. Historical financial warnings and missing values remain.']
         self.history._text(self.detail,'\n'.join(lines));self.history.summary.configure(text='Local historical test snapshot created. Candidate selections unchanged. No approval, publication or Power BI refresh.')
@@ -162,6 +180,7 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
 
     def failed(self):
         self.plan=None;self.ack.set(False);self.local.set(False)
+        self.history._text(self.technical,'')
         self.history._text(self.detail,'Snapshot operation stopped. No incomplete snapshot is ready for import. Check the status message, then preview selected candidates again. Previous completed snapshots and candidate selections are preserved.')
         self.busy(False)
 

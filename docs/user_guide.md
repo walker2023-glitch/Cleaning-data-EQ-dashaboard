@@ -1,9 +1,38 @@
 # Equipment Data Manager: local prototype
 
+## Daily navigation and what happens next
+
+Primary navigation: **Process Reports**, **Results**, **Process Multiple Months**,
+**Settings**, **Help**. Earlier revisions are under **Settings → Processing History**.
+
+1. In Settings, confirm Raw Data and local output folders; Check Locations and Save.
+2. For one month use Process Reports → Discover month (or select individual files).
+   For several months use Process Multiple Months → Discover Historical Reports.
+3. Confirm the reporting month or range. Preview and read counts, missing data,
+   totals and warnings. Discovery/preview do not save cleaned reports.
+4. Review corrections individually. Approval for processing saves nothing. Run
+   **Process Reports & Save Candidate**, or review and confirm a multi-month plan
+   before **Process Selected Reports & Save Candidates**.
+5. Results opens without the input form; use **Process more reports** to return.
+   Read every result: **Saved successfully**, **Already processed / unchanged**,
+   **Needs review**, **Failed**, **Stopped / not processed**. Run finished only
+   means the run ended. Resolve failed/review rows, then preview again. Already
+   saved revisions survive failures and stops. Open Technical details for your
+   maintainer's hashes, paths, versions and diagnostic source-date trace.
+6. Use Process Multiple Months → Power BI snapshot to combine reviewed saved
+   reports into four local historical test datasets. Development tools separately
+   creates the five-table V3 comparison from a completed snapshot, for a backup
+   PBIX only. Neither action approves, activates, publishes or refreshes Power BI.
+
+Warnings, unavailable costs and financial totals remain visible. A successful save
+is not proof of business accuracy. F1, Explain this step and the offline Help guide
+explain selections, writes, recovery and next steps. There is no Update Power BI
+Data button yet; activation/update functionality is a later milestone.
+
 ## Development comparison tools
 
 The current development preview is **comparison-preview-v3**, with five CSVs.
-Historical Data → Power BI snapshot → Development tools → Create simplified
+Process Multiple Months → Power BI snapshot → Development tools → Create simplified
 comparison export uses one completed canonical snapshot and a separate trusted
 local output parent. It includes an observed Equipment lookup, shared equipment
 names/types, original observed names and evidence-based Maintenance Type.
@@ -21,7 +50,7 @@ permanent employee format choice.
 
 ## Historical Power BI datasets — 2026-11-12
 
-Based on merged main eea5d01 (PR #23). Historical Data → Power BI snapshot now
+Based on merged main eea5d01 (PR #23). Process Multiple Months → Power BI snapshot now
 previews only current manifest-selected normalized candidates and creates four
 deterministic local CandidateUnverified datasets with revision/source/output/summary
 hashes, counts, warnings and a compatibility report. Missing/invalid slots block
@@ -55,42 +84,22 @@ or send them with diagnostics. Existing month persistence and local review reque
 are unchanged. A successful organizational sign-in would still not grant business
 approval or upload permission.
 
-## Remembering your month and reviewing evidence
+## Remembering your month and earlier results
 
-Choose the reporting month on **Process Reports** or **Review & Approval**; they
-share the same selection. After you save Settings, valid changes are remembered
-on this computer for the same profile. Navigation does not replace January with
-the calendar month. After restarting, check the displayed month and confirm it
-again before processing. A new profile without a saved period starts at the
-calendar month; loading a synthetic sample deliberately selects its sample month.
+Choose the reporting month on **Process Reports**. After saving Settings, valid
+changes are remembered for this computer/profile. Confirm it again after restart;
+confirmation and previews are never restored. A new profile starts at the calendar
+month; loading an invented sample selects the sample month.
 
-On Review & Approval choose **Review candidate**. Overview shows report counts and
-reported financial totals. Issues shows warnings/missing data; Revisions shows IDs
-and hashes; Review history shows local requests; Technical details retains the
-original structured evidence. Switching months clears old evidence until refreshed.
-Not supplied is different from zero. A local request is **recorded here, not sent**.
-Approval Pending, Approved and Published require authoritative evidence and are
-unavailable. Entra sign-in, Approve and Publish remain disabled. F1 explains why.
-See approval_ux_identity_readiness.md for synthetic preview and profile/rollback notes.
+Open **Settings → Processing History** for earlier saved reports. This read-only
+view refreshes on opening and retains current and previous revisions. **Back to
+Settings** returns to setup. A saved report is a local candidate, not business
+approval. Failed attempts remain in the current Results view.
 
-## Review & Approval — local foundation
-
-After processing the month in Power BI CSV candidate mode, open **Review & Approval**
-and select **Review candidate**. Inspect report counts, monthly reported costs,
-missing values, warnings and exact revisions/hashes. Add a concise evidence note
-or private reference, then choose **Request approval (local)**. The request is
-recorded on this computer only: **it is not sent and is not business approval**.
-All three current reports and repair schema v2 are required. Corrections or changed
-original files require fresh review; refresh the view to see stale requests.
-
-**Approve** and **Publish** stay disabled until independent reviewer authority and
-a separately authorized publishing service exist. Publication history is unavailable;
-use History for local candidate revisions. Guided Mode/F1 explains the controls.
-Do not put credentials or unnecessary personal information in notes. Keep local
-requests/history outside OneDrive/shared folders. Reading downloaded synced raw
-files does not verify synchronization. See approval_publishing_foundation.md for
-synthetic preview instructions; existing Power BI files and production folders are
-unchanged.
+Review & Approval is hidden from ordinary employee navigation. Its developer
+foundation, local records and tests are retained; sign-in, final approval and
+publishing remain disabled. No local request was deleted or sent by this change.
+Follow departmental review procedures outside this application.
 
 ## Consolidated prototype review
 
@@ -163,7 +172,12 @@ has its own processing history; use the same one for repeat runs.
 If the month already has different data, preview marks it **Potential correction**.
 Select that row and click **Review correction**. Review current/proposed row counts
 and proposed totals. Open the current revision folder to compare its CSV if needed.
-Check the explicit approval box and click **Confirm correction**, then process.
+Check the confirmation box and click **Approve Correction for Processing**.
+**This saves nothing.** Next, click **Process Reports & Save Candidate**. Only
+successful processing saves/selects the new revision; the previous revision
+remains available in **Settings → Processing History**. Confirmation never starts
+processing automatically. A failed/stopped correction leaves the earlier saved
+revision available.
 
 Approval applies only to that preview. A changed input file or current revision
 requires another preview/review. The original raw file and previous output remain
@@ -181,7 +195,7 @@ For errors, read the selected row's next step, fix the selection/export, then
 preview again. A missing/changed previous output stops processing to protect the
 recorded history; keep the folder intact and ask your maintainer for help.
 
-History lists completed candidate revisions, including CLI-created M1 revisions.
+Settings → Processing History lists completed candidate revisions, including CLI-created revisions.
 Failed attempts remain in the current Results screen, not a permanent audit log.
 Do not delete the manifest or recursively combine all version CSVs into Power BI:
 the folder contains superseded revisions and may contain unselected artifacts
@@ -269,8 +283,8 @@ cleaning results, dates, correction approvals or financial calculations.
 Errors need resolution before the affected operation can proceed. Warnings need
 review; repair source and calculated financial totals still require reconciliation.
 Neither a saved candidate nor a review packet is a production-approved release.
-Maintenance classification and direct Microsoft/SharePoint integration remain future
-work. Do not rename an unsupported TMA XLS file to CSV/XLSX to force processing.
+Maintenance classification is available only in development comparison V3; direct
+Microsoft/SharePoint integration is not enabled. Do not rename an unsupported TMA XLS file to CSV/XLSX to force processing.
 
 If saved folders become unavailable, Settings keeps the choices and shows what
 needs attention. **Reset to Defaults** asks first and only resets preferences;
@@ -287,21 +301,21 @@ on this device, wait for export/download completion, then preview again. Existen
 a green folder indicator or a successful local read does not verify cloud sync.
 
 Candidate history, review packets, SQLite and authentication caches must remain on
-trusted local disk outside sync services. The Settings storage card keeps Microsoft
+trusted local disk outside sync services. The Advanced Settings storage diagnostics keep Microsoft
 Graph unavailable: organizational sign-in and site/library selection are not enabled
 in this prototype. No candidate is uploaded or published. Finance reconciliation is
 not business approval. See sharepoint_foundation.md for developer tests and the
 separate IT-authorized live-pilot requirements.
 
 
-## Historical Data — read-only inventory
+## Process Multiple Months — read-only inventory
 
 In Settings, select and save **Raw folder layout**. Choose Standard for
 YYYY-MM/report-type folders or SharePoint year/month for 01_Raw_Data / year /
 YYYY-MM (Jan or full month name), with the three reports directly in each month.
 The choice restores after restart; no original is moved or renamed.
 
-Open **Historical Data**, enter start/end as YYYY-MM (up to 120 months), and
+Open **Process Multiple Months**, enter start/end as YYYY-MM (up to 120 months), and
 **Discover Historical Reports**. Inspect Monthly completeness and Problems & files.
 Found means one readable filename/format match, not validated contents or finances.
 Missing, ambiguous, unavailable and unscanned months stay visible. Technical details
@@ -384,7 +398,7 @@ May preview/count/hash acceptance; no candidate is approved or published.
 
 ## Preview historical months together
 
-Open Historical Data after choosing the raw root/layout in Settings. Enter start
+Open Process Multiple Months after choosing the raw root/layout in Settings. Enter start
 and end as YYYY-MM, Discover, then **Preview Selected Months**. All three report
 types are checked for every month in that range, without creating candidates.
 Select a month and open Problems & files for counts, exclusions, missing values,
@@ -412,19 +426,21 @@ automatically. Never treat preview success as approval.
 
 ## Process historical months into local candidates
 
-Discover and preview a range first. In Historical Data → Batch processing, select
+Discover and preview a range first. In Process Multiple Months → Batch processing, select
 report rows/months and report types, then Review Processing Plan. Inspect existing
 candidates, proposed actions, counts and warnings. Check the processing-intent
-statement and confirm Process Selected Reports. Scroll the panel if the controls
+statement and confirm **Process Selected Reports & Save Candidates**. Scroll the panel if the controls
 are below the viewport. This always uses Power BI CSV candidates with repair v2;
-the single-report Legacy preference stays separate.
+the single-report Legacy preference stays separate. Snapshot generation is a later,
+separate step in the Power BI snapshot tab; it does not clean raw reports.
 
 Unchanged candidates skip. Corrections remain blocked here; select one and open
 the single-report correction workflow for its own month/preview/confirmation. The
 batch checkbox does not approve data or authorize replacements. Stop After Current
 Report finishes an active commit and leaves later rows Not started. Results show
-created/skipped/correction/blocked/failed counts, warnings and output locations;
-select rows for details. Open candidate folder points to normalized local history.
+saved/unchanged/review/failed/stopped counts and readable warnings; select rows
+for details. Private output locations and original status categories remain under
+Technical details and the diagnostic export. Open candidate folder points to normalized local history.
 
 Restart never runs an old plan. Fresh discovery/preview/plan/confirmation consults
 durable history and skips completed equivalent files. Never recursively ingest

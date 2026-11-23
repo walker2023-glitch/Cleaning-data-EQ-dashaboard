@@ -4,7 +4,12 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 import customtkinter as ctk
 
-from equipment_data_manager.historical_processing import ACTIONS, RESULTS, make_plan, execute_plan, export_processing
+from equipment_data_manager.historical_processing import ACTIONS, make_plan, execute_plan, export_processing
+
+# Employee labels only; backend statuses and diagnostic documents stay unchanged.
+RESULTS = {"created": "Saved successfully", "skipped": "Already processed / unchanged",
+    "correction": "Needs review — correction", "blocked": "Needs review — blocked",
+    "failed": "Failed", "not_started": "Stopped / not processed"}
 from equipment_data_manager.processing.models import ReportType
 from equipment_data_manager.ui.workflow import SUPPORTED_REPORTS, SourceFile
 from equipment_data_manager.ui.worker import JobEvent
@@ -20,7 +25,7 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
         self.results = {}
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
-        ctk.CTkLabel(self, text='Historical Batch Processing', text_color='#172B4D', font=ctk.CTkFont(size=18, weight='bold')).grid(row=0,column=0,pady=4,sticky='w')
+        ctk.CTkLabel(self, text='Process selected months', text_color='#172B4D', font=ctk.CTkFont(size=18, weight='bold')).grid(row=0,column=0,pady=4,sticky='w')
         form = ctk.CTkFrame(self)
         form.grid(row=1,column=0,sticky='ew',pady=4)
         self.month = ctk.StringVar(value='Select month')
@@ -50,7 +55,7 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
         buttons=ctk.CTkFrame(self);buttons.grid(row=4,column=0,sticky='ew')
         self.plan_button=ctk.CTkButton(buttons,text='Review Processing Plan',command=self.review_plan,width=180)
         self.plan_button.grid(row=0,column=0,padx=4,pady=4)
-        self.process_button=ctk.CTkButton(buttons,text='Process Selected Reports',command=self.process,width=190)
+        self.process_button=ctk.CTkButton(buttons,text='Process Selected Reports & Save Candidates',command=self.process,width=340)
         # Keep the primary action at the scroll endpoint, including small/DPI-scaled viewports.
         self.process_button.grid(row=4,column=0,columnspan=3,padx=4,pady=4,sticky='w')
         self.export_button=ctk.CTkButton(buttons,text='Export Processing Summary',command=self.export,width=190)
@@ -99,7 +104,7 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
             chosen=set(self.selected())
             self._text(self.result_text([item for item in self.run.items if (item.month,item.report_type) in chosen]))
         elif self.rows:
-            self._text(f'{len(self.selected())} report(s) selected. Review a fresh plan before writing. Completed candidates remain in History. Corrections need their single-report confirmation.')
+            self._text(f'{len(self.selected())} report(s) selected. Review a fresh plan before writing. Saved reports remain in Settings → Processing History. Corrections need their single-report confirmation.')
         self.busy(False)
 
     def select_all(self):
@@ -139,7 +144,7 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
     def planned(self,plan):
         self.plan=plan;self.confirmed.set(False)
         self.history.summary.configure(text=f'Plan reviewed for {len(plan.items)} selected reports. No candidates written during plan review; processing still requires confirmation.')
-        lines=['Power BI CSV candidates (repair financial schema v2). Single-report Legacy mode is separate.', 'Review this exact plan. No files have been written. Candidate outputs stay unapproved.']
+        lines=['Save cleaned local report copies for later review. Single-report Legacy mode is separate.', 'Review this exact plan. No files have been written. Candidate outputs stay unapproved.']
         for item in plan.items:
             key=f'{item.month}:{item.report_type}'
             existing='None' if item.preview.existing_revision is None else 'Exists, unchanged' if item.action=='skip' else 'Exists — correction review required'
@@ -172,12 +177,11 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
 
     def result_text(self,items):
         stats=self.run.summary
-        caption=' • '.join(f'{label}: {stats[key]}' for key,label in [('selected','Selected'),('created','Created'),('skipped','Already processed'),('correction','Correction review'),('blocked','Blocked'),('failed','Failed'),('not_started','Not started')])
+        caption=' • '.join(f'{label}: {stats[key]}' for key,label in [('selected','Selected'),('created','Saved successfully'),('skipped','Already processed / unchanged'),('correction','Needs correction review'),('blocked','Needs review / blocked'),('failed','Failed'),('not_started','Stopped / not processed')])
         retained='Retained records in committed/unchanged candidates: '+', '.join(f'{SUPPORTED_REPORTS[kind]} {count}' for kind,count in stats['retained_committed_or_unchanged'].items())
         lines=[caption,retained, 'Local candidates only. Review warnings below. Refresh preview and review a new plan to retry; committed history survives restart.']
         for item in items:
             lines += [f'{item.month} — {SUPPORTED_REPORTS[item.report_type]}: {RESULTS[item.status]}','  '+error_message(item.code) if item.status in ('blocked','failed','correction') else f'  Retained records: {item.evidence.retained_records}']
-            if item.output_location:lines.append('  Candidate file: '+item.output_location)
             financial=dict(item.evidence.financial)
             if financial:
                 lines.append('  Reported monthly labor / parts / total: '+ ' / '.join(financial.get(key) if financial.get(key) is not None else 'Unavailable' for key in ('ReportedLaborCost','ReportedPartsCost','ReportedTotalCost')))
@@ -188,8 +192,19 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
     def completed(self,run):
         self.run=run;self.plan=None;self.confirmed.set(False)
         self._text(self.result_text(run.items))
-        self.history.summary.configure(text=f'Processing results: {run.summary["created"]} candidates created, {run.summary["skipped"]} unchanged, {run.summary["correction"]} corrections require individual review, {run.summary["blocked"]} blocked, {run.summary["failed"]} failed, {run.summary["not_started"]} not started. Local unapproved outputs only.')
+        self.history.summary.configure(text=self.run_message(run))
         self.history._text(self.history.technical,json.dumps(run.document(),indent=2));self.busy(False)
+
+    @staticmethod
+    def run_message(run):
+        stats = run.summary
+        caption = ('Run finished with failed reports.' if stats['failed'] else
+            'Run stopped; some reports were not processed.' if run.stopped or stats['not_started'] else
+            'Run finished with reports needing review.' if stats['blocked'] or stats['correction'] else 'Run finished.')
+        return (caption + f" {stats['created']} candidates created (saved successfully), "
+            f"{stats['skipped']} unchanged, {stats['correction'] + stats['blocked']} need review, "
+            f"{stats['failed']} failed, {stats['not_started']} stopped / not processed. "
+            'Review each month/report and its warnings. Refresh preview and plan to retry. Local unapproved outputs only.')
 
     def stop(self):
         self.app.stop_work();self.stop_button.configure(state='disabled')
@@ -202,7 +217,7 @@ class HistoricalProcessingPage(ctk.CTkScrollableFrame):
 
     def failed(self):
         self.plan=None;self.confirmed.set(False)
-        self._text('Operation did not finish. Completed candidates remain in durable History; partial results remain in the table. Discover/preview and review a fresh plan before retrying.')
+        self._text('Operation did not finish. Completed candidates remain in Settings → Processing History; partial results remain in the table. Discover/preview and review a fresh plan before retrying.')
         self.busy(False)
 
     def export(self):
