@@ -20,7 +20,7 @@ Then open **Power BI snapshot**, whose primary panel is **Monthly Historical Upd
 3. **Choose new local output location**: select a trusted local parent outside raw,
    candidates, reserved-approved, synced and production locations. The plan displays
    the exact new `Monthly_Update_Test_<id>` destination before writing.
-4. **Review monthly update**. Read the entire plan below: baseline/proposed coverage,
+4. **Review monthly update**. Read the entire plan in the read-only review above the confirmation controls: baseline/proposed coverage,
    all three report types, included/unchanged/excluded months, previous/proposed record
    counts, missing slots, selected revision replacements, missing values and warnings.
    **Technical details (show)** contains exact identities and evidence.

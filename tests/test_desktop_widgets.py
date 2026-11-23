@@ -1692,9 +1692,14 @@ def test_monthly_update_gui_initial_add_retry_explicit_baseline_and_confirmation
     assert monthly.plan.recommendation==REBUILD and 'initial historical build' in monthly.recommendation.cget('text')
     assert monthly.generate_button.cget('state')=='disabled' and not monthly.destination.exists()
     monthly.generate();assert not app.worker.busy
+    assert 'Proposed: 2026-01 through 2026-01' in monthly.review.get('1.0','end')
+    assert str(monthly.destination) in monthly.review.get('1.0','end')
     monthly.confirm.toggle()
-    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',lambda *a,**kw:False)
+    prompts=[]
+    def decline(*args,**kwargs):prompts.append(args[1]);return False
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',decline)
     monthly.generate_button.invoke();assert not app.worker.busy and not monthly.destination.exists()
+    assert len(prompts[0])<1500 and str(monthly.destination) in prompts[0]
     monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',lambda *a,**kw:True)
     monthly.generate_button.invoke();pump(app,lambda:not app.worker.busy)
     first=dataset.output;assert validate_dataset(first)['end']=='2026-01'

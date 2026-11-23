@@ -31,19 +31,23 @@ class MonthlyUpdateControls(ctk.CTkFrame):
         self.preview_button.grid(row=4,column=0,sticky='w',padx=8,pady=4)
         self.recommendation=ctk.CTkLabel(self,text='Review the proposed range above. No output has been generated.',wraplength=730,justify='left')
         self.recommendation.grid(row=5,column=0,sticky='w',padx=8,pady=4)
+        self.review=ctk.CTkTextbox(self,height=180,wrap='word')
+        self.review.grid(row=6,column=0,sticky='ew',padx=8,pady=4)
+        self.history._text(self.review,'Review monthly update to see complete coverage, counts and warnings here.')
         self.mode=ctk.StringVar(value=REBUILD)
         self.mode_menu=ctk.CTkOptionMenu(self,variable=self.mode,values=[REBUILD],command=lambda *_:self.reset_confirmation())
-        self.mode_menu.grid(row=6,column=0,sticky='w',padx=8,pady=4)
+        self.mode_menu.grid(row=7,column=0,sticky='w',padx=8,pady=4)
         self.confirmed=ctk.BooleanVar(value=False);self.changes=ctk.BooleanVar(value=False)
         self.confirm=ctk.CTkCheckBox(self,text='I reviewed the plan, compatibility gaps and trusted local destination.',variable=self.confirmed,command=lambda:self.busy(False))
-        self.confirm.grid(row=7,column=0,sticky='w',padx=8,pady=4)
+        self.confirm.grid(row=8,column=0,sticky='w',padx=8,pady=4)
         self.change_confirm=ctk.CTkCheckBox(self,text='I authorize the displayed replacements and removals for this new version.',variable=self.changes,command=lambda:self.busy(False))
-        self.change_confirm.grid(row=8,column=0,sticky='w',padx=8,pady=4)
+        self.change_confirm.grid(row=9,column=0,sticky='w',padx=8,pady=4)
         self.generate_button=ctk.CTkButton(self,text='Generate confirmed monthly update',command=self.generate,width=280)
-        self.generate_button.grid(row=9,column=0,sticky='w',padx=8,pady=8)
+        self.generate_button.grid(row=10,column=0,sticky='w',padx=8,pady=8)
 
     def invalidate(self):
         self.plan=None;self.reset_confirmation()
+        self.history._text(self.review,'Plan changed. Review monthly update again before confirming.')
         self.recommendation.configure(text='Plan changed or not reviewed. Review monthly update before confirming.')
 
     def reset_confirmation(self):
@@ -95,6 +99,7 @@ class MonthlyUpdateControls(ctk.CTkFrame):
         self.recommendation.configure(text=plan.recommendation+(' — initial historical build' if not plan.baseline else ''))
         self.mode_menu.configure(values=list(plan.permitted) or [plan.recommendation])
         self.mode.set(plan.permitted[0] if plan.permitted else plan.recommendation)
+        self.history._text(self.review,plan.summary())
         self.history._text(self.dataset.detail,plan.summary())
         self.history._text(self.dataset.technical,json.dumps(asdict(plan),indent=2))
         self.history.summary.configure(text=plan.recommendation+'. Review included/excluded months, revisions, counts, warnings and output location below. No output written.')
@@ -104,7 +109,14 @@ class MonthlyUpdateControls(ctk.CTkFrame):
         if self.app.worker.busy or self.app.settings_worker.busy or not self.plan or not self.confirmed.get():return
         plan=self.plan;mode=self.mode.get()
         if mode not in plan.permitted or (plan.changes_history and not self.changes.get()):return
-        if not messagebox.askyesno('Generate this new local version?',mode+'\n'+plan.summary()+'\nConfirm this exact plan? Previous outputs remain unchanged.',parent=self.app):return
+        # Keep the native dialog bounded even for the maximum 120-month plan.
+        # Exact slots, counts and warnings remain in the read-only review above.
+        prompt=(f'{mode}\nBaseline: '+(' through '.join(plan.baseline_range) if plan.baseline else 'None — initial build')+
+            f'\nProposed: {plan.dataset.start} through {plan.dataset.end}'
+            f'\nNew months: {len(plan.added)}; replaced report revisions: {len(plan.replacements)}; removed months: {len(plan.removed)}.'
+            f'\nNew local destination: {plan.destination}'
+            '\nConfirm the exact plan displayed in the review? Previous outputs remain unchanged. No activation or Power BI refresh.')
+        if not messagebox.askyesno('Generate this new local version?',prompt,parent=self.app):return
         confirmation=plan.confirmation(mode);changes=self.changes.get();workspace=self.app.workspace
         self.reset_confirmation()
         self.app._start('monthly_update_create',lambda progress,stop:generate_update(workspace,plan,
