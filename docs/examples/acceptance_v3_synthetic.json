@@ -1,0 +1,1220 @@
+{
+  "business_approved": false,
+  "checks": [
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "development_contract",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Export is explicitly development-only, not production approval."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "source_association",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Retained canonical bytes match the separately supplied snapshot."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "canonical_contract",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical input remains a complete unapproved historical snapshot."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "manifest_context",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Selection interval, canonical contract and equipment monthly-count basis match the associated snapshot."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "dataset_repairs",
+      "metrics": {
+        "rows": 18,
+        "rows_by_month": {
+          "2026-01": 3,
+          "2026-02": 3,
+          "2026-03": 3,
+          "2026-04": 3,
+          "2026-05": 3,
+          "2026-06": 3
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Dataset hash, ordered schema, declared types and total/monthly counts match the frozen V3 reference."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "canonical_repairs",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical file schema/hash/counts match its manifest."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "dataset_service_orders",
+      "metrics": {
+        "rows": 12,
+        "rows_by_month": {
+          "2026-01": 2,
+          "2026-02": 2,
+          "2026-03": 2,
+          "2026-04": 2,
+          "2026-05": 2,
+          "2026-06": 2
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Dataset hash, ordered schema, declared types and total/monthly counts match the frozen V3 reference."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "canonical_service_orders",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical file schema/hash/counts match its manifest."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "dataset_tma_work_orders",
+      "metrics": {
+        "rows": 13,
+        "rows_by_month": {
+          "2026-01": 2,
+          "2026-02": 2,
+          "2026-03": 2,
+          "2026-04": 2,
+          "2026-05": 2,
+          "2026-06": 3
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Dataset hash, ordered schema, declared types and total/monthly counts match the frozen V3 reference."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "canonical_tma_work_orders",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical file schema/hash/counts match its manifest."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "dataset_repair_financial_summary",
+      "metrics": {
+        "rows": 6,
+        "rows_by_month": {
+          "2026-01": 1,
+          "2026-02": 1,
+          "2026-03": 1,
+          "2026-04": 1,
+          "2026-05": 1,
+          "2026-06": 1
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Dataset hash, ordered schema, declared types and total/monthly counts match the frozen V3 reference."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "canonical_repair_financial_summary",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical file schema/hash/counts match its manifest."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "dataset_equipment",
+      "metrics": {
+        "rows": 3,
+        "rows_by_month": {
+          "2026-01": 3
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Dataset hash, ordered schema, declared types and total/monthly counts match the frozen V3 reference."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "canonical_report_hash",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical compatibility report hash matches."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "audit_integrity",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "All audit/warning hashes, ordered audit schemas and lineage counts match."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "equipment_unique",
+      "metrics": {
+        "lookup_rows": 3
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Lookup keys are unique and nonblank."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "equipment_resolution",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Lookup names/types/months/counts/conflicts/order independently follow the documented most-recent-name policy."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "record_counts_repairs",
+      "metrics": {
+        "canonical": 18,
+        "comparison": 18,
+        "rows_by_month": {
+          "2026-01": 3,
+          "2026-02": 3,
+          "2026-03": 3,
+          "2026-04": 3,
+          "2026-05": 3,
+          "2026-06": 3
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical and V3 transaction/summary counts match by month; repeated occurrences are retained."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "ordered_projection_repairs",
+      "metrics": {
+        "mismatched_occurrences": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every ordered occurrence independently matches canonical values plus documented enrichment; no row deduplication, reordering or value replacement."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "lookup_fact_repairs",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every nonblank fact key has a lookup with the same resolved name/type."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "financial_repairs",
+      "metrics": {
+        "EstimatedLaborCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyEstimatedTotalCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyLaborCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyPartsCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "RepairCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "RepairPersonHours": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "ReportedTotalCost": {
+          "canonical_nulls": 6,
+          "comparison_nulls": 6,
+          "equal_cells": true,
+          "equal_totals": true
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Each count/hour/financial field is compared separately, including nulls and decimal totals. Reported amounts are never combined with estimates."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "record_counts_service_orders",
+      "metrics": {
+        "canonical": 12,
+        "comparison": 12,
+        "rows_by_month": {
+          "2026-01": 2,
+          "2026-02": 2,
+          "2026-03": 2,
+          "2026-04": 2,
+          "2026-05": 2,
+          "2026-06": 2
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical and V3 transaction/summary counts match by month; repeated occurrences are retained."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "ordered_projection_service_orders",
+      "metrics": {
+        "mismatched_occurrences": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every ordered occurrence independently matches canonical values plus documented enrichment; no row deduplication, reordering or value replacement."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "lookup_fact_service_orders",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every nonblank fact key has a lookup with the same resolved name/type."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "financial_service_orders",
+      "metrics": {
+        "EstimatedPrice": {
+          "canonical_nulls": 12,
+          "comparison_nulls": 12,
+          "equal_cells": true,
+          "equal_totals": true
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Each count/hour/financial field is compared separately, including nulls and decimal totals. Reported amounts are never combined with estimates."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "record_counts_tma_work_orders",
+      "metrics": {
+        "canonical": 13,
+        "comparison": 13,
+        "rows_by_month": {
+          "2026-01": 2,
+          "2026-02": 2,
+          "2026-03": 2,
+          "2026-04": 2,
+          "2026-05": 2,
+          "2026-06": 3
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical and V3 transaction/summary counts match by month; repeated occurrences are retained."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "ordered_projection_tma_work_orders",
+      "metrics": {
+        "mismatched_occurrences": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every ordered occurrence independently matches canonical values plus documented enrichment; no row deduplication, reordering or value replacement."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "record_counts_repair_financial_summary",
+      "metrics": {
+        "canonical": 6,
+        "comparison": 6,
+        "rows_by_month": {
+          "2026-01": 1,
+          "2026-02": 1,
+          "2026-03": 1,
+          "2026-04": 1,
+          "2026-05": 1,
+          "2026-06": 1
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Canonical and V3 transaction/summary counts match by month; repeated occurrences are retained."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "ordered_projection_repair_financial_summary",
+      "metrics": {
+        "mismatched_occurrences": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every ordered occurrence independently matches canonical values plus documented enrichment; no row deduplication, reordering or value replacement."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "financial_repair_financial_summary",
+      "metrics": {
+        "EstimatedLaborCostMissingCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "EstimatedLaborCostSum": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "KnownRepairTotalCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyEstimatedTotalCostMissingCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyEstimatedTotalCostSum": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyLaborCostMissingCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyLaborCostSum": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyPartsCostMissingCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "LegacyPartsCostSum": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "RepairTotalDifference": {
+          "canonical_nulls": 6,
+          "comparison_nulls": 6,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "ReportedLaborCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "ReportedPartsCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "ReportedRepairCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "ReportedTotalCost": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "RetainedRepairCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "SourceRecordCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "SummaryComponentsDifference": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        },
+        "UnavailableRepairCostCount": {
+          "canonical_nulls": 0,
+          "comparison_nulls": 0,
+          "equal_cells": true,
+          "equal_totals": true
+        }
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Each count/hour/financial field is compared separately, including nulls and decimal totals. Reported amounts are never combined with estimates."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "complete_lineage",
+      "metrics": {
+        "actual_links": 79,
+        "expected_links": 79
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Lineage maps every output occurrence and equipment contributor to its canonical dataset/ordinal, record ID, revision and hashes."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "classification_source_evidence",
+      "metrics": {
+        "actual_observations": 30,
+        "expected_observations": 30
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Every classification/conflicting name retains exact source tags/descriptions, canonical source references and independently checked rule evidence."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "maintenance_evidence_consistency",
+      "metrics": {
+        "suspicious_classifications": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Maintenance labels independently match prioritized source evidence; contradictory/uncertain evidence cannot silently become Needed Repair."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "maintenance_contract",
+      "metrics": {
+        "by_report_month": [
+          {
+            "classification": "Needed Repair",
+            "month": "2026-01",
+            "report_type": "repairs",
+            "rows": 3
+          },
+          {
+            "classification": "Needed Repair",
+            "month": "2026-02",
+            "report_type": "repairs",
+            "rows": 3
+          },
+          {
+            "classification": "Needed Repair",
+            "month": "2026-03",
+            "report_type": "repairs",
+            "rows": 3
+          },
+          {
+            "classification": "Needed Repair",
+            "month": "2026-04",
+            "report_type": "repairs",
+            "rows": 3
+          },
+          {
+            "classification": "Needed Repair",
+            "month": "2026-05",
+            "report_type": "repairs",
+            "rows": 3
+          },
+          {
+            "classification": "Needed Repair",
+            "month": "2026-06",
+            "report_type": "repairs",
+            "rows": 3
+          },
+          {
+            "classification": "Needs Review",
+            "month": "2026-01",
+            "report_type": "service_orders",
+            "rows": 2
+          },
+          {
+            "classification": "Needs Review",
+            "month": "2026-02",
+            "report_type": "service_orders",
+            "rows": 2
+          },
+          {
+            "classification": "Needs Review",
+            "month": "2026-03",
+            "report_type": "service_orders",
+            "rows": 2
+          },
+          {
+            "classification": "Needs Review",
+            "month": "2026-04",
+            "report_type": "service_orders",
+            "rows": 2
+          },
+          {
+            "classification": "Needs Review",
+            "month": "2026-05",
+            "report_type": "service_orders",
+            "rows": 2
+          },
+          {
+            "classification": "Needs Review",
+            "month": "2026-06",
+            "report_type": "service_orders",
+            "rows": 2
+          }
+        ]
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Maintenance labels use the four-value contract, preserving Unclassified and Needs Review."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 1
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 2
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 3
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 4
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 5
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 6
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 7
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 8
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 9
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 10
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 11
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 12
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 13
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 14
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 15
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 16
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 17
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 18
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 1
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 3
+        }
+      ],
+      "evidence_total": 24,
+      "evidence_truncated": true,
+      "id": "name_conflicts",
+      "metrics": {
+        "affected_observations": 24
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Conflicting verbatim equipment names; use referenced observation audit rows to inspect competing names and sources."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 1
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 3
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 4
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 6
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 7
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 9
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 10
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 12
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 13
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 15
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 16
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 18
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 1
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 3
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 5
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 7
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 9
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 11
+        }
+      ],
+      "evidence_total": 18,
+      "evidence_truncated": false,
+      "id": "id_collisions",
+      "metrics": {
+        "affected_observations": 18
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Distinct supported original IDs normalize to one key; review aliases before joining. No observations were merged."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "id_missing",
+      "metrics": {
+        "affected_observations": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Missing IDs remain in fact tables without fictitious lookup records."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 2
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 4
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 6
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 8
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 10
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 12
+        }
+      ],
+      "evidence_total": 6,
+      "evidence_truncated": false,
+      "id": "id_unsupported",
+      "metrics": {
+        "affected_observations": 6
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Unsupported ID formats are retained literal text; unsupported does not mean an invalid identifier."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "equipment_other",
+      "metrics": {
+        "affected_observations": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "No equipment rule matched; Other requires departmental review."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 2
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 4
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 6
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 8
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 10
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 12
+        }
+      ],
+      "evidence_total": 6,
+      "evidence_truncated": false,
+      "id": "broad_equipment_keywords",
+      "metrics": {
+        "affected_observations": 6
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Vac, ICE or Trash substring matches may be overbroad; compatibility rules were not changed."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "kaivac_precedence",
+      "metrics": {
+        "affected_observations": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Kaivac matches the earlier Vac rule; this accepted compatibility limitation is not a code failure."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "building_missing",
+      "metrics": {
+        "affected_observations": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Location is blank; no Building was invented."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "building_unresolved",
+      "metrics": {
+        "affected_observations": 0
+      },
+      "next_step": "",
+      "status": "PASS",
+      "summary": "Building remains unresolved; check source evidence and the departmental dimension."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 2
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 4
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 6
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 8
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 10
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 12
+        }
+      ],
+      "evidence_total": 6,
+      "evidence_truncated": false,
+      "id": "building_ambiguous",
+      "metrics": {
+        "affected_observations": 6
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Location is ambiguous under the conservative Building policy; no aliases or corrections applied."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 1
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 2
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 3
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 4
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 5
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 6
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 7
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 8
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 9
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 10
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 11
+        },
+        {
+          "dataset": "ServiceOrders_History.csv",
+          "record": 12
+        }
+      ],
+      "evidence_total": 12,
+      "evidence_truncated": false,
+      "id": "maintenance_uncertain",
+      "metrics": {
+        "affected_observations": 12
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Unclassified or Needs Review remains explicit; inspect source evidence rather than forcing Needed Repair."
+    },
+    {
+      "evidence": [
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 2
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 5
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 8
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 11
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 14
+        },
+        {
+          "dataset": "Repairs_History.csv",
+          "record": 17
+        }
+      ],
+      "evidence_total": 6,
+      "evidence_truncated": false,
+      "id": "missing_repair_costs",
+      "metrics": {
+        "rows": 6
+      },
+      "next_step": "Review referenced records in the private audit evidence with the data owner; no automatic correction.",
+      "status": "REVIEW",
+      "summary": "Missing reported repair costs stay blank. Partial known totals are not complete source totals."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "building_dimension",
+      "metrics": {},
+      "next_step": "Rerun with an owner-approved CSV containing the exact text Building column.",
+      "status": "NOT TESTED",
+      "summary": "No Building dimension supplied; membership and unmatched/ambiguous dimension keys cannot be established."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "inventory_authority",
+      "metrics": {},
+      "next_step": "Confirm lookup coverage and aliases with the department.",
+      "status": "REVIEW",
+      "summary": "Observed equipment covers only the selected history; it is not an authoritative complete inventory."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "application_verifiers",
+      "metrics": {},
+      "next_step": "Use the frozen project environment. A verifier rejection needs investigation, not automatic repairs.",
+      "status": "PASS",
+      "summary": "Additional existing read-only canonical/comparison verifiers; independent assertions above do not depend on their verdict."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "inputs_unchanged",
+      "metrics": {},
+      "next_step": "",
+      "status": "PASS",
+      "summary": "All captured input bytes remain unchanged after analysis; no application write/generation API was called."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "business_accuracy",
+      "metrics": {},
+      "next_step": "Follow the documented Windows/backup-PBIX acceptance procedure and record separate evidence.",
+      "status": "NOT TESTED",
+      "summary": "Business accuracy, source completeness and departmental policy approval require independent human evidence."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "power_bi_runtime",
+      "metrics": {},
+      "next_step": "Follow the documented Windows/backup-PBIX acceptance procedure and record separate evidence.",
+      "status": "NOT TESTED",
+      "summary": "Actual five-table M import, DAX, visuals and relationships have not been executed by this analyzer."
+    },
+    {
+      "evidence": [],
+      "evidence_total": 0,
+      "evidence_truncated": false,
+      "id": "native_desktop",
+      "metrics": {},
+      "next_step": "Follow the documented Windows/backup-PBIX acceptance procedure and record separate evidence.",
+      "status": "NOT TESTED",
+      "summary": "This data analyzer does not execute Windows or native desktop UI tests."
+    }
+  ],
+  "counts": {
+    "FAIL": 0,
+    "NOT TESTED": 4,
+    "PASS": 41,
+    "REVIEW": 8
+  },
+  "executive_summary": "41 PASS, 8 REVIEW, 0 FAIL, 4 NOT TESTED. Structural validation is not business approval.",
+  "input_fingerprints": {
+    "building_dimension_sha256": null,
+    "canonical_manifest_sha256": "b9329c0007ea85cad8867d8637e7c15f3cc1725936ae6b513acdc1809a50e1cc",
+    "comparison_manifest_sha256": "82bca3828232873d6e4f767ad2134c4b08c89baaa170626cba9aadd11f968aa5"
+  },
+  "overall": "REVIEW",
+  "privacy": "Aggregate months/approved labels, counts, schema names, fingerprints and CSV references; no identifying source cells, private paths or exception text.",
+  "report_schema": "edm-acceptance-v1",
+  "scope": "ReadOnlyDevelopmentComparison",
+  "structurally_valid": true
+}

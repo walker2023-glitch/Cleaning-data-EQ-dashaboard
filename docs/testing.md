@@ -673,3 +673,38 @@ are recorded separately; this is not production activation or approval of later 
   no hosted success is inferred from these local checks.
 
 See [schemas, policy differences and Windows/backup-PBIX steps](comparison_exports_v3.md).
+
+
+## Testing-only automated acceptance — 2026-11-23
+
+- Main-based feature baseline: dc73a80. Final full runner: **1,206 passed**,
+  zero failures/errors/skips (1,132 core + 74 isolated desktop cases). The 69
+  added analyzer/runner cases cover independent self-consistent tamper detection,
+  counts/order/nulls, lookup/lineage/evidence, malformed inputs, privacy, report
+  path/collision/cleanup and environment handling. Existing tests are unchanged.
+- Milestone 2 is not on main. Separate clean pinned checkout f2718b3: complete
+  existing suite **1,157 passed**, zero failures/errors/skips (1,078 core + 79
+  isolated desktop cases). Do not combine these as unique test counts.
+- Reusable pinned-M2 runner: **53 PASS, 8 REVIEW, 0 FAIL, 4 NOT TESTED**. All five
+  focused real-widget cases passed; source and native Linux packaged desktop
+  phase-51 smokes and fresh-process restarts passed. Source/resources stayed
+  byte-identical; the selected checkout remained clean.
+- Root sdist/wheel and pinned M2 Linux PyInstaller build passed. The image Python
+  library directory was used during analysis to collect Tcl 9; executable smoke
+  ran without a runtime library-path override. Existing read-only font-cache
+  warnings used the fallback renderer. This is not Windows distribution evidence.
+- The analyzer also ran with site packages disabled: its independent checks
+  completed and the unavailable additional app verifier was correctly NOT TESTED.
+  Normal frozen-environment example: **41 PASS, 8 REVIEW, 0 FAIL, 4 NOT TESTED**.
+  Reports contain only safe aggregate labels/counts, fingerprints and CSV refs.
+- One existing V3 manifest scalar-type validation defect was reproduced on
+  disposable copies. No application fix was implemented. See
+  [reproduction, impact and owner-gated proposal](acceptance_defects.md).
+- Production src, existing tests, dependencies, candidate storage, canonical/
+  comparison schemas, financial/classification code, Power Query and application
+  packaging files have no changes. `git diff --check` passed. All data used was
+  invented. No departmental data, production PBIX or SharePoint was modified.
+- Native Windows/hosted CI, actual Power BI M/DAX/visuals, approved dimension
+  authority and business acceptance remain separate evidence requirements. See
+  [Windows/backup-PBIX execution guide](automated_acceptance.md). No merge or
+  Milestone 3a/3b work is authorized by this testing result.
