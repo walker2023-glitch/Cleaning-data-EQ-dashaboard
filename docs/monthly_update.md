@@ -1,5 +1,11 @@
 # Milestone 3a — Hybrid Monthly Update Workflow
 
+**Current status — November 24, 2026:** merged through [PR #31](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/pull/31)
+at main `b23a5e6b74c1b4c8903fda159e74b857601bf6c8`. The original implementation
+record below describes its prior review boundary. Merge does not establish employee
+or business acceptance and does not authorize 3b. See the [current review and Windows
+checklist](completion_readiness/README.md).
+
 Approved hybrid behavior, based on verified main
 `00648ca434c59b6dd39334b272ca584c303388fa` (Milestone 2 PR #30 and automated acceptance
 PR #29 present). Branch: `feature/hybrid-monthly-update`. This is implementation for

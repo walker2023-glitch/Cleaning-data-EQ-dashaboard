@@ -1,5 +1,16 @@
 # Automated V3 and employee-interface acceptance
 
+## Current execution — November 24, 2026
+
+Milestone 2 and 3a are now merged (main b23a5e6, PR #31). The workflow tests the
+exact pushed/PR SHA; manual dispatch may select a reviewed ref. The runner requires
+**phase 55** plus monthly-check identities and fresh-process restart when the selected
+checkout contains `monthly_update.py`. A separately selected original M2 checkout
+still requires its complete phase-51 smoke. Use a NEW output directory and avoid
+concurrent GUI checks on the same display. See [current review evidence](completion_readiness/README.md).
+
+## Original testing-only implementation record
+
 This testing-only feature adds no application code, rules, schemas or dependencies.
 Verified main: `dc73a80a4ecbbe038f687c7735887bb1a210f644`.
 Milestone 2 is **not on main** at this check; its pushed review commit is
@@ -152,8 +163,8 @@ Pop-Location
 uv run --frozen --all-extras python tools/acceptance/run_synthetic.py --app-checkout ..\EDM-Acceptance-App --output C:\EDM-Test\new-run --desktop --executable ..\EDM-Acceptance-App\dist\EquipmentDataManager\EquipmentDataManager.exe
 ```
 
-The runner records the executable SHA-256, checks successful exit/phase 51 plus
-fresh-process restore, and preserves all five widget outcomes. Build/source
+The runner records the executable SHA-256, checks successful exit and the complete selected-checkout phase (55 for 3a,
+51 for the original M2 checkout) plus fresh-process restore, and preserves all five widget outcomes. Build/source
 association depends on using that checkout; a hash alone is not a signed build
 attestation. Linux needs a usable DISPLAY (CI uses existing xvfb-run). Never run
 GUI suites/smokes concurrently on the same display. Windows DPI, accessibility,

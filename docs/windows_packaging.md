@@ -1,5 +1,16 @@
 # Windows prototype packaging and distribution
 
+## Current merged behavior — November 24, 2026
+
+Milestone 2 and 3a are merged. Current comparison output is **v3**, and full desktop
+smoke must reach **phase 55** plus passed fresh-process restart. Earlier version/phase
+sections below are historical feature evidence, not the current acceptance threshold.
+Use [the concise Windows employee checklist](completion_readiness/windows_acceptance.md)
+and [the monthly update guide](monthly_update.md). Native Windows feature-head
+packaging and synthetic acceptance passed on e0b4f85; merged main b23a5e6 has an
+identical source tree. Verify each distributed artifact's revision/digest separately.
+A portable prototype is not a signed departmental installer or production approval.
+
 ## Milestone 1b comparison v2
 
 The existing executable comparison action now generates v2 and shows its readable
