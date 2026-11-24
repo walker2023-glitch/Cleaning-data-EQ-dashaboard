@@ -1,5 +1,10 @@
 # Documentation readiness, remaining effort and owner decisions
 
+**Decision update:** Option A has been selected. Its [final implementation design](milestone_3b_final_design.md)
+now estimates 6–9 engineering days plus Windows acceptance and still requires final
+schema/reader approval. The older alternative-selection questions/estimates below
+are preserved as the prior readiness audit, not a request to select A again.
+
 Audit date November 24, 2026; main b23a5e6. This is a technical supplement.
 The owner's separate master guide `docs/README.md` is intentionally **not rewritten**.
 Its historical statements are identified below for later owner-controlled integration.

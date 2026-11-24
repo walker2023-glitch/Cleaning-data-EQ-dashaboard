@@ -16,6 +16,23 @@ guide was not rewritten. No production data, PBIX or SharePoint was modified.
 - [Documentation review comparison](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/compare/main...docs/autonomous-completion-readiness?expand=1).
   Do not merge automatically. GitHub API creation outcome is recorded below.
 
+## Owner-selected Option A — implementation preparation
+
+Owner selected Option A and approved the local fixed-disk/backup-PBIX product
+boundaries. Final control schemas and reader contract are **not yet approved**.
+The strict validation fix is implemented on separate `feature/strict-manifest-metadata`
+(commit 6ab7a80) for review; no activation state is implemented on this docs branch.
+
+- [Strict validation fix handoff](strict_manifest_handoff.md).
+- [Exact final design](milestone_3b_final_design.md), with canonical-only initial reader proposed.
+- [Complete proposed JSON Schemas](milestone_3b_schemas.proposed.json) — documentation only.
+- [Windows failure-injection/recovery and backup-PBIX plan](milestone_3b_acceptance_plan.md).
+- [Exact next implementation prompt](milestone_3b_next_prompt.md) — send only after approval.
+
+These details supersede the earlier Option A sketch's illustrative field names.
+The earlier comparison remains available as implementation context. The next decision
+is approval/revision of schemas, reader and recovery limits, not selection of A vs B.
+
 ## Deliverables
 
 1. [Milestone 3a specification review, evidence and test gaps](milestone_3a_review.md).
@@ -65,8 +82,8 @@ Native Windows hosted evidence is separate:
 - [3a exact-head Windows/Linux synthetic acceptance](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45231387711):
   Success; 10m 54s; both OS jobs passed.
 - [Merged-main CI](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45405904112):
-  **In progress during this audit: Linux complete; Windows pending.** This is not
-  reported as a merged-main Windows success. Its push event runs the existing matrix;
+  **Success**, 12m 4s; both Windows and Linux completed, reverified during final-design
+  preparation. Its push event runs the existing matrix;
   the native packaging gate is not triggered merely by a main push. Do not claim
   a new native Windows artifact from that skipped build step.
 
@@ -78,15 +95,15 @@ activation semantics require the proposed Windows failure tests before approval.
 
 ## Boundary and next owner decision
 
-All authorized independent preparation tasks are complete; the outstanding merged-main
-Windows CI result is explicitly recorded above, not inferred from earlier runs. 3a is merged, not a new implementation task. Record
+The earlier preparation is complete and merged-main CI subsequently passed;
+implementation preparation now adds the owner-selected exact Option A design above. 3a is merged, not a new implementation task. Record
 employee acceptance next, then approve/revise a bounded **local backup-PBIX** 3b
 architecture and output contract, strict-validation prerequisite, refresh exclusion,
 settings/record schemas and recovery policy. No 3b/production authority is implied.
 
-Remaining indicative effort for recommended option A: **11–19 engineering working
-days**, plus overlapping owner/model/Windows validation; scope and exclusions are
-in the estimate. This is not a production-release date or a promise of background
+The earlier full-readiness estimate remains historical. The exact 3b prototype
+design refines its own effort to **6–9 engineering working days**, plus 1–2 Windows
+acceptance days and model-owner time; production/model redesign remains excluded. This is not a production-release date or a promise of background
 execution. No further independent production-code work is authorized here.
 
 ## Review preparation limitation

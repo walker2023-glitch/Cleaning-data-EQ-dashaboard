@@ -1,5 +1,10 @@
 # Milestone 3b architecture proposal — approval required
 
+**Owner decision update:** Option A and its local-backup product boundaries are now
+selected. See [the exact final design](milestone_3b_final_design.md), proposed schemas
+and acceptance plan for the remaining approval. The earlier fields below are an
+architecture sketch, not the final schema. No activation implementation is included.
+
 **Planning only. No implementation authorization or production activation.**
 Baseline: merged 3a main b23a5e6. Employee need: stop manually repointing a backup
 Power BI input while retaining a verified previous version and a clear recovery path.
