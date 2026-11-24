@@ -19,15 +19,23 @@ Primary navigation: **Process Reports**, **Results**, **Process Multiple Months*
    means the run ended. Resolve failed/review rows, then preview again. Already
    saved revisions survive failures and stops. Open Technical details for your
    maintainer's hashes, paths, versions and diagnostic source-date trace.
-6. Use Process Multiple Months → Power BI snapshot to combine reviewed saved
-   reports into four local historical test datasets. Development tools separately
-   creates the five-table V3 comparison from a completed snapshot, for a backup
-   PBIX only. Neither action approves, activates, publishes or refreshes Power BI.
+6. In Process Multiple Months → Power BI snapshot, choose **Choose completed baseline**
+   for a monthly update, or **Initial build (no baseline)** for a separate first build.
+   **Choose new local output location**, then **Review monthly update**. Read the full
+   plan below: recommendation, included/excluded months, replacements, counts and warnings.
+   Confirm the plan and any historical replacements/removals, then **Generate confirmed
+   monthly update**. A final dialog is required. Every saved version stays local and
+   unapproved; choose its completed `snapshot` folder explicitly for the next baseline.
+   **No Update Needed** writes nothing; **Review Required** explains missing/changed or
+   invalid evidence. Complete corrections through approval AND processing before retrying.
+   See [monthly update acceptance and recovery](monthly_update.md).
+   Development tools separately retain maintainer snapshot generation and temporary V3
+   comparisons for a backup PBIX. No action activates, publishes or refreshes Power BI.
 
 Warnings, unavailable costs and financial totals remain visible. A successful save
 is not proof of business accuracy. F1, Explain this step and the offline Help guide
-explain selections, writes, recovery and next steps. There is no Update Power BI
-Data button yet; activation/update functionality is a later milestone.
+explain selections, writes, recovery and next steps. Monthly updates generate new local versions only. Stable activation and Power BI
+refresh remain later, separately approved milestones.
 
 ## Development comparison tools
 

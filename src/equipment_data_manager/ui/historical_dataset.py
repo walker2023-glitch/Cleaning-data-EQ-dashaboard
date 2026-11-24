@@ -16,8 +16,8 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.history,self.app=history,history.app
         self.plan=None;self.output=None;self.comparison_output=None
         self.grid_columnconfigure(0,weight=1)
-        ctk.CTkLabel(self,text='Power BI Historical Snapshot',font=ctk.CTkFont(size=18,weight='bold')).grid(row=0,column=0,sticky='w')
-        ctk.CTkLabel(self,text='Combine current selected candidates for the range above. No raw cleaning, approval, upload or refresh.',
+        ctk.CTkLabel(self,text='Monthly Historical Update',font=ctk.CTkFont(size=18,weight='bold')).grid(row=0,column=0,sticky='w')
+        ctk.CTkLabel(self,text='Process eligible reports in Batch processing first. Review a monthly update below; a new local version requires your confirmation.',
             wraplength=760,justify='left').grid(row=1,column=0,sticky='w',pady=5)
         self.preview_button=ctk.CTkButton(self,text='Preview selected candidates',command=self.preview,width=230)
         self.preview_button.grid(row=2,column=0,sticky='w',pady=5)
@@ -50,6 +50,16 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.technical_button.grid(row=11,column=0,sticky='w',pady=5)
         self.technical = ctk.CTkTextbox(self,height=130,wrap='word')
         self.development_visible=False
+        # The existing low-level snapshot controls remain in development tools;
+        # monthly updating is the single primary employee path.
+        legacy=ctk.CTkFrame(self.development)
+        legacy.pack(fill='x',padx=8,pady=4)
+        ctk.CTkLabel(legacy,text='Maintainer: independent canonical snapshot (no monthly comparison)').grid(row=0,column=0,sticky='w')
+        for row,widget in enumerate((self.preview_button,self.compatibility,self.local_check,self.create_button),1):
+            widget.grid(in_=legacy,row=row,column=0,sticky='w',pady=4)
+        from equipment_data_manager.ui.monthly_update import MonthlyUpdateControls
+        self.monthly=MonthlyUpdateControls(self,self)
+        self.monthly.grid(row=2,column=0,sticky='ew',pady=5)
         self.invalidate()
 
     def toggle_technical(self):
@@ -62,6 +72,7 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.technical_button.configure(text='Technical details (hide)' if self.technical_visible else 'Technical details (show)')
 
     def invalidate(self):
+        if hasattr(self,'monthly'):self.monthly.invalidate()
         self.plan=None;self.ack.set(False);self.local.set(False)
         self.history._text(self.technical,'')
         self.table.delete(*self.table.get_children())
@@ -69,6 +80,7 @@ class HistoricalDatasetPage(ctk.CTkScrollableFrame):
         self.busy(False)
 
     def busy(self,value):
+        if hasattr(self,'monthly'):self.monthly.busy(value)
         busy=value or self.app.worker.busy or self.app.settings_worker.busy
         ready=self.app.workspace is not None and not busy
         self.preview_button.configure(state='normal' if ready else 'disabled')

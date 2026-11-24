@@ -232,12 +232,12 @@ entry('comparison_preview','Development comparison export',
     'Verify the comparison with the developer guide, then import into new disconnected tables in a backup PBIX. This temporary preview is not another permanent employee output mode.',
     'Read comparison_warnings.txt and audit/diagnostics.csv for collisions, unsupported IDs, unresolved locations and legacy Building differences. Building labels are not validated dimension keys. Observed Equipment is not a complete inventory. Review conflicting names, broad equipment keywords and uncertain maintenance in the audit reports. Use the V3 Power Query helper with v3; keep canonical/old helpers and production sources unchanged.')
 
-entry('historical_dataset','Power BI Historical Snapshot',
-    'Creates four local unapproved datasets from current selected candidate revisions.',
-    'Use the range above, preview selected candidates, inspect missing slots, hashes, counts and warnings. All requested months and report types must be valid. Acknowledge compatibility gaps and trusted local storage, then confirm creation in a new snapshot directory.',
-    'Candidate revisions and originals are read only. Dates remain date-only, identifiers stay text, missing costs stay blank. This does not replace Requests and Work Order with identical tables.',
-    'Open the completed snapshot, read compatibility_report.md, then compare in a separate backup PBIX. No approval, Graph access, upload or refresh.',
-    'Missing or invalid selections block generation; resolve them through existing preview/correction workflows. Never recursively import candidate history or multiple snapshots.')
+entry('historical_dataset','Monthly Historical Update',
+    'Recommends Add New Months, Rebuild History, No Update Needed or Review Required before any new output.',
+    'Process eligible reports first. In Power BI snapshot choose a completed baseline, or explicitly use Initial build (no baseline). Choose new local output location, then Review monthly update. Read the complete plan below, including months, revisions, counts, warnings and destination. Confirm the plan and any historical replacements/removals, then Generate confirmed monthly update.',
+    'Reuses validated candidates without recleaning. Writes four canonical CSVs only in a new local unapproved version. Previous outputs, candidate revisions, identifiers, repeated records and missing values remain. No activation, publication or refresh.',
+    'Choose the completed output explicitly as the baseline for the next update. Identical selections give No Update Needed. Development tools retain independent canonical generation and temporary backup-PBIX comparisons for maintainers.',
+    'Missing, changed or invalid sources/candidates/baselines block ordinary updates. Complete corrections through the existing single-report approval AND processing workflow. If evidence changes after review, preview again. Restart requires fresh explicit baseline and destination selection.')
 
 
 entry('navigation_process', 'Process one month',

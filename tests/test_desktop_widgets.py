@@ -1679,3 +1679,85 @@ def test_employee_partial_failure_completion_uses_actual_saved_and_failed_result
     assert 'Failed: 1' in app.summary.cget('text')
     assert len(app.workflow.coordinator.store.history())==1
     assert app.table.item('1','values')[1:3]==('Repair Reports','2026-09')
+
+
+def test_monthly_update_gui_initial_add_retry_explicit_baseline_and_confirmation(app,tmp_path,monkeypatch):
+    from equipment_data_manager.monthly_update import REBUILD,ADD,UNCHANGED
+    from equipment_data_manager.historical_dataset import validate_dataset
+    from test_historical_discovery import snapshot
+    page,dataset=prepare_historical_dataset(app,tmp_path);monthly=dataset.monthly
+    page.end.set('2026-01');before=snapshot(app.workspace.candidate_folder)
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.filedialog.askdirectory',lambda **kw:str(tmp_path/'monthly-outputs'))
+    monthly.destination_button.invoke();monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan.recommendation==REBUILD and 'initial historical build' in monthly.recommendation.cget('text')
+    assert monthly.generate_button.cget('state')=='disabled' and not monthly.destination.exists()
+    monthly.generate();assert not app.worker.busy
+    assert 'Proposed: 2026-01 through 2026-01' in monthly.review.get('1.0','end')
+    assert str(monthly.destination) in monthly.review.get('1.0','end')
+    monthly.confirm.toggle()
+    prompts=[]
+    def decline(*args,**kwargs):prompts.append(args[1]);return False
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',decline)
+    monthly.generate_button.invoke();assert not app.worker.busy and not monthly.destination.exists()
+    assert len(prompts[0])<1500 and str(monthly.destination) in prompts[0]
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',lambda *a,**kw:True)
+    monthly.generate_button.invoke();pump(app,lambda:not app.worker.busy)
+    first=dataset.output;assert validate_dataset(first)['end']=='2026-01'
+    assert 'Saved successfully' in monthly.recommendation.cget('text')
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.filedialog.askdirectory',lambda **kw:str(first))
+    monthly.baseline_button.invoke();assert monthly.baseline==first and monthly.plan is None
+    page.end.set('2026-02')
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.filedialog.askdirectory',lambda **kw:str(tmp_path/'monthly-outputs'))
+    monthly.destination_button.invoke();monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan.recommendation==ADD and '2026-02' in dataset.detail.get('1.0','end')
+    monthly.confirm.toggle();monthly.mode_menu.set(REBUILD);monthly.mode_menu._command(REBUILD)
+    assert not monthly.confirmed.get() and monthly.generate_button.cget('state')=='disabled'
+    monthly.confirm.toggle();monthly.generate_button.invoke();pump(app,lambda:not app.worker.busy)
+    second=dataset.output;assert second!=first and first.exists()
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.filedialog.askdirectory',lambda **kw:str(second))
+    monthly.baseline_button.invoke()
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.filedialog.askdirectory',lambda **kw:str(tmp_path/'monthly-outputs'))
+    monthly.destination_button.invoke();monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan.recommendation==UNCHANGED and monthly.generate_button.cget('state')=='disabled'
+    assert snapshot(app.workspace.candidate_folder)==before and not monthly.destination.exists()
+
+
+def test_monthly_update_gui_removal_requires_separate_authorization(app,tmp_path,monkeypatch):
+    from test_historical_dataset import build
+    from equipment_data_manager.historical_dataset import preview_dataset,validate_dataset
+    page,dataset=prepare_historical_dataset(app,tmp_path);monthly=dataset.monthly
+    base=build(app.workspace,preview_dataset(app.workspace,'2026-01','2026-02'),tmp_path/'baseline')
+    monthly.baseline=base;monthly.destination=tmp_path/'smaller';page.end.set('2026-01')
+    monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan.removed==('2026-02',) and monthly.plan.recommendation=='Review Required'
+    monthly.confirm.toggle();assert monthly.generate_button.cget('state')=='disabled'
+    monthly.change_confirm.toggle();assert monthly.generate_button.cget('state')=='normal'
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',lambda *a,**kw:True)
+    monthly.generate_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert validate_dataset(dataset.output)['end']=='2026-01' and base.exists()
+
+
+def test_monthly_update_gui_stale_source_failed_result_requires_fresh_preview(app,tmp_path,monkeypatch):
+    from test_monthly_update import source
+    page,dataset=prepare_historical_dataset(app,tmp_path);monthly=dataset.monthly
+    monthly.destination=tmp_path/'out';monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    monthly.confirm.toggle();f=source(app.workspace);f.write_bytes(f.read_bytes()+b'\n')
+    monkeypatch.setattr('equipment_data_manager.ui.monthly_update.messagebox.askyesno',lambda *a,**kw:True)
+    monthly.generate_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan is None and not monthly.destination.exists() and not dataset.output
+    assert 'changed since preview' in app.status.get()
+    assert monthly.generate_button.cget('state')=='disabled'
+    monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan.recommendation=='Review Required' and not monthly.plan.permitted
+    assert 'source changed' in dataset.detail.get('1.0','end')
+
+
+def test_monthly_update_gui_range_and_settings_invalidate_confirmation(app,tmp_path):
+    page,dataset=prepare_historical_dataset(app,tmp_path);monthly=dataset.monthly
+    monthly.destination=tmp_path/'out';monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    monthly.confirm.toggle();page.end.set('2026-03')
+    assert monthly.plan is None and not monthly.confirmed.get()
+    monthly.preview_button.invoke();pump(app,lambda:not app.worker.busy)
+    assert monthly.plan.recommendation=='Review Required' and not monthly.plan.permitted
+    assert monthly.generate_button.cget('state')=='disabled'
+    page.invalidate();assert monthly.plan is None and not monthly.confirmed.get()

@@ -624,12 +624,20 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
                         self.status.set(event.payload + (" Check local folder availability; synchronization is unverified." if self.job in ("discover", "packet") else ""))
                         if self.job == "business_review":
                             self.business_review_page.failed()
+                        if self.job in ('monthly_update_preview','monthly_update_create'):
+                            self.historical_page.dataset.monthly.failed()
                         if self.job in ('dataset_preview','dataset_create'):
                             self.historical_page.dataset.failed()
                         if self.job == 'comparison_create':
                             self.historical_page.dataset.comparison_failed()
                         if self.job in ("historical_plan", "historical_process"):
                             self.historical_page.processing.failed()
+                    elif self.job == 'monthly_update_preview':
+                        self.historical_page.dataset.monthly.previewed(event.payload)
+                        self.status.set('Monthly update reviewed. Inspect the recommendation and exact plan before confirming a new local version.')
+                    elif self.job == 'monthly_update_create':
+                        self.historical_page.dataset.monthly.completed(event.payload)
+                        self.status.set('Monthly update saved successfully as a new local unapproved version. No activation or refresh.')
                     elif self.job == 'dataset_preview':
                         self.historical_page.dataset.previewed(event.payload)
                         self.status.set('Candidate snapshot preview complete. Missing/invalid selections block generation; compatibility and local storage need explicit confirmation.')
@@ -704,7 +712,7 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
         self.stop_button.configure(state="disabled")
         if self.job in ('historical_preview','historical_plan'):
             self.status.set('Stopping after the current report. Read-only evidence remains visible; no candidates written.')
-        elif self.job in ('dataset_preview','dataset_create'):
+        elif self.job in ('dataset_preview','dataset_create','monthly_update_preview','monthly_update_create'):
             self.status.set('Stopping local snapshot work safely; no incomplete dataset will be finalized.')
         elif self.job == 'historical_process':
             self.status.set('Stopping after the current report. Saved reports remain in Settings → Processing History.')
@@ -1012,6 +1020,10 @@ class EquipmentDataManager(SettingsMixin, ctk.CTk):
             self.guidance.register(widget,'historical_inventory')
         for widget in (self.historical_page.dataset.preview_button,self.historical_page.dataset.create_button,
                        self.historical_page.dataset.compatibility,self.historical_page.dataset.local_check,self.historical_page.dataset.open_button):
+            self.guidance.register(widget,'historical_dataset')
+        monthly=self.historical_page.dataset.monthly
+        for widget in (monthly.baseline_button,monthly.initial_button,monthly.destination_button,
+                       monthly.preview_button,monthly.mode_menu,monthly.confirm,monthly.change_confirm,monthly.generate_button):
             self.guidance.register(widget,'historical_dataset')
         self.guidance.register(self.historical_page.dataset.technical_button, 'technical_details')
         for widget in (self.historical_page.dataset.development_button,self.historical_page.dataset.comparison_button,

@@ -42,7 +42,7 @@ def run_smoke(directory: Path | None) -> int:
         (directory / "desktop-smoke.json").write_text(json.dumps({
             "status": state["status"], "phase": state["phase"], "failure_kind": state.get("failure_kind"),
             "checks": ["window", "preview_without_writes", "M1_processing", "duplicate_skip",
-                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip", "historical_dataset_selected_revisions", "historical_dataset_integrity", "historical_dataset_repeatability", "historical_dataset_no_candidate_mutation", "comparison_development_action", "comparison_projection_integrity", "comparison_retained_canonical_lineage"],
+                       "explicit_correction_review", "previous_revision_retained", "history", "TMA_XLSX_preview_process", "powerbi_all_report_types", "publication_blocked", "monthly_discovery", "mixed_preview_process", "candidate_review_packet", "approved_folder_untouched", "visual_settings", "saved_preferences", "guided_brief_detailed", "F1_help", "bundled_employee_guide", "restart_restores_settings", "monthly_review_evidence", "local_unsent_request", "final_approval_publish_disabled", "reporting_month_restored", "review_sections", "identity_unavailable", "historical_standard_inventory", "historical_sharepoint_inventory", "historical_export", "folder_layout_restored", "legacy_xls_preview_process", "missing_assignment_counts", "legacy_xls_source_hash", "timestamped_tma_june", "timestamped_tma_counts", "timestamped_tma_source_hash", "historical_batch_preview", "historical_batch_no_writes", "historical_batch_export", "historical_ignored_extra_notice", "historical_processing_plan", "historical_processing_confirmation", "historical_candidate_commit", "historical_processing_retry_skip", "historical_dataset_selected_revisions", "historical_dataset_integrity", "historical_dataset_repeatability", "historical_dataset_no_candidate_mutation", "comparison_development_action", "comparison_projection_integrity", "comparison_retained_canonical_lineage", "monthly_update_recommendation", "monthly_update_explicit_confirmation", "monthly_update_version_and_retry"],
         }, indent=2), encoding="utf-8")
         app._close()
 
@@ -517,6 +517,54 @@ def run_smoke(directory: Path | None) -> int:
                 assert (dataset.comparison_output/'Equipment_History.csv').exists()
                 assert (dataset.comparison_output/'audit/equipment_observations.csv').exists()
                 assert validate_dataset(dataset.output)['status']=='CandidateUnverified'
+                monthly=dataset.monthly
+                monthly.baseline=dataset.output
+                state['monthly_baseline']=dataset.output
+                monthly.destination=workspace/'monthly-no-change'
+                monthly.preview_button.invoke()
+            elif phase == 52:
+                monthly=app.historical_page.dataset.monthly
+                assert monthly.plan.recommendation=='No Update Needed'
+                assert monthly.generate_button.cget('state')=='disabled'
+                assert not monthly.destination.exists()
+                from tkinter import messagebox
+                confirm=messagebox.askyesno
+                try:
+                    messagebox.askyesno=lambda *args,**kwargs:True
+                    monthly.initial_button.invoke()
+                finally:messagebox.askyesno=confirm
+                monthly.destination=workspace/'monthly-initial'
+                monthly.preview_button.invoke()
+            elif phase == 53:
+                monthly=app.historical_page.dataset.monthly
+                assert monthly.plan.recommendation=='Rebuild History'
+                assert monthly.generate_button.cget('state')=='disabled'
+                from tkinter import messagebox
+                confirm=messagebox.askyesno
+                try:
+                    monthly.confirm.toggle()
+                    messagebox.askyesno=lambda *args,**kwargs:False
+                    monthly.generate_button.invoke()
+                    assert not app.worker.busy and not monthly.destination.exists()
+                    messagebox.askyesno=lambda *args,**kwargs:True
+                    monthly.generate_button.invoke()
+                finally:messagebox.askyesno=confirm
+                assert app.worker.busy
+            elif phase == 54:
+                from equipment_data_manager.historical_dataset import validate_dataset
+                dataset=app.historical_page.dataset;monthly=dataset.monthly
+                assert dataset.output!=state['monthly_baseline']
+                manifest=validate_dataset(dataset.output)
+                assert [e['sha256'] for e in manifest['datasets']]==state['dataset_hashes']
+                assert validate_dataset(state['monthly_baseline'])['complete']
+                assert 'Saved successfully' in monthly.recommendation.cget('text')
+                monthly.baseline=dataset.output
+                monthly.destination=workspace/'monthly-retry'
+                monthly.preview_button.invoke()
+            elif phase == 55:
+                monthly=app.historical_page.dataset.monthly
+                assert monthly.plan.recommendation=='No Update Needed'
+                assert not monthly.destination.exists() and monthly.generate_button.cget('state')=='disabled'
                 app.month.set('January');app.show_page('Process Reports')
                 finish(True);return
             state["phase"] += 1

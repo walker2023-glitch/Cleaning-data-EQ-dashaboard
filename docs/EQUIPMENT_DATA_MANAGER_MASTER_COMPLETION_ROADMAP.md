@@ -331,3 +331,19 @@ implementation. See [the acceptance guide](automated_acceptance.md). Production
 code, financial/classification rules, schemas, dependencies and data remain unchanged.
 Existing application bugs, if found, require owner approval before any fix. No
 Milestone 3a/3b work or automatic merge is authorized.
+
+## Owner-directed Milestone 3a approval — 2026-11-23
+
+Owner confirmed Milestone 2 merged through PR #30 and authorized resuming **Hybrid
+Monthly Update Workflow** from verified main `00648ca434c59b6dd39334b272ca584c303388fa`.
+Automated acceptance PR #29 is present. Branch: `feature/hybrid-monthly-update`.
+The app recommends Add New Months, Rebuild History, No Update Needed or Review
+Required; employees explicitly confirm before generating a new immutable local
+version. Reuse existing validated candidate selection and canonical generation;
+no new dependency, persisted planning authority or canonical/comparison schema change.
+See [implementation and Windows acceptance](monthly_update.md).
+
+This authorizes 3a implementation and a review PR only. Owner review, Windows employee
+acceptance and business verification remain separate gates. No automatic merge,
+Milestone 3b, stable activation, SharePoint publication, automatic Power BI refresh,
+production PBIX/data changes or unrelated bug fixes are authorized by this record.
