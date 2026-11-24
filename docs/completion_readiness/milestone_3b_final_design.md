@@ -186,7 +186,8 @@ remain available read-only even when state is blocked.
 | No active/journal/history selection (new root) | Uninitialized selection; explicit first activation only |
 | Prepared journal; active exactly old (or absent for first activation) | Prior state retained; offer confirmed Abort pending operation; archive aborted, keep all versions/history |
 | Journal; active exactly new and all new evidence valid | Offer confirmed Finish recorded activation; archive committed, no selector change |
-| Valid old/new journal but unknown/malformed selector, inconsistent history, bad target or unexpected phase/digest | Recovery Required; no automatic pointer repair or refresh. Retain evidence for authorized maintainer review |
+| Exact known selector/history, but selected version is corrupt/incomplete; a reachable committed previous version validates | Recovery Required; offer explicitly confirmed recovery rollback to that verified version, as a fresh generation; never auto-select it |
+| Unknown/malformed selector, inconsistent history or unexpected phase/digest | Recovery Required; no automatic pointer repair or refresh. Retain evidence for authorized maintainer review |
 | Valid persistent hold after restart | Refresh In Progress; never expire/clear automatically; finish via explicit hold protocol |
 | Partial temp/.s or orphan history/version | Never use as active authority; retain for diagnosis. Valid complete unselected version may be explicitly selected later |
 
@@ -201,6 +202,17 @@ a fresh selection ID and incremented generation. It requires valid current metad
 no refresh hold, final rollback confirmation and any removal/replacement consent.
 If the old retained version is invalid, rollback is blocked; never silently choose
 another version. No old snapshot/record is modified or deleted.
+
+Recovery rollback may proceed when the current CONTROL binding/history are exact and
+valid but its selected DATA version fails validation. Display current data as invalid/
+not assessed, validate the explicitly chosen reachable prior version, and require
+specific recovery/rollback confirmation. Archive any failed live journal as
+recovery_required before preparing the new rollback journal under the same lock;
+retain its old/new evidence. A crash between archival and new preparation leaves the
+known invalid current version blocked, with the verified history chain still available
+for the same explicit recovery. The new rollback uses current generation + 1 and the
+usual commit protocol; it may not bypass invalid ROOT/SELECTOR/HISTORY metadata.
+No normal activation or refresh is allowed while the current version is invalid.
 
 ## 7. Manual refresh hold and M wrapper
 

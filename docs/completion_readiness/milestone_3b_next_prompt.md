@@ -26,7 +26,8 @@ change schemas. Start a NEW feature branch from verified main.
 
 Implement only the approved root, immutable import, active selector/history,
 activation journal, OS writer lock, persistent manual refresh hold, explicit rollback,
-startup recovery, Settings migration and new canonical-only stable-root M wrapper.
+startup recovery (including explicit verified-parent recovery rollback for invalid data
+with valid control metadata), Settings migration and new canonical-only stable-root M wrapper.
 Use the exact path/state/confirmation/validation protocol and failure tests. Preserve
 all source/candidate/completed versions, finances, classifications, canonical and
 V1/V2/V3 contracts. No unapproved dependencies, production/network/sync activation,

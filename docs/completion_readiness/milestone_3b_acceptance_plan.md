@@ -45,6 +45,7 @@ processes/native filesystem semantics in addition to mocked OSError unit tests.
 | HOLD-03 | Truncated/invalid hold or journal | Fail closed, no reset/delete shortcut; maintainer review |
 | ROLL-01 | Verified prior committed version | New generation/selection ID, explicit rollback and change consent; old records untouched |
 | ROLL-02 | Missing/corrupt target or orphan history receipt | Rollback blocked; no alternate “latest good” choice |
+| ROLL-03 | Current control binding valid but selected data corrupt; committed previous target valid | Only explicit recovery rollback permitted, fresh generation; test crash after failed-journal archive and before new preparation; unknown selector/history still blocks |
 | SET-01 | v1/v2 load and ordinary save | No activation/default root; unchanged existing preferences/workspace behavior |
 | SET-02 | First v3 save failure after profile backup | Old Settings retained, exclusive original-byte backup verified; no implicit activation |
 | SET-03 | Disable/root change during hold/journal | Block; retain old root/versions; no authority copied to a new root |
