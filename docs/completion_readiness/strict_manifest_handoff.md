@@ -26,11 +26,11 @@ are environmental; actual Power BI/employee/DPI/business acceptance is separate.
 
 Hosted checks at the exact fix head:
 
-- [Windows/Linux regression and native Windows packaging](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45411388265).
+- [Windows/Linux regression and native Windows packaging](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45411388265): **Success**, 13m 45s; both jobs completed. Windows phase-55 smoke/restart and prototype/diagnostic artifacts passed.
 - [Windows/Linux synthetic acceptance](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45411388016): **Success**, 12m 22s; native Windows build, full selected-app regression, source/frozen smoke and restart passed.
 
-Final statuses are recorded in the delivery; no hosted success is inferred from
-local checks. The proposed 3b Windows failure matrix is not implemented or claimed
+Both exact-head hosted results were read and verified after completion; no hosted
+success is inferred from local checks. The proposed 3b Windows failure matrix is not implemented or claimed
 executed. No activation service, state file or wrapper was added.
 
 Draft creation returned `Post "https://api.github.com/graphql": Forbidden`.
