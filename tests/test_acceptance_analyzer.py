@@ -211,7 +211,7 @@ def test_independent_equipment_reference_known_answers(name,expected):
 
 
 @pytest.mark.parametrize('mutation,check_id', [('boolean_as_integer','development_contract'),('count_as_boolean','dataset_repair_financial_summary')])
-def test_documented_existing_verifier_type_coercion_gap_is_caught_independently(bundle,mutation,check_id):
+def test_documented_verifier_type_coercion_is_rejected_independently(bundle,mutation,check_id):
     from equipment_data_manager.comparison_export import validate_comparison
     comparison,canonical=bundle;p=comparison/'comparison_manifest.json';m=json.loads(p.read_text())
     if mutation=='boolean_as_integer':m['production_ready']=0
@@ -220,8 +220,10 @@ def test_documented_existing_verifier_type_coercion_gap_is_caught_independently(
         first=next(iter(entry['rows_by_month']));assert entry['rows_by_month'][first]==1
         entry['rows_by_month'][first]=True
     p.write_text(json.dumps(m))
-    # Current application defect, recorded for owner approval rather than fixed here.
-    validate_comparison(comparison)
+    # Owner-approved strict metadata fix; independent rejection remains required.
+    from equipment_data_manager.processing.models import ProcessingError
+    with pytest.raises(ProcessingError,match='comparison_contract_rejected'):
+        validate_comparison(comparison)
     r=a.analyze(*bundle)
     assert check(r,check_id)['status']=='FAIL'
 

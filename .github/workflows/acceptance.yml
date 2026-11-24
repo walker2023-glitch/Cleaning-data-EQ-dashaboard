@@ -1,7 +1,7 @@
 name: Synthetic V3 and employee UI acceptance
 on:
   push:
-    branches: [feature/automated-acceptance-testing, feature/hybrid-monthly-update]
+    branches: [feature/automated-acceptance-testing, feature/hybrid-monthly-update, feature/strict-manifest-metadata]
   pull_request:
     paths:
       - 'tools/acceptance/**'

@@ -324,7 +324,9 @@ def validate_comparison(root):
             raise ProcessingError('comparison_contract_rejected')
         source, payloads = _capture(audit / 'canonical')
         tables, lineage, extras, counts = _project(payloads, export_schema)
-        if manifest != _manifest(source, payloads, tables, lineage, export_schema, extras, counts):
+        # JSON encoding preserves Boolean/integer/float distinctions recursively;
+        # Python mapping equality considers False == 0 and True == 1.
+        if _json(manifest) != _json(_manifest(source, payloads, tables, lineage, export_schema, extras, counts)):
             raise ProcessingError('comparison_contract_rejected')
         for kind, raw in tables.items():
             if _safe(root / names_for(export_schema)[kind]).read_bytes() != raw:
