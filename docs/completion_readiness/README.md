@@ -65,7 +65,8 @@ Native Windows hosted evidence is separate:
 - [3a exact-head Windows/Linux synthetic acceptance](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45231387711):
   Success; 10m 54s; both OS jobs passed.
 - [Merged-main CI](https://github.com/walker2023-glitch/Cleaning-data-EQ-dashaboard/actions/runs/45405904112):
-  status being checked before delivery. Its push event runs the existing matrix;
+  **In progress during this audit: Linux complete; Windows pending.** This is not
+  reported as a merged-main Windows success. Its push event runs the existing matrix;
   the native packaging gate is not triggered merely by a main push. Do not claim
   a new native Windows artifact from that skipped build step.
 
@@ -77,8 +78,8 @@ activation semantics require the proposed Windows failure tests before approval.
 
 ## Boundary and next owner decision
 
-All authorized independent preparation tasks are complete when validation and review
-link status below are finalized. 3a is merged, not a new implementation task. Record
+All authorized independent preparation tasks are complete; the outstanding merged-main
+Windows CI result is explicitly recorded above, not inferred from earlier runs. 3a is merged, not a new implementation task. Record
 employee acceptance next, then approve/revise a bounded **local backup-PBIX** 3b
 architecture and output contract, strict-validation prerequisite, refresh exclusion,
 settings/record schemas and recovery policy. No 3b/production authority is implied.
@@ -90,8 +91,8 @@ execution. No further independent production-code work is authorized here.
 
 ## Review preparation limitation
 
-Current GitHub GraphQL access returned exactly
-`Post "https://api.github.com/graphql": Forbidden`. A prepared description is retained
-in the task handoff; if draft creation remains blocked, use the exact documentation
-comparison link above. The merged 3a PR #31 is already the original implementation
+Draft PR creation was attempted for this pushed documentation branch and returned
+exactly `Post "https://api.github.com/graphql": Forbidden`. No documentation PR could
+be created through this API. A prepared description is retained in the task handoff;
+use the exact documentation comparison link above. The merged 3a PR #31 is already the original implementation
 review record. No permission to merge or implement 3b is requested or inferred here.
