@@ -297,11 +297,32 @@ def generate_dataset(workspace,plan,destination,*,confirmation,local_confirmed=F
     return completed
 
 
+
+def _manifest_scalar_types(manifest):
+    """Strict types for existing JSON flags/counts; never coerce Boolean numbers."""
+    flags=('complete','stopped','production_ready','source_bytes_verified',
+           'compatibility_gaps_acknowledged')
+    if any(type(manifest[k]) is not bool for k in flags):
+        raise ProcessingError('dataset_snapshot_contract_rejected')
+    if type(manifest['repeated_work_order_id_occurrences']) is not int:
+        raise ProcessingError('dataset_snapshot_contract_rejected')
+    for entry in manifest['datasets']:
+        if (type(entry['rows']) is not int or type(entry['rows_by_month']) is not dict
+                or any(type(n) is not int for n in entry['rows_by_month'].values())):
+            raise ProcessingError('dataset_snapshot_contract_rejected')
+    for selection in manifest['selections']:
+        for key in ('rows','unavailable_costs','missing_assignments','missing_identifiers'):
+            value=selection[key]
+            if value is not None and type(value) is not int:
+                raise ProcessingError('dataset_snapshot_contract_rejected')
+
+
 def validate_dataset(root):
     """Offline hash/schema/binding check of one completed test snapshot, no model execution."""
     root=_safe(root,local=True)
     try:
         manifest=json.loads((root/'snapshot_manifest.json').read_text(encoding='utf-8'))
+        _manifest_scalar_types(manifest)
         if (manifest['snapshot_schema']!=SNAPSHOT_SCHEMA or manifest['status']!='CandidateUnverified'
                 or manifest['production_ready'] is not False or manifest['approval_status']!='NotApproved'
                 or manifest['financial_schema_version']!='2' or not manifest['complete']):
