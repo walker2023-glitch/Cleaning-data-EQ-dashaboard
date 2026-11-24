@@ -213,6 +213,8 @@ known invalid current version blocked, with the verified history chain still ava
 for the same explicit recovery. The new rollback uses current generation + 1 and the
 usual commit protocol; it may not bypass invalid ROOT/SELECTOR/HISTORY metadata.
 No normal activation or refresh is allowed while the current version is invalid.
+If no committed predecessor validates (including first activation), retain evidence
+and require maintainer review; no new target is guessed or automatically selected.
 
 ## 7. Manual refresh hold and M wrapper
 
@@ -222,9 +224,13 @@ pinning that exact binding, including its complete exact bytes as binding_json_b
 
 While any hold exists, all cooperating app instances reject import/activation/
 rollback/root-change mutations. `Finish manual refresh` requires expected hold ID,
-unchanged active binding, fresh validation, and explicit employee confirmation that
+unchanged active binding, fresh control-record validation, and explicit employee confirmation that
 all Power BI preview/refresh activity has finished or Desktop is closed. Remove only
-that exact hold under lock. Crash does not clear it. A malformed hold is not removable
+that exact hold under lock. If the selected data became invalid but control records
+remain valid, explicitly confirm Power BI is closed to finish the hold **for recovery**;
+show Recovery Required and permit only verified recovery rollback afterward. Do not
+label that a successful refresh. Invalid control metadata still blocks removal.
+Crash does not clear it. A malformed hold is not removable
 through a convenient reset button; it blocks and needs maintainer review.
 
 Proposed NEW wrapper signature (not implemented):

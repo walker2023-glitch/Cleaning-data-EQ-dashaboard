@@ -43,6 +43,7 @@ processes/native filesystem semantics in addition to mocked OSError unit tests.
 | HOLD-01 | Crash after hold write / app restart | Hold persists, activation remains disabled; explicit expected-ID finish required |
 | HOLD-02 | Stale app finishes old hold ID or selector mismatch | Reject; newer hold cannot be removed |
 | HOLD-03 | Truncated/invalid hold or journal | Fail closed, no reset/delete shortcut; maintainer review |
+| HOLD-04 | Data version corrupt during hold, control pair still exact | Explicitly confirm Desktop closed, finish hold for recovery (not successful refresh), then allow only verified recovery rollback; invalid hold/selector still blocks |
 | ROLL-01 | Verified prior committed version | New generation/selection ID, explicit rollback and change consent; old records untouched |
 | ROLL-02 | Missing/corrupt target or orphan history receipt | Rollback blocked; no alternate “latest good” choice |
 | ROLL-03 | Current control binding valid but selected data corrupt; committed previous target valid | Only explicit recovery rollback permitted, fresh generation; test crash after failed-journal archive and before new preparation; unknown selector/history still blocks |
